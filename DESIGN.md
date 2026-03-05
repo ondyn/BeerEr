@@ -23,7 +23,7 @@ Application description:
 
 System Architecture (Tech Stack):
 
-- Frontend: Cross-platform mobile framework (e.g., Flutter or React Native) for a unified codebase across iOS and Android.
+- Frontend: Cross-platform mobile framework (Flutter) for a unified codebase across iOS and Android.
 - Backend & Database: Firebase/Firestore for real-time document syncing and offline persistence capabilities.
 - Serverless Logic: Firebase Cloud Functions to securely interact with third-party APIs (Untappd API, Settle Up API) without exposing API keys on the client.
 - Notifications: Firebase Cloud Messaging (FCM) to handle push notifications when someone taps a beer for another user.

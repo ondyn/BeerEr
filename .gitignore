@@ -1,0 +1,46 @@
+
+# FVM — keep config, ignore the cached SDK symlink and downloaded versions
+.fvm/flutter_sdk
+.fvm/versions/
+
+# Flutter / Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+build/
+*.g.dart
+*.freezed.dart
+doc/api/
+
+# Firebase generated
+lib/firebase_options.dart
+google-services.json
+GoogleService-Info.plist
+
+# iOS
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Flutter/Generated.xcconfig
+ios/ServiceDefinitions.json
+
+# Android
+android/.gradle/
+android/captures/
+android/local.properties
+android/key.properties
+*.jks
+
+# Cloud Functions — Node
+functions/node_modules/
+functions/lib/
+
+# macOS
+.DS_Store
+
+# IDE
+.idea/
+*.iml
+.vscode/settings.json

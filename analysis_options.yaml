@@ -1,0 +1,51 @@
+# BeerEr — Dart/Flutter analysis options
+# Uses flutter_lints as the base, with additional strict rules.
+
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  plugins:
+    - custom_lint
+  language:
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
+  exclude:
+    - '**/*.g.dart'
+    - '**/*.freezed.dart'
+    - 'lib/l10n/**'
+
+linter:
+  rules:
+    # Style
+    prefer_single_quotes: true
+    always_use_package_imports: true
+    directives_ordering: true
+
+    # Safety
+    avoid_dynamic_calls: true
+    avoid_print: true
+    cancel_subscriptions: true
+    close_sinks: true
+    literal_only_boolean_expressions: true
+    no_adjacent_strings_in_list: true
+    test_types_in_equals: true
+    throw_in_finally: true
+    unnecessary_statements: true
+
+    # Dart idioms
+    prefer_const_constructors: true
+    prefer_const_constructors_in_immutables: true
+    prefer_const_declarations: true
+    prefer_const_literals_to_create_immutables: true
+    prefer_final_fields: true
+    prefer_final_in_for_each: true
+    prefer_final_locals: true
+    unnecessary_const: true
+    unnecessary_new: true
+    use_super_parameters: true
+
+    # Flutter-specific
+    use_key_in_widget_constructors: true
+    sized_box_for_whitespace: true
+    sized_box_shrink_expand: true

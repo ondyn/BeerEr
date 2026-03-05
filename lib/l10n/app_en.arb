@@ -1,0 +1,32 @@
+{
+  "@@locale": "en",
+  "appTitle": "BeerEr",
+  "@appTitle": {
+    "description": "The application title"
+  },
+  "tapKeg": "Tap Keg",
+  "@tapKeg": { "description": "Button to start/resume a keg session" },
+  "untapKeg": "Untap Keg",
+  "@untapKeg": { "description": "Button to pause a keg session" },
+  "kegDone": "Keg Done",
+  "@kegDone": { "description": "Button to mark keg as finished" },
+  "iGotBeer": "I Got Beer",
+  "@iGotBeer": { "description": "Button to log a pour for yourself" },
+  "pourForSomeone": "Pour for Someone",
+  "@pourForSomeone": { "description": "Button to log a pour for another user" },
+  "undo": "Undo",
+  "@undo": { "description": "Undo button label" },
+  "statistics": "Statistics",
+  "@statistics": { "description": "Statistics section heading" },
+  "estimatedBac": "Est. BAC",
+  "@estimatedBac": { "description": "Estimated blood alcohol content label" },
+  "drinkResponsibly": "Please drink responsibly.",
+  "@drinkResponsibly": { "description": "Responsible drinking disclaimer" },
+  "volumeRemaining": "{volume} ml remaining",
+  "@volumeRemaining": {
+    "description": "Volume remaining in keg",
+    "placeholders": {
+      "volume": { "type": "String" }
+    }
+  }
+}
