@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="400" height="400">
+  <defs>
+    <!-- Crisp, fresh amber gradient for the beer -->
+    <linearGradient id="beerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFD100" />
+      <stop offset="100%" stop-color="#FF9900" />
+    </linearGradient>
+  </defs>
+
+  <!-- Modern, dark geometric background shield (Hexagon) -->
+  <polygon fill="#2B2D42" points="100,10 190,55 190,145 100,190 10,55"/>
+  <!-- Corrected the hexagon points above to be a proper shape -->
+  <polygon fill="#2B2D42" points="100,10 190,55 190,145 100,190 10,145 10,55"/>
+
+  <!-- Handle made of sharp angles -->
+  <path fill="none" stroke="#EDF2F4" stroke-width="12" stroke-linejoin="miter" d="M 130,100 L 155,100 L 155,145 L 122,145"/>
+
+  <!-- Beer liquid base -->
+  <polygon fill="url(#beerGradient)" points="65,95 135,95 120,165 80,165"/>
+
+  <!-- Angular, non-rounded foam -->
+  <polygon fill="#EDF2F4" points="55,95 72,60 92,82 108,50 125,75 145,95 135,105 65,105"/>
+
+  <!-- Fresh highlight/Line detail on the glass -->
+  <polygon fill="#FFFFFF" opacity="0.2" points="75,95 85,95 78,160 70,160" />
+</svg>
