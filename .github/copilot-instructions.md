@@ -98,15 +98,87 @@ jointAccounts/{account_id}
 
 ---
 
+## Development Environment
+
+### Flutter via FVM
+Flutter is managed with **FVM (Flutter Version Manager)**. The project pins `stable` in `.fvmrc`.
+`fvm` is **not** on the global `PATH` — always invoke Flutter and Dart through the local SDK symlink:
+
+```zsh
+# Flutter
+.fvm/flutter_sdk/bin/flutter <command>
+
+# Dart
+.fvm/flutter_sdk/bin/dart <command>
+
+# Examples
+.fvm/flutter_sdk/bin/flutter pub get
+.fvm/flutter_sdk/bin/flutter test
+.fvm/flutter_sdk/bin/flutter run
+.fvm/flutter_sdk/bin/flutter pub run build_runner build --delete-conflicting-outputs
+```
+
+If `fvm` is on PATH (after a full shell reload or global install), the short form also works:
+```zsh
+fvm flutter <command>
+fvm dart <command>
+```
+
+### Code generation
+Models use `freezed` + `json_serializable`; providers use `riverpod_generator`. After editing any annotated file, regenerate:
+```zsh
+.fvm/flutter_sdk/bin/flutter pub run build_runner build --delete-conflicting-outputs
+```
+Generated files (`*.g.dart`, `*.freezed.dart`) are **gitignored** — never edit them by hand.
+
+### Running tests
+```zsh
+# All tests
+.fvm/flutter_sdk/bin/flutter test
+
+# Single file
+.fvm/flutter_sdk/bin/flutter test test/bac_calculator_test.dart --reporter expanded
+```
+
+### Linting & formatting
+```zsh
+# Analyse
+.fvm/flutter_sdk/bin/flutter analyze
+
+# Format (line length 80, enforced by CI)
+.fvm/flutter_sdk/bin/dart format lib/ test/
+```
+
+### Cloud Functions (TypeScript)
+```zsh
+cd functions
+npm install          # first time
+npm run build        # compile TS → lib/
+npm run lint         # eslint
+```
+Secrets (`UNTAPPD_API_KEY`, `SETTLEUP_CLIENT_ID`, `SETTLEUP_CLIENT_SECRET`) live in Firebase Function environment config — **never** hardcode them.
+
+### Firebase setup (first time)
+```zsh
+# Install FlutterFire CLI once
+dart pub global activate flutterfire_cli
+
+# Connect to Firebase project (generates lib/firebase_options.dart)
+flutterfire configure
+```
+`lib/firebase_options.dart` is **gitignored** — each developer runs `flutterfire configure` locally.
+
+---
+
 ## Coding Conventions
 
 - **Language**: Dart for Flutter; TypeScript for Cloud Functions
-- **State management**: Prefer `riverpod` (or `bloc` if already scaffolded)
+- **State management**: `riverpod` with code-gen (`@riverpod` annotation + `riverpod_generator`)
 - **Naming**: `snake_case` for Firestore fields; `camelCase` for Dart variables/functions; `PascalCase` for classes/widgets
 - **Error handling**: Always handle Firestore `FirebaseException`; show user-friendly snackbars/dialogs
 - **Transactions**: Any write that changes `volume_remaining_ml` MUST go through `runTransaction`
 - **Tests**: Unit-test BAC calculation logic and Firestore transaction helpers; widget-test critical flows (pour, undo)
-- **Localisation**: Use Flutter's `intl`/`AppLocalizations` from the start — the app targets international users
+- **Localisation**: All user-facing strings go in `lib/l10n/app_en.arb`; use `AppLocalizations` — never hardcode strings
 - **Responsible drinking**: Include "Drink Responsibly" copy in BAC-related UI; comply with App Store / Play Store guidelines
 
 ---
@@ -131,21 +203,39 @@ jointAccounts/{account_id}
 
 ---
 
-## Repository Structure (planned)
+## Repository Structure
 
 ```
 BeerEr/
+├── .fvm/                  # FVM config (fvm_config.json pinned to stable)
 ├── .github/
 │   └── copilot-instructions.md
-├── lib/                   # Flutter app source
-│   ├── models/
-│   ├── repositories/
-│   ├── providers/         # Riverpod providers
-│   ├── screens/
-│   ├── widgets/
-│   └── utils/
+├── android/               # Android host app (generated)
+├── ios/                   # iOS host app (generated)
 ├── functions/             # Firebase Cloud Functions (TypeScript)
+│   ├── src/
+│   │   └── index.ts       # searchUntappd, exportToSettleUp, onPourCreated
+│   ├── tsconfig.json
+│   ├── eslint.config.mjs
+│   └── package.json
+├── lib/
+│   ├── main.dart          # Entry point — Firebase init + ProviderScope
+│   ├── app.dart           # BeerErApp widget (MaterialApp.router)
+│   ├── router.dart        # go_router setup (@riverpod)
+│   ├── firebase_options.dart  # GITIGNORED — run `flutterfire configure`
+│   ├── models/            # Freezed data classes (user, keg_session, pour, joint_account)
+│   ├── repositories/      # Firestore access layer (user_repository, keg_repository)
+│   ├── providers/         # Riverpod providers (auth_provider, …)
+│   ├── screens/           # One sub-folder per screen (home/, keg/, pour/, …)
+│   ├── widgets/           # Shared reusable widgets
+│   ├── utils/             # Pure Dart helpers (bac_calculator, …)
+│   └── l10n/              # ARB files (app_en.arb, …)
 ├── test/
+│   ├── bac_calculator_test.dart
+│   └── widget_test.dart
+├── analysis_options.yaml  # Strict lint config
+├── pubspec.yaml
+├── .fvmrc                 # FVM version pin ({"flutter": "stable"})
 ├── DESIGN.md
 └── README.md
 ```
