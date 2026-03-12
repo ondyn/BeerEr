@@ -1,0 +1,33 @@
+{
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "ondyn-beerer",
+          "appId": "1:345206098339:android:77d06b7455beb35ef2b216",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "ios": {
+        "default": {
+          "projectId": "ondyn-beerer",
+          "appId": "1:345206098339:ios:4517bd89fd8aa088f2b216",
+          "uploadDebugSymbols": false,
+          "fileOutput": "ios/Runner/GoogleService-Info.plist"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "ondyn-beerer",
+          "configurations": {
+            "android": "1:345206098339:android:77d06b7455beb35ef2b216",
+            "ios": "1:345206098339:ios:4517bd89fd8aa088f2b216"
+          }
+        }
+      }
+    }
+  }
+}

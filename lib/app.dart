@@ -1,9 +1,9 @@
+import 'package:beerer/l10n/app_localizations.dart';
+import 'package:beerer/router.dart';
+import 'package:beerer/theme/beer_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import 'l10n/app_localizations.dart';
-import 'router.dart';
 
 class BeerErApp extends ConsumerWidget {
   const BeerErApp({super.key});
@@ -15,13 +15,7 @@ class BeerErApp extends ConsumerWidget {
     return MaterialApp.router(
       title: 'BeerEr',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFFF5A623), // amber/beer colour
-          brightness: Brightness.dark,
-        ),
-        useMaterial3: true,
-      ),
+      theme: buildBeerTheme(),
       routerConfig: router,
       localizationsDelegates: const [
         AppLocalizations.delegate,

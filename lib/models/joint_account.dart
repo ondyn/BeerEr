@@ -4,7 +4,7 @@ part 'joint_account.freezed.dart';
 part 'joint_account.g.dart';
 
 @freezed
-class JointAccount with _$JointAccount {
+abstract class JointAccount with _$JointAccount {
   const factory JointAccount({
     required String id,
     required String sessionId,

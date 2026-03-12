@@ -4,7 +4,7 @@ part 'pour.freezed.dart';
 part 'pour.g.dart';
 
 @freezed
-class Pour with _$Pour {
+abstract class Pour with _$Pour {
   const factory Pour({
     required String id,
     required String sessionId,
