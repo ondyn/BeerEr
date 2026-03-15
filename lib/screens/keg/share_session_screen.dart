@@ -71,54 +71,12 @@ class ShareSessionScreen extends StatelessWidget {
               label: const Text('Copy link'),
             ),
             const SizedBox(height: 16),
-            // Share via
-            Text(
-              'Share via…',
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => SharePlus.instance.share(
-                      ShareParams(text: 'Join my keg party! $_deepLink'),
-                    ),
-                    child: const Text('WhatsApp'),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => SharePlus.instance.share(
-                      ShareParams(text: 'Join my keg party! $_deepLink'),
-                    ),
-                    child: const Text('Messages'),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => SharePlus.instance.share(
-                      ShareParams(text: 'Join my keg party! $_deepLink'),
-                    ),
-                    child: const Text('Mail'),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => SharePlus.instance.share(
-                      ShareParams(text: 'Join my keg party! $_deepLink'),
-                    ),
-                    child: const Text('Other…'),
-                  ),
-                ),
-              ],
+            ElevatedButton.icon(
+              onPressed: () => SharePlus.instance.share(
+                ShareParams(text: 'Join my keg party! $_deepLink'),
+              ),
+              icon: const Icon(Icons.share),
+              label: const Text('Share link'),
             ),
           ],
         ),

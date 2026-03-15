@@ -28,5 +28,37 @@
     "placeholders": {
       "volume": { "type": "String" }
     }
-  }
+  },
+  "kegInformation": "Keg Information",
+  "@kegInformation": { "description": "Title for keg information screen" },
+  "beerInformation": "Beer Information",
+  "@beerInformation": { "description": "Section header for beer details" },
+  "kegInfo": "Keg Information",
+  "@kegInfo": { "description": "Section header for keg details" },
+  "beerName": "Name",
+  "@beerName": { "description": "Beer name label" },
+  "alcoholPercent": "Alcohol %",
+  "@alcoholPercent": { "description": "Alcohol percentage label" },
+  "brewery": "Brewery",
+  "@brewery": { "description": "Brewery label" },
+  "malt": "Malt",
+  "@malt": { "description": "Malt label" },
+  "fermentation": "Fermentation",
+  "@fermentation": { "description": "Fermentation label" },
+  "beerType": "Type",
+  "@beerType": { "description": "Beer type label" },
+  "beerGroup": "Group",
+  "@beerGroup": { "description": "Beer group label" },
+  "beerStyle": "Style",
+  "@beerStyle": { "description": "Beer style label" },
+  "degreePlato": "Degree Plato",
+  "@degreePlato": { "description": "Degree Plato label" },
+  "totalVolume": "Total Volume",
+  "@totalVolume": { "description": "Total keg volume label" },
+  "price": "Price",
+  "@price": { "description": "Keg price label" },
+  "status": "Status",
+  "@status": { "description": "Session status label" },
+  "started": "Started",
+  "@started": { "description": "Session start time label" }
 }

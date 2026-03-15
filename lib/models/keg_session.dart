@@ -23,6 +23,14 @@ abstract class KegSession with _$KegSession {
     /// Format: beerer://join/[sessionId]
     /// Serialised as join_link in Firestore.
     String? joinLink,
+    // Beer detail fields sourced from BeerWeb.cz
+    String? brewery,
+    String? malt,
+    String? fermentation,
+    String? beerType,
+    String? beerGroup,
+    String? beerStyle,
+    String? degreePlato,
   }) = _KegSession;
 
   factory KegSession.fromJson(Map<String, dynamic> json) =>

@@ -11,6 +11,7 @@ export 'home/home_screen.dart';
 export 'keg/create_keg_screen.dart';
 export 'keg/join_session_screen.dart';
 export 'keg/keg_detail_screen.dart';
+export 'keg/keg_info_screen.dart';
 export 'keg/settle_up_screen.dart';
 export 'keg/share_session_screen.dart';
 export 'profile/profile_screen.dart';

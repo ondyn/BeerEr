@@ -85,6 +85,10 @@ class _KegDetailBody extends ConsumerWidget {
             onSelected: (value) =>
                 _handleAction(context, ref, value),
             itemBuilder: (_) => [
+              const PopupMenuItem(
+                value: 'info',
+                child: Text('Keg Information'),
+              ),
               if (session.status == KegStatus.active && isCreator)
                 const PopupMenuItem(
                   value: 'pause',
@@ -119,6 +123,8 @@ class _KegDetailBody extends ConsumerWidget {
   void _handleAction(BuildContext context, WidgetRef ref, String action) {
     final repo = ref.read(kegRepositoryProvider);
     switch (action) {
+      case 'info':
+        context.go('/keg/${session.id}/info');
       case 'pause':
         repo.updateStatus(session.id, KegStatus.paused);
       case 'resume':

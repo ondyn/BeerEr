@@ -91,6 +91,14 @@ GoRouter router(Ref ref) {
         },
         routes: [
           GoRoute(
+            path: 'info',
+            builder: (context, state) {
+              final sessionId =
+                  state.pathParameters['sessionId']!;
+              return KegInfoScreen(sessionId: sessionId);
+            },
+          ),
+          GoRoute(
             path: 'share',
             builder: (context, state) {
               final sessionId =
