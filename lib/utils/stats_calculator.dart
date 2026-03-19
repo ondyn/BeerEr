@@ -1,4 +1,5 @@
 import 'package:beerer/models/models.dart';
+import 'package:beerer/utils/format_preferences.dart';
 
 /// Calculates session statistics client-side.
 class StatsCalculator {
@@ -88,5 +89,41 @@ class StatsCalculator {
       0.0,
       (sum, uid) => sum + userCost(pours, uid, kegPrice, volumeTotalMl),
     );
+  }
+
+  /// Price per reference beer (0.5 l for litres, 1 pint for pints,
+  /// 16 fl oz for US fl oz).
+  ///
+  /// Returns null when [volumeTotalMl] is zero.
+  static double? pricePerReferenceBeer(
+    double kegPrice,
+    double volumeTotalMl, {
+    VolumeUnit unit = VolumeUnit.litres,
+  }) {
+    if (volumeTotalMl <= 0) return null;
+
+    final double referenceMl;
+    switch (unit) {
+      case VolumeUnit.litres:
+        referenceMl = 500; // 0.5 l
+      case VolumeUnit.pints:
+        referenceMl = 568.261; // 1 imperial pint
+      case VolumeUnit.usFlOz:
+        referenceMl = 473.176; // 16 US fl oz (US pint)
+    }
+
+    return kegPrice / volumeTotalMl * referenceMl;
+  }
+
+  /// Human-readable label for the reference beer size.
+  static String referenceBeerLabel(VolumeUnit unit) {
+    switch (unit) {
+      case VolumeUnit.litres:
+        return '0.5 l beer';
+      case VolumeUnit.pints:
+        return '1 pint';
+      case VolumeUnit.usFlOz:
+        return '16 fl oz';
+    }
   }
 }

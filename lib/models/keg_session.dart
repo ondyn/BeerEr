@@ -3,7 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'keg_session.freezed.dart';
 part 'keg_session.g.dart';
 
-enum KegStatus { active, paused, done }
+enum KegStatus { created, active, paused, done }
 
 @freezed
 abstract class KegSession with _$KegSession {
@@ -18,7 +18,7 @@ abstract class KegSession with _$KegSession {
     required double alcoholPercent,
     @Default([]) List<double> predefinedVolumesMl,
     DateTime? startTime,
-    @Default(KegStatus.active) KegStatus status,
+    @Default(KegStatus.created) KegStatus status,
     /// Deep link stored in Firestore so it can be retrieved without recalculation.
     /// Format: beerer://join/[sessionId]
     /// Serialised as join_link in Firestore.

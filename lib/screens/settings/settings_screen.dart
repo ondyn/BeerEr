@@ -1,6 +1,7 @@
 import 'package:beerer/providers/providers.dart';
 import 'package:beerer/repositories/user_repository.dart';
 import 'package:beerer/theme/beer_theme.dart';
+import 'package:beerer/utils/format_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -19,21 +20,46 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool? _allowPourForMe;
   bool _notifyKegNearlyEmpty = true;
   bool _notifyKegDone = true;
-  String _volumeUnit = 'Litres';
+
+  // Local mirrors for display preferences — seeded from Firestore on first
+  // data emission and written back on every change.
+  VolumeUnit? _volumeUnit;
+  String? _currency;
+  DecimalSeparator? _decimalSeparator;
+
+  /// Persists a single key/value pair into the user's Firestore preferences
+  /// map.
+  Future<void> _savePreference(String key, dynamic value) async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+    final repo = ref.read(userRepositoryProvider);
+    final user = await repo.getUser(uid);
+    if (user == null) return;
+    final updatedPrefs = Map<String, dynamic>.from(user.preferences)
+      ..[key] = value;
+    await repo.createOrUpdateUser(user.copyWith(preferences: updatedPrefs));
+  }
 
   /// Persists the updated [allowPourForMe] value into the user's Firestore
   /// preferences map.
   Future<void> _saveAllowPourForMe(bool value) async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid == null) return;
     setState(() => _allowPourForMe = value);
-    final repo = ref.read(userRepositoryProvider);
-    final user = await repo.getUser(uid);
-    if (user == null) return;
-    final updatedPrefs =
-        Map<String, dynamic>.from(user.preferences)
-          ..['allow_pour_for_me'] = value;
-    await repo.createOrUpdateUser(user.copyWith(preferences: updatedPrefs));
+    await _savePreference('allow_pour_for_me', value);
+  }
+
+  void _setVolumeUnit(VolumeUnit unit) {
+    setState(() => _volumeUnit = unit);
+    _savePreference('volume_unit', unit.key);
+  }
+
+  void _setCurrency(String symbol) {
+    setState(() => _currency = symbol);
+    _savePreference('currency', symbol);
+  }
+
+  void _setDecimalSeparator(DecimalSeparator sep) {
+    setState(() => _decimalSeparator = sep);
+    _savePreference('decimal_separator', sep.key);
   }
 
   @override
@@ -57,6 +83,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           final firestoreAllowPourForMe = appUser?.allowPourForMe ?? true;
           final effectiveAllowPourForMe =
               _allowPourForMe ?? firestoreAllowPourForMe;
+
+          // Seed display preferences from Firestore on first emission.
+          final prefs = appUser != null
+              ? FormatPreferences.fromMap(appUser.preferences)
+              : const FormatPreferences();
+          final effectiveVolumeUnit = _volumeUnit ?? prefs.volumeUnit;
+          final effectiveCurrency = _currency ?? prefs.currency;
+          final effectiveDecimalSep =
+              _decimalSeparator ?? prefs.decimalSeparator;
 
           return ListView(
             padding: const EdgeInsets.all(16),
@@ -104,16 +139,60 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               const SizedBox(height: 8),
               ListTile(
                 title: const Text('Volume units'),
-                trailing: DropdownButton<String>(
-                  value: _volumeUnit,
-                  items: ['Litres', 'Millilitres', 'Pints']
+                trailing: DropdownButton<VolumeUnit>(
+                  value: effectiveVolumeUnit,
+                  items: VolumeUnit.values
                       .map((u) => DropdownMenuItem(
                             value: u,
-                            child: Text(u),
+                            child: Text(u.label),
                           ))
                       .toList(),
                   onChanged: (val) {
-                    if (val != null) setState(() => _volumeUnit = val);
+                    if (val != null) _setVolumeUnit(val);
+                  },
+                ),
+                tileColor: BeerColors.surfaceVariant,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              const SizedBox(height: 4),
+              ListTile(
+                title: const Text('Currency symbol'),
+                trailing: DropdownButton<String>(
+                  value: effectiveCurrency,
+                  items: ['€', '\$', '£', 'Kč']
+                      .map((c) => DropdownMenuItem(
+                            value: c,
+                            child: Text(c),
+                          ))
+                      .toList(),
+                  onChanged: (val) {
+                    if (val != null) _setCurrency(val);
+                  },
+                ),
+                tileColor: BeerColors.surfaceVariant,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              const SizedBox(height: 4),
+              ListTile(
+                title: const Text('Decimal separator'),
+                trailing: DropdownButton<DecimalSeparator>(
+                  value: effectiveDecimalSep,
+                  items: DecimalSeparator.values
+                      .map((s) => DropdownMenuItem(
+                            value: s,
+                            child: Text(
+                              s == DecimalSeparator.dot
+                                  ? 'Dot (1.5)'
+                                  : 'Comma (1,5)',
+                            ),
+                          ))
+                      .toList(),
+                  onChanged: (val) {
+                    if (val != null) _setDecimalSeparator(val);
                   },
                 ),
                 tileColor: BeerColors.surfaceVariant,

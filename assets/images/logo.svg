@@ -5,13 +5,7 @@
       <stop offset="0%" stop-color="#FFD100" />
       <stop offset="100%" stop-color="#FF9900" />
     </linearGradient>
-    <clipPath id="circleClip">
-      <circle cx="100" cy="107" r="88"/>
-    </clipPath>
   </defs>
-
-  <!-- Circular background -->
-  <circle cx="100" cy="107" r="88" fill="#2B2D42"/>
 
   <!-- Handle made of sharp angles -->
   <path fill="none" stroke="#EDF2F4" stroke-width="12" stroke-linejoin="miter" d="M 130,100 L 155,100 L 155,145 L 122,145"/>

@@ -134,6 +134,7 @@ class _StatusBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (label, color) = switch (status) {
+      KegStatus.created => ('Ready', BeerColors.primaryAmber),
       KegStatus.active => ('Active', BeerColors.success),
       KegStatus.paused => ('Paused', BeerColors.warning),
       KegStatus.done => ('Done', BeerColors.onSurfaceSecondary),

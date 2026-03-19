@@ -16,7 +16,8 @@ GoRouter router(Ref ref) {
 
   return GoRouter(
     navigatorKey: appNavigatorKey,
-    initialLocation: '/',
+    // initialLocation: '/', // SKIP SPLASH: was '/', now going straight to /welcome
+    initialLocation: '/welcome',
     redirect: (context, state) {
       final user = authAsync.value;
       final emailVerified = user?.emailVerified ?? false;
@@ -24,7 +25,7 @@ GoRouter router(Ref ref) {
       final path = state.uri.path;
 
       // Allow splash always
-      if (path == '/') return null;
+      // if (path == '/') return null; // SKIP SPLASH: splash bypassed
 
       // Allow auth routes when not logged in
       final authPaths = [

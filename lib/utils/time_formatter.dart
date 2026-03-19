@@ -1,3 +1,5 @@
+import 'package:beerer/utils/format_preferences.dart';
+
 /// Formats durations and timestamps for display.
 class TimeFormatter {
   const TimeFormatter._();
@@ -33,12 +35,30 @@ class TimeFormatter {
   }
 
   /// Formats a volume in ml to a human-readable string.
-  static String formatVolumeMl(double ml) {
-    if (ml >= 1000) {
-      final litres = ml / 1000;
-      return '${litres.toStringAsFixed(1)} l';
+  ///
+  /// When [prefs] is provided, the value is converted to the user's
+  /// preferred unit system and formatted with the correct decimal
+  /// separator.
+  static String formatVolumeMl(double ml, {FormatPreferences? prefs}) {
+    final p = prefs ?? const FormatPreferences();
+
+    switch (p.volumeUnit) {
+      case VolumeUnit.litres:
+        if (ml >= 1000) {
+          return '${p.formatDecimal(ml / 1000, 1)} l';
+        }
+        return '${ml.round()} ml';
+
+      case VolumeUnit.pints:
+        // 1 imperial pint ≈ 568.261 ml
+        final pints = ml / 568.261;
+        return '${p.formatDecimal(pints, 1)} pt';
+
+      case VolumeUnit.usFlOz:
+        // 1 US fl oz ≈ 29.5735 ml
+        final oz = ml / 29.5735;
+        return '${p.formatDecimal(oz, 1)} fl oz';
     }
-    return '${ml.round()} ml';
   }
 
   /// Formats a percentage (0.0–100.0) for display.
@@ -47,7 +67,16 @@ class TimeFormatter {
   }
 
   /// Formats a currency amount.
-  static String formatCurrency(double amount, {String symbol = '€'}) {
-    return '$symbol${amount.toStringAsFixed(2)}';
+  ///
+  /// When [prefs] is provided, the user's chosen currency symbol and
+  /// decimal separator are applied.
+  static String formatCurrency(
+    double amount, {
+    String? symbol,
+    FormatPreferences? prefs,
+  }) {
+    final p = prefs ?? const FormatPreferences();
+    final sym = symbol ?? p.currency;
+    return '$sym${p.formatDecimal(amount, 2)}';
   }
 }

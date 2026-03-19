@@ -1,6 +1,6 @@
 import 'package:beerer/theme/beer_theme.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+// import 'package:go_router/go_router.dart'; // SKIP SPLASH: unused while splash is bypassed
 
 /// Splash / loading screen — Firebase init, auth check, deep-link resolution.
 class SplashScreen extends StatefulWidget {
@@ -15,12 +15,12 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     // Navigation is handled by the router redirect based on auth state.
-    // This screen auto-navigates after a short delay as a fallback.
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        context.go('/home');
-      }
-    });
+    // SKIP SPLASH: auto-navigation disabled while splash is bypassed.
+    // Future.delayed(const Duration(seconds: 2), () {
+    //   if (mounted) {
+    //     context.go('/home');
+    //   }
+    // });
   }
 
   @override

@@ -1,0 +1,10 @@
+- after creating keg session, then in three dot menu there is "Edit session" which doesnt work. And after clicking "Delete session" and confirming then empty page is shown with "Session not found" and unable to navigate anywhere, after deleting it should redirect to home screen.
+- system "back" key or swipe to go back close the app, should follow the screens af if user is on eg. keg detail, it should go back to keg session and the to home screen
+- when user click "I got beer" pop out is showed ("Pour logged!") but this pop not dissapear, should behave same way as "Poured for ondyn!" pop.
+- when editting user profile, prefill inputs with current values if they exists
+- "past sessions" screens not loading properly, there is flutter error: W/Firestore(30012): (26.1.0) [Firestore]: Listen for QueryWrapper(query=Query(target=Query(kegSessions where status==done order by __name__);limitType=LIMIT_TO_FIRST)) failed: Status{code=PERMISSION_DENIED, description=Missing or insufficient permissions., cause=null}
+- add alcohol drinked/remaining in the keg level/stats card. Add alcohol drunk by user in "My stats". Alcohol will be calculated from keg volume and beer Alcohol content.
+- currency annd decimal point is not respected when creating new keg session and in keg level/stats and "My stats"
+- beers count in participants list - add one decimal point. When user is drinking eg. 0.3l volumes, the whole number is missleading
+- "0.5l beer" price: put it on the right next to keg status in "Keg level" section
+- when screen is updated (eg someone else pour the beer) than page is scrolled to top. Keep the scroll where the user was before update.

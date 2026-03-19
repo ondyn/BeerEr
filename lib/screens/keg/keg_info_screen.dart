@@ -182,6 +182,8 @@ class _KegInfoBody extends StatelessWidget {
 
   String _formatStatus(KegStatus status) {
     switch (status) {
+      case KegStatus.created:
+        return 'Created';
       case KegStatus.active:
         return 'Active';
       case KegStatus.paused:

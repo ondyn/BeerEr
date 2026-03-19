@@ -78,56 +78,57 @@ class HomeScreen extends ConsumerWidget {
 
                 final active = sessions
                     .where((s) =>
+                        s.status.name == 'created' ||
                         s.status.name == 'active' ||
                         s.status.name == 'paused')
                     .toList();
-                final done = sessions
-                    .where((s) => s.status.name == 'done')
-                    .toList();
 
-                return ListView(
-                  padding: const EdgeInsets.all(16),
-                  children: [
-                    if (active.isNotEmpty) ...[
-                      for (final session in active)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: _SessionCardWithCount(
-                            session: session,
-                            isOwner: session.creatorId == currentUserId,
-                            highlighted: true,
-                            onTap: () =>
-                                context.go('/keg/${session.id}'),
-                          ),
+                if (active.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.sports_bar_outlined,
+                          size: 80,
+                          color: BeerColors.surfaceVariant,
                         ),
-                    ],
-                    if (done.isNotEmpty) ...[
-                      Padding(
-                        padding: const EdgeInsets.only(
-                          top: 8,
-                          bottom: 12,
-                        ),
-                        child: Text(
-                          'Past sessions',
+                        const SizedBox(height: 16),
+                        Text(
+                          'No active keg sessions',
                           style: Theme.of(context)
                               .textTheme
-                              .titleSmall
+                              .titleMedium
                               ?.copyWith(
                                 color: BeerColors.onSurfaceSecondary,
                               ),
                         ),
-                      ),
-                      for (final session in done)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: _SessionCardWithCount(
-                            session: session,
-                            isOwner: session.creatorId == currentUserId,
-                            onTap: () =>
-                                context.go('/keg/${session.id}'),
-                          ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Tap + to create a new keg session',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall,
                         ),
-                    ],
+                      ],
+                    ),
+                  );
+                }
+
+                return ListView(
+                  padding: const EdgeInsets.all(16),
+                  children: [
+                    for (final session in active)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: _SessionCardWithCount(
+                          session: session,
+                          isOwner: session.creatorId == currentUserId,
+                          highlighted: true,
+                          onTap: () =>
+                              context.go('/keg/${session.id}'),
+                        ),
+                      ),
                   ],
                 );
               },
@@ -279,31 +280,37 @@ class _BeerErDrawer extends ConsumerWidget {
             decoration: const BoxDecoration(
               color: BeerColors.surfaceVariant,
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                CircleAvatar(
-                  radius: 30,
-                  backgroundColor: BeerColors.primaryAmber,
-                  child: Text(
-                    avatarLetter,
-                    style: Theme.of(context)
-                        .textTheme
-                        .headlineMedium
-                        ?.copyWith(color: BeerColors.background),
+            child: GestureDetector(
+              onTap: () {
+                Navigator.pop(context);
+                context.go('/profile');
+              },
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  CircleAvatar(
+                    radius: 30,
+                    backgroundColor: BeerColors.primaryAmber,
+                    child: Text(
+                      avatarLetter,
+                      style: Theme.of(context)
+                          .textTheme
+                          .headlineMedium
+                          ?.copyWith(color: BeerColors.background),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  displayName,
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                Text(
-                  user?.email ?? '',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ],
+                  const SizedBox(height: 8),
+                  Text(
+                    displayName,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  Text(
+                    user?.email ?? '',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
+              ),
             ),
           ),
           ListTile(
@@ -316,18 +323,10 @@ class _BeerErDrawer extends ConsumerWidget {
           ),
           ListTile(
             leading: const Icon(Icons.history),
-            title: const Text('My Sessions'),
+            title: const Text('Past Sessions'),
             onTap: () {
               Navigator.pop(context);
               context.go('/sessions/history');
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.person),
-            title: const Text('Profile'),
-            onTap: () {
-              Navigator.pop(context);
-              context.go('/profile');
             },
           ),
           ListTile(

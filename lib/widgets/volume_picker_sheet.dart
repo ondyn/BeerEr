@@ -8,13 +8,13 @@ class VolumePickerSheet extends StatefulWidget {
   const VolumePickerSheet({
     super.key,
     required this.predefinedVolumesMl,
-    required this.onConfirm,
+    this.onConfirm,
     this.initialVolumeMl,
     this.title = 'Log a pour for you',
   });
 
   final List<double> predefinedVolumesMl;
-  final Future<void> Function(double volumeMl) onConfirm;
+  final Future<void> Function(double volumeMl)? onConfirm;
   final double? initialVolumeMl;
   final String title;
 
@@ -159,8 +159,7 @@ class _VolumePickerSheetState extends State<VolumePickerSheet> {
           FilledButton.icon(
             onPressed: () async {
               HapticFeedback.mediumImpact();
-              await widget.onConfirm(_selectedVolume);
-              if (context.mounted) Navigator.of(context).pop();
+              Navigator.of(context).pop(_selectedVolume);
             },
             icon: const Icon(Icons.check),
             label: const Text('Log Pour'),
