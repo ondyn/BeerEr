@@ -10,6 +10,8 @@
 - when screen is updated (eg someone else pour the beer) than page is scrolled to top. Keep the scroll where the user was before update.
 - enable users to choose avatar, also enable avatar for joint Accounts, when group is created.
 - consolidate participants and accounts details - to participants detail add consumed price. To Accounts add icon of beer and beer count
+- when keg done, show statistics - participatns, accounts, total keg time (from tap to done)
+
 
 
 - cleanup: DB will be cleared, rething about all names, database attributes, screen names, variables if it makes sense. Rename accordingly. Analyze code, if something is repeating put it into shared code. Make sure all graphics types useses same dimensions, colors and theme everywhere.

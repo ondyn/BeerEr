@@ -612,6 +612,30 @@ class _ActiveBodyState extends ConsumerState<_ActiveBody> {
       unit: prefs.volumeUnit,
     );
 
+    // BAC for My Stats — compute if user has weight set
+    final appUserAsync = ref.watch(watchCurrentUserProvider(uid));
+    final appUser = appUserAsync.asData?.value;
+    double? myBac;
+    if (appUser != null &&
+        appUser.weightKg > 0 &&
+        session.startTime != null) {
+      final totalAlcGrams = userPours
+          .where((p) => !p.undone)
+          .fold(0.0, (sum, p) {
+        return sum +
+            BacCalculator.pureAlcoholGrams(
+              volumeMl: p.volumeMl,
+              abv: session.alcoholPercent,
+            );
+      });
+      myBac = BacCalculator.calculate(
+        totalAlcoholGrams: totalAlcGrams,
+        weightKg: appUser.weightKg,
+        gender: appUser.gender,
+        elapsedMinutes: elapsed.inMinutes,
+      );
+    }
+
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -729,6 +753,12 @@ class _ActiveBodyState extends ConsumerState<_ActiveBody> {
                       prefs: prefs,
                     ),
                   ),
+                if (myBac != null && myBac > 0)
+                  StatTile(
+                    icon: Icons.science,
+                    label: 'BAC estimate',
+                    value: '${myBac.toStringAsFixed(2)} ‰',
+                  ),
               ],
             ),
           ),
@@ -740,7 +770,6 @@ class _ActiveBodyState extends ConsumerState<_ActiveBody> {
             userPours: userPours,
             session: session,
             userId: uid,
-            ref: ref,
           ),
         ],
         const SizedBox(height: 16),
@@ -771,38 +800,58 @@ class _ActiveBodyState extends ConsumerState<_ActiveBody> {
   }
 }
 
-/// BAC section — calculates BAC on device only.
-class _BacSection extends StatelessWidget {
+/// BAC section — calculates BAC on device only, updates every second.
+class _BacSection extends ConsumerStatefulWidget {
   const _BacSection({
     required this.userPours,
     required this.session,
     required this.userId,
-    required this.ref,
   });
 
   final List<Pour> userPours;
   final KegSession session;
   final String userId;
-  final WidgetRef ref;
+
+  @override
+  ConsumerState<_BacSection> createState() => _BacSectionState();
+}
+
+class _BacSectionState extends ConsumerState<_BacSection> {
+  Timer? _ticker;
+
+  @override
+  void initState() {
+    super.initState();
+    _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _ticker?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final userAsync = ref.watch(watchCurrentUserProvider(userId));
+    final userAsync =
+        ref.watch(watchCurrentUserProvider(widget.userId));
     return userAsync.when(
       data: (user) {
         if (user == null || user.weightKg <= 0) {
           return const SizedBox.shrink();
         }
-        final totalAlcGrams = userPours.fold(0.0, (sum, p) {
+        final totalAlcGrams = widget.userPours.fold(0.0, (sum, p) {
           return sum +
               BacCalculator.pureAlcoholGrams(
                 volumeMl: p.volumeMl,
-                abv: session.alcoholPercent,
+                abv: widget.session.alcoholPercent,
               );
         });
-        final elapsed = session.startTime != null
+        final elapsed = widget.session.startTime != null
             ? DateTime.now()
-                .difference(session.startTime!)
+                .difference(widget.session.startTime!)
                 .inMinutes
             : 0;
         final bac = BacCalculator.calculate(

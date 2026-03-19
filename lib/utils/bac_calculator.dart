@@ -42,4 +42,15 @@ class BacCalculator {
     // Density of ethanol ≈ 0.789 g/mL
     return volumeMl * (abv / 100) * 0.789;
   }
+
+  /// Estimated duration until BAC reaches 0 (sober / "ready to drive").
+  ///
+  /// The body metabolises alcohol at approximately 0.015 g/dL per hour.
+  /// Returns `null` when the current BAC is already 0.
+  static Duration? timeToZero(double currentBac) {
+    if (currentBac <= 0) return null;
+    // hours = BAC / metabolic rate
+    final hours = currentBac / 0.015;
+    return Duration(minutes: (hours * 60).ceil());
+  }
 }

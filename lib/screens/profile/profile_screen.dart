@@ -64,7 +64,7 @@ class ProfileScreen extends ConsumerWidget {
               ),
             );
           }
-          return _buildProfile(context, user, firebaseUser);
+          return _buildProfile(context, ref, user, firebaseUser);
         },
         loading: () => const Center(
           child: CircularProgressIndicator(
@@ -78,6 +78,7 @@ class ProfileScreen extends ConsumerWidget {
 
   Widget _buildProfile(
     BuildContext context,
+    WidgetRef ref,
     AppUser user,
     User firebaseUser,
   ) {
@@ -124,8 +125,14 @@ class ProfileScreen extends ConsumerWidget {
           SwitchListTile(
             title: const Text('Show stats to others'),
             value: user.preferences['show_stats'] as bool? ?? true,
-            onChanged: (_) {
-              // TODO: update preferences
+            onChanged: (val) async {
+              final repo = ref.read(userRepositoryProvider);
+              final updatedPrefs =
+                  Map<String, dynamic>.from(user.preferences)
+                    ..['show_stats'] = val;
+              await repo.createOrUpdateUser(
+                user.copyWith(preferences: updatedPrefs),
+              );
             },
             tileColor: BeerColors.surfaceVariant,
             shape: RoundedRectangleBorder(
@@ -135,9 +142,23 @@ class ProfileScreen extends ConsumerWidget {
           const SizedBox(height: 8),
           SwitchListTile(
             title: const Text('Show BAC estimate'),
+            subtitle: user.weightKg <= 0
+                ? Text(
+                    'Set your weight in profile to enable BAC',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: BeerColors.error,
+                        ),
+                  )
+                : null,
             value: user.preferences['show_bac'] as bool? ?? false,
-            onChanged: (_) {
-              // TODO: update preferences
+            onChanged: (val) async {
+              final repo = ref.read(userRepositoryProvider);
+              final updatedPrefs =
+                  Map<String, dynamic>.from(user.preferences)
+                    ..['show_bac'] = val;
+              await repo.createOrUpdateUser(
+                user.copyWith(preferences: updatedPrefs),
+              );
             },
             tileColor: BeerColors.surfaceVariant,
             shape: RoundedRectangleBorder(
