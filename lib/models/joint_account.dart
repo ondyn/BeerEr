@@ -9,6 +9,7 @@ abstract class JointAccount with _$JointAccount {
     required String id,
     required String sessionId,
     required String groupName,
+    required String creatorId,
     @Default([]) List<String> memberUserIds,
   }) = _JointAccount;
 

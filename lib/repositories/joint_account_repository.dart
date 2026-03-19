@@ -27,6 +27,22 @@ class JointAccountRepository {
             .toList());
   }
 
+  /// Returns the joint account that [userId] belongs to in [sessionId],
+  /// or `null` if the user is not in any group.
+  Future<JointAccount?> getAccountForUser(
+    String sessionId,
+    String userId,
+  ) async {
+    final qs = await _col
+        .where('session_id', isEqualTo: sessionId)
+        .where('member_user_ids', arrayContains: userId)
+        .limit(1)
+        .get();
+    if (qs.docs.isEmpty) return null;
+    final d = qs.docs.first;
+    return JointAccount.fromJson(firestoreDoc(d.id, d.data()));
+  }
+
   /// Creates a new joint account.
   Future<JointAccount> createAccount(JointAccount account) async {
     final data = account.toJson()..remove('id');

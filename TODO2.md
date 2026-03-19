@@ -8,3 +8,8 @@
 - beers count in participants list - add one decimal point. When user is drinking eg. 0.3l volumes, the whole number is missleading
 - "0.5l beer" price: put it on the right next to keg status in "Keg level" section
 - when screen is updated (eg someone else pour the beer) than page is scrolled to top. Keep the scroll where the user was before update.
+- enable users to choose avatar, also enable avatar for joint Accounts, when group is created.
+- consolidate participants and accounts details - to participants detail add consumed price. To Accounts add icon of beer and beer count
+
+
+- cleanup: DB will be cleared, rething about all names, database attributes, screen names, variables if it makes sense. Rename accordingly. Analyze code, if something is repeating put it into shared code. Make sure all graphics types useses same dimensions, colors and theme everywhere.

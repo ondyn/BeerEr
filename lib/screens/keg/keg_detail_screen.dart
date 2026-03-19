@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:beerer/models/models.dart';
 import 'package:beerer/providers/providers.dart';
 import 'package:beerer/repositories/keg_repository.dart';
+import 'package:beerer/screens/keg/joint_account_sheet.dart';
 import 'package:beerer/theme/beer_theme.dart';
 import 'package:beerer/utils/bac_calculator.dart';
 import 'package:beerer/utils/stats_calculator.dart';
@@ -757,6 +758,14 @@ class _ActiveBodyState extends ConsumerState<_ActiveBody> {
           ref: ref,
           onPourFor: widget.onShowPourForSheet,
         ),
+        const SizedBox(height: 16),
+        // Joint Accounts
+        _AccountsSection(
+          session: session,
+          pours: pours,
+          participantIds: widget.participantIdsAsync.value ?? [],
+          ref: ref,
+        ),
       ],
     );
   }
@@ -832,6 +841,17 @@ class _ParticipantsSection extends StatelessWidget {
     if (ids.isEmpty) return const SizedBox.shrink();
 
     final usersAsync = ref.watch(watchUsersProvider(ids));
+    final accountsAsync =
+        ref.watch(watchSessionAccountsProvider(session.id));
+    final accounts = accountsAsync.asData?.value ?? [];
+
+    // Build a userId → groupName lookup.
+    final Map<String, String> userGroupNames = {};
+    for (final a in accounts) {
+      for (final uid in a.memberUserIds) {
+        userGroupNames[uid] = a.groupName;
+      }
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -852,6 +872,7 @@ class _ParticipantsSection extends StatelessWidget {
                   pours: pours,
                   session: session,
                   ref: ref,
+                  groupName: userGroupNames[user.id],
                   onPourFor: () {
                     if (!user.allowPourForMe) {
                       ScaffoldMessenger.of(context)
@@ -882,7 +903,7 @@ class _ParticipantsSection extends StatelessWidget {
 }
 
 /// A single participant row showing name, beer count, last pour time,
-/// estimated BAC, and a pour-for button.
+/// estimated BAC, group badge, and a pour-for button.
 class _ParticipantRow extends StatelessWidget {
   const _ParticipantRow({
     required this.user,
@@ -890,6 +911,7 @@ class _ParticipantRow extends StatelessWidget {
     required this.session,
     required this.ref,
     required this.onPourFor,
+    this.groupName,
   });
 
   final AppUser user;
@@ -897,6 +919,7 @@ class _ParticipantRow extends StatelessWidget {
   final KegSession session;
   final WidgetRef ref;
   final VoidCallback onPourFor;
+  final String? groupName;
 
   @override
   Widget build(BuildContext context) {
@@ -959,11 +982,42 @@ class _ParticipantRow extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    user.displayName + (isMe ? ' (you)' : ''),
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          user.displayName + (isMe ? ' (you)' : ''),
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.copyWith(fontWeight: FontWeight.w600),
+                          overflow: TextOverflow.ellipsis,
                         ),
+                      ),
+                      if (groupName != null) ...[
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: BeerColors.primaryAmber
+                                .withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            groupName!,
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelSmall
+                                ?.copyWith(
+                                  color: BeerColors.primaryAmber,
+                                ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                   const SizedBox(height: 2),
                   Row(
@@ -1000,6 +1054,215 @@ class _ParticipantRow extends StatelessWidget {
                 tooltip: 'Pour for ${user.displayName}',
                 onPressed: onPourFor,
               ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Accounts / bills section showing joint account summaries and a
+/// create / join action.
+class _AccountsSection extends StatelessWidget {
+  const _AccountsSection({
+    required this.session,
+    required this.pours,
+    required this.participantIds,
+    required this.ref,
+  });
+
+  final KegSession session;
+  final List<Pour> pours;
+  final List<String> participantIds;
+  final WidgetRef ref;
+
+  @override
+  Widget build(BuildContext context) {
+    final accountsAsync =
+        ref.watch(watchSessionAccountsProvider(session.id));
+    final accounts = accountsAsync.asData?.value ?? [];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Accounts / Bills',
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                color: BeerColors.onSurfaceSecondary,
+              ),
+        ),
+        const SizedBox(height: 8),
+        if (accounts.isNotEmpty)
+          for (final account in accounts)
+            _AccountCard(
+              account: account,
+              session: session,
+              pours: pours,
+            ),
+        // Solo participants (not in any group)
+        Builder(
+          builder: (_) {
+            final groupedIds = <String>{};
+            for (final a in accounts) {
+              groupedIds.addAll(a.memberUserIds);
+            }
+            final soloIds = participantIds
+                .where((id) => !groupedIds.contains(id))
+                .toList();
+            if (soloIds.isEmpty) return const SizedBox.shrink();
+            return Column(
+              children: [
+                for (final uid in soloIds)
+                  _SoloAccountCard(
+                    userId: uid,
+                    session: session,
+                    pours: pours,
+                    ref: ref,
+                  ),
+              ],
+            );
+          },
+        ),
+        const SizedBox(height: 8),
+        Center(
+          child: TextButton.icon(
+            onPressed: () {
+              showModalBottomSheet<void>(
+                context: context,
+                isScrollControlled: true,
+                builder: (_) => JointAccountSheet(
+                  sessionId: session.id,
+                  participantIds: participantIds,
+                ),
+              );
+            },
+            icon: const Icon(Icons.group_add, size: 18),
+            label: const Text('Join / Create Account'),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Card showing a joint account's name, member count, total volume, and cost.
+class _AccountCard extends StatelessWidget {
+  const _AccountCard({
+    required this.account,
+    required this.session,
+    required this.pours,
+  });
+
+  final JointAccount account;
+  final KegSession session;
+  final List<Pour> pours;
+
+  @override
+  Widget build(BuildContext context) {
+    final totalVolumeMl = account.memberUserIds.fold(
+      0.0,
+      (double sum, String uid) =>
+          sum + StatsCalculator.userPouredMl(pours, uid),
+    );
+    final totalCost = StatsCalculator.groupCost(
+      pours,
+      account.memberUserIds,
+      session.kegPrice,
+      session.volumeTotalMl,
+    );
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        child: Row(
+          children: [
+            const Icon(Icons.group, color: BeerColors.primaryAmber),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    account.groupName,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '${account.memberUserIds.length} members · '
+                    '${TimeFormatter.formatVolumeMl(totalVolumeMl)} · '
+                    '${TimeFormatter.formatCurrency(totalCost)}',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Card for a solo participant (not in any joint account).
+class _SoloAccountCard extends StatelessWidget {
+  const _SoloAccountCard({
+    required this.userId,
+    required this.session,
+    required this.pours,
+    required this.ref,
+  });
+
+  final String userId;
+  final KegSession session;
+  final List<Pour> pours;
+  final WidgetRef ref;
+
+  @override
+  Widget build(BuildContext context) {
+    final userAsync = ref.watch(watchCurrentUserProvider(userId));
+    final volumeMl = StatsCalculator.userPouredMl(pours, userId);
+    final cost = StatsCalculator.userCost(
+      pours,
+      userId,
+      session.kegPrice,
+      session.volumeTotalMl,
+    );
+
+    final displayName = userAsync.asData?.value?.displayName ?? userId;
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        child: Row(
+          children: [
+            const Icon(
+              Icons.person,
+              color: BeerColors.onSurfaceSecondary,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '$displayName (solo)',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '${TimeFormatter.formatVolumeMl(volumeMl)} · '
+                    '${TimeFormatter.formatCurrency(cost)}',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
