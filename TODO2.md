@@ -11,6 +11,7 @@
 - enable users to choose avatar, also enable avatar for joint Accounts, when group is created.
 - consolidate participants and accounts details - to participants detail add consumed price. To Accounts add icon of beer and beer count
 - when keg done, show statistics - participatns, accounts, total keg time (from tap to done)
+- "Make keg done" can be executed only by keg session creator. other users should have this menu option not visible and cant finish the keg
 
 
 

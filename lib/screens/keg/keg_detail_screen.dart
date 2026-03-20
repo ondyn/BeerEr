@@ -6,6 +6,7 @@ import 'package:beerer/repositories/keg_repository.dart';
 import 'package:beerer/screens/keg/joint_account_sheet.dart';
 import 'package:beerer/theme/beer_theme.dart';
 import 'package:beerer/utils/bac_calculator.dart';
+import 'package:beerer/utils/format_preferences.dart';
 import 'package:beerer/utils/stats_calculator.dart';
 import 'package:beerer/utils/time_formatter.dart';
 import 'package:beerer/widgets/bac_banner.dart';
@@ -18,6 +19,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 /// Main keg session detail screen — adapts to keg status.
 class KegDetailScreen extends ConsumerWidget {
@@ -345,16 +347,38 @@ class _KegDetailBody extends ConsumerWidget {
     final uid = currentUser?.uid ?? '';
     final isCreator = uid == session.creatorId;
     final totalPouredMl = StatsCalculator.totalPouredMl(pours);
-    final myCost = StatsCalculator.userCost(
+    final myCost = StatsCalculator.userCostByConsumption(
       pours,
       uid,
       session.kegPrice,
-      session.volumeTotalMl,
     );
     final elapsed = session.startTime != null
         ? DateTime.now().difference(session.startTime!)
         : Duration.zero;
     final participantIds = participantIdsAsync.value ?? [];
+    final prefs = ref.watch(formatPreferencesProvider);
+
+    // Watch participant profiles
+    final usersAsync =
+        ref.watch(watchUsersProvider(participantIds));
+    final users = usersAsync.asData?.value ?? [];
+
+    // Watch joint accounts
+    final accountsAsync =
+        ref.watch(watchSessionAccountsProvider(session.id));
+    final accounts = accountsAsync.asData?.value ?? [];
+
+    // Build userId → account lookup
+    final userAccountMap = <String, JointAccount>{};
+    for (final a in accounts) {
+      for (final memberId in a.memberUserIds) {
+        userAccountMap[memberId] = a;
+      }
+    }
+
+    // Solo users (not in any group)
+    final soloUsers =
+        users.where((u) => !userAccountMap.containsKey(u.id)).toList();
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -384,7 +408,7 @@ class _KegDetailBody extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 12),
-        // Final stats
+        // Final stats summary
         Card(
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -399,7 +423,10 @@ class _KegDetailBody extends ConsumerWidget {
                 StatTile(
                   icon: Icons.sports_bar,
                   label: 'Total poured',
-                  value: TimeFormatter.formatVolumeMl(totalPouredMl),
+                  value: TimeFormatter.formatVolumeMl(
+                    totalPouredMl,
+                    prefs: prefs,
+                  ),
                 ),
                 StatTile(
                   icon: Icons.people,
@@ -409,8 +436,63 @@ class _KegDetailBody extends ConsumerWidget {
                 StatTile(
                   icon: Icons.euro,
                   label: 'My total',
-                  value: TimeFormatter.formatCurrency(myCost),
+                  value: TimeFormatter.formatCurrency(
+                    myCost,
+                    prefs: prefs,
+                  ),
                 ),
+                StatTile(
+                  icon: Icons.attach_money,
+                  label: 'Keg price',
+                  value: TimeFormatter.formatCurrency(
+                    session.kegPrice,
+                    prefs: prefs,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        // Per-participant breakdown
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Bill split',
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Based on actual consumption',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: BeerColors.onSurfaceSecondary,
+                      ),
+                ),
+                const Divider(height: 20),
+                // Group accounts first
+                for (final account in accounts) ...[
+                  _DoneGroupRow(
+                    account: account,
+                    pours: pours,
+                    users: users,
+                    kegPrice: session.kegPrice,
+                    prefs: prefs,
+                  ),
+                  const SizedBox(height: 4),
+                ],
+                // Solo users
+                for (final user in soloUsers)
+                  _DoneParticipantRow(
+                    user: user,
+                    pours: pours,
+                    kegPrice: session.kegPrice,
+                    isMe: user.id == uid,
+                    prefs: prefs,
+                  ),
               ],
             ),
           ),
@@ -422,7 +504,44 @@ class _KegDetailBody extends ConsumerWidget {
                 context.go('/keg/${session.id}/settle'),
             child: const Text('Export to Settle Up'),
           ),
+          const SizedBox(height: 12),
         ],
+        // Tip the developer
+        Card(
+          color: BeerColors.surfaceVariant,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                const Text(
+                  '🍻',
+                  style: TextStyle(fontSize: 36),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Enjoy using BeerEr?',
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Buy the developer a beer!',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: BeerColors.onSurfaceSecondary,
+                      ),
+                ),
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  onPressed: () => launchUrl(
+                    Uri.parse('https://revolut.me/hnyko'),
+                    mode: LaunchMode.externalApplication,
+                  ),
+                  icon: const Icon(Icons.favorite, size: 18),
+                  label: const Text('Tip via Revolut'),
+                ),
+              ],
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -1314,6 +1433,229 @@ class _SoloAccountCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------
+// Done-screen bill-split widgets
+// ---------------------------------------------------------------
+
+/// A row showing a single participant's consumption, ratio, and cost
+/// on the "done" screen.
+class _DoneParticipantRow extends StatelessWidget {
+  const _DoneParticipantRow({
+    required this.user,
+    required this.pours,
+    required this.kegPrice,
+    required this.isMe,
+    required this.prefs,
+  });
+
+  final AppUser user;
+  final List<Pour> pours;
+  final double kegPrice;
+  final bool isMe;
+  final FormatPreferences prefs;
+
+  @override
+  Widget build(BuildContext context) {
+    final volumeMl = StatsCalculator.userPouredMl(pours, user.id);
+    final ratio = StatsCalculator.userConsumptionRatio(pours, user.id);
+    final cost =
+        StatsCalculator.userCostByConsumption(pours, user.id, kegPrice);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 16,
+            backgroundColor: isMe
+                ? BeerColors.primaryAmber
+                : BeerColors.surfaceVariant,
+            child: Text(
+              user.displayName[0].toUpperCase(),
+              style: TextStyle(
+                color: isMe
+                    ? BeerColors.background
+                    : BeerColors.onSurface,
+                fontWeight: FontWeight.w600,
+                fontSize: 12,
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  user.displayName + (isMe ? ' (you)' : ''),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '${TimeFormatter.formatVolumeMl(volumeMl, prefs: prefs)} · '
+                  '${(ratio * 100).toStringAsFixed(0)}%',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: BeerColors.onSurfaceSecondary,
+                      ),
+                ),
+              ],
+            ),
+          ),
+          Text(
+            TimeFormatter.formatCurrency(cost, prefs: prefs),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// A card showing a joint account group's total on the "done" screen,
+/// with each member listed underneath.
+class _DoneGroupRow extends StatelessWidget {
+  const _DoneGroupRow({
+    required this.account,
+    required this.pours,
+    required this.users,
+    required this.kegPrice,
+    required this.prefs,
+  });
+
+  final JointAccount account;
+  final List<Pour> pours;
+  final List<AppUser> users;
+  final double kegPrice;
+  final FormatPreferences prefs;
+
+  @override
+  Widget build(BuildContext context) {
+    final groupCost = StatsCalculator.groupCostByConsumption(
+      pours,
+      account.memberUserIds,
+      kegPrice,
+    );
+    final groupVolumeMl = account.memberUserIds.fold(
+      0.0,
+      (double sum, String uid) =>
+          sum + StatsCalculator.userPouredMl(pours, uid),
+    );
+    final groupRatio = StatsCalculator.totalPouredMl(pours) > 0
+        ? groupVolumeMl / StatsCalculator.totalPouredMl(pours)
+        : 0.0;
+
+    // Resolve member AppUser objects
+    final memberUsers = account.memberUserIds
+        .map((id) => users.where((u) => u.id == id).firstOrNull)
+        .whereType<AppUser>()
+        .toList();
+
+    return Card(
+      color: BeerColors.primaryAmber.withValues(alpha: 0.08),
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(
+                  Icons.group,
+                  size: 18,
+                  color: BeerColors.primaryAmber,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    account.groupName,
+                    style:
+                        Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                  ),
+                ),
+                Text(
+                  TimeFormatter.formatCurrency(groupCost, prefs: prefs),
+                  style:
+                      Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 2),
+            Padding(
+              padding: const EdgeInsets.only(left: 26),
+              child: Text(
+                '${TimeFormatter.formatVolumeMl(groupVolumeMl, prefs: prefs)} · '
+                '${(groupRatio * 100).toStringAsFixed(0)}%',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: BeerColors.onSurfaceSecondary,
+                    ),
+              ),
+            ),
+            if (memberUsers.length > 1) ...[
+              const Divider(height: 16),
+              for (final member in memberUsers)
+                Padding(
+                  padding: const EdgeInsets.only(left: 26),
+                  child: _DoneMemberRow(
+                    user: member,
+                    pours: pours,
+                    prefs: prefs,
+                  ),
+                ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// A lightweight row for a group member inside [_DoneGroupRow].
+class _DoneMemberRow extends StatelessWidget {
+  const _DoneMemberRow({
+    required this.user,
+    required this.pours,
+    required this.prefs,
+  });
+
+  final AppUser user;
+  final List<Pour> pours;
+  final FormatPreferences prefs;
+
+  @override
+  Widget build(BuildContext context) {
+    final volumeMl = StatsCalculator.userPouredMl(pours, user.id);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Row(
+        children: [
+          Text(
+            user.displayName,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const Spacer(),
+          Text(
+            TimeFormatter.formatVolumeMl(volumeMl, prefs: prefs),
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: BeerColors.onSurfaceSecondary,
+                ),
+          ),
+        ],
       ),
     );
   }

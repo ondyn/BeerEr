@@ -126,4 +126,40 @@ class StatsCalculator {
         return '16 fl oz';
     }
   }
+
+  /// Cost for a user based on their share of the actual total consumption
+  /// (sum of all pours), not the initial keg volume.
+  ///
+  /// This gives fairer billing when the keg isn't fully consumed.
+  /// Formula: kegPrice × (userMl / totalPouredMl)
+  static double userCostByConsumption(
+    List<Pour> pours,
+    String userId,
+    double kegPrice,
+  ) {
+    final total = totalPouredMl(pours);
+    if (total == 0) return 0;
+    final ml = userPouredMl(pours, userId);
+    return kegPrice * (ml / total);
+  }
+
+  /// The consumption ratio for a user (0.0–1.0) relative to the total
+  /// poured volume across all participants.
+  static double userConsumptionRatio(List<Pour> pours, String userId) {
+    final total = totalPouredMl(pours);
+    if (total == 0) return 0;
+    return userPouredMl(pours, userId) / total;
+  }
+
+  /// Cost for a group of users based on actual consumption.
+  static double groupCostByConsumption(
+    List<Pour> pours,
+    List<String> userIds,
+    double kegPrice,
+  ) {
+    return userIds.fold(
+      0.0,
+      (sum, uid) => sum + userCostByConsumption(pours, uid, kegPrice),
+    );
+  }
 }
