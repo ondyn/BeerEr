@@ -176,46 +176,47 @@ class _SignInScreenState extends State<SignInScreen> {
                       : const Text('Sign in'),
                 ),
                 const SizedBox(height: 24),
-                // Divider
-                Row(
-                  children: [
-                    const Expanded(child: Divider()),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Text(
-                        'or',
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                    ),
-                    const Expanded(child: Divider()),
-                  ],
-                ),
+                // TODO: Uncomment divider when social sign-in is implemented
+                // const SizedBox(height: 24),
+                // Row(
+                //   children: [
+                //     const Expanded(child: Divider()),
+                //     Padding(
+                //       padding: const EdgeInsets.symmetric(horizontal: 16),
+                //       child: Text(
+                //         'or',
+                //         style: Theme.of(context).textTheme.bodySmall,
+                //       ),
+                //     ),
+                //     const Expanded(child: Divider()),
+                //   ],
+                // ),
                 const SizedBox(height: 24),
-                // Social sign-in
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () {
-                          // TODO: Implement Google sign-in
-                        },
-                        icon: const Icon(Icons.g_mobiledata, size: 24),
-                        label: const Text('Google'),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () {
-                          // TODO: Implement Apple sign-in
-                        },
-                        icon: const Icon(Icons.apple, size: 24),
-                        label: const Text('Apple'),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
+                // TODO: Social sign-in — implement Google & Apple later
+                // Row(
+                //   children: [
+                //     Expanded(
+                //       child: OutlinedButton.icon(
+                //         onPressed: () {
+                //           // TODO: Implement Google sign-in
+                //         },
+                //         icon: const Icon(Icons.g_mobiledata, size: 24),
+                //         label: const Text('Google'),
+                //       ),
+                //     ),
+                //     const SizedBox(width: 12),
+                //     Expanded(
+                //       child: OutlinedButton.icon(
+                //         onPressed: () {
+                //           // TODO: Implement Apple sign-in
+                //         },
+                //         icon: const Icon(Icons.apple, size: 24),
+                //         label: const Text('Apple'),
+                //       ),
+                //     ),
+                //   ],
+                // ),
+                // const SizedBox(height: 24),
                 // Register link
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,

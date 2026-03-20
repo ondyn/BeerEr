@@ -27,3 +27,5 @@
 
 - DO NOT DO IT NOW: implement steps 19-22 from implemetation_steps.md
 - DO NOT DO IT NOW: cleanup: DB will be cleared, rething about all names, database attributes, screen names, variables if it makes sense. Rename accordingly. Analyze code, if something is repeating put it into shared code. Make sure all graphics types useses same dimensions, colors and theme everywhere.
+- forgot password - mail not sent
+- verification email, reset password - how to change templates?
