@@ -23,6 +23,7 @@
 - check the app name where it is visible for user at screens and make sure everywhere it is "Beerer", not "BeerEr"
 - join keg session via camera - QR recognition. When sharing keg session QR is generated, but when user wants to join he is not able to take picture of QR.
 - remember gender, weight and age at device. Load it when app is started.
+- add link to https://beerweb.cz/o-pivu/degustace-piva. Where?
 
 
 

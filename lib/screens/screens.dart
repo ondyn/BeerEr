@@ -2,6 +2,7 @@
 library;
 
 export 'about/about_screen.dart';
+export 'about/privacy_policy_screen.dart';
 export 'auth/forgot_password_screen.dart';
 export 'auth/register_screen.dart';
 export 'auth/sign_in_screen.dart';

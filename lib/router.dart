@@ -149,6 +149,10 @@ GoRouter router(Ref ref) {
         path: '/about',
         builder: (context, state) => const AboutScreen(),
       ),
+      GoRoute(
+        path: '/privacy',
+        builder: (context, state) => const PrivacyPolicyScreen(),
+      ),
 
       // History
       GoRoute(
