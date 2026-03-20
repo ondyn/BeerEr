@@ -18,8 +18,10 @@ class SettingsScreen extends ConsumerStatefulWidget {
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   // Local mirror of toggle state — initialised once from Firestore.
   bool? _allowPourForMe;
-  bool _notifyKegNearlyEmpty = true;
-  bool _notifyKegDone = true;
+  bool? _notifyPourForMe;
+  bool? _notifyKegNearlyEmpty;
+  bool? _notifyKegDone;
+  bool? _notifyBacZero;
 
   // Local mirrors for display preferences — seeded from Firestore on first
   // data emission and written back on every change.
@@ -84,6 +86,26 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           final effectiveAllowPourForMe =
               _allowPourForMe ?? firestoreAllowPourForMe;
 
+          // Seed notification preferences from Firestore.
+          final firestoreNotifyPourForMe =
+              appUser?.preferences['notify_pour_for_me'] as bool? ?? true;
+          final firestoreNotifyKegNearlyEmpty =
+              appUser?.preferences['notify_keg_nearly_empty'] as bool? ??
+                  true;
+          final firestoreNotifyKegDone =
+              appUser?.preferences['notify_keg_done'] as bool? ?? true;
+          final firestoreNotifyBacZero =
+              appUser?.preferences['notify_bac_zero'] as bool? ?? true;
+
+          final effectiveNotifyPourForMe =
+              _notifyPourForMe ?? firestoreNotifyPourForMe;
+          final effectiveNotifyKegNearlyEmpty =
+              _notifyKegNearlyEmpty ?? firestoreNotifyKegNearlyEmpty;
+          final effectiveNotifyKegDone =
+              _notifyKegDone ?? firestoreNotifyKegDone;
+          final effectiveNotifyBacZero =
+              _notifyBacZero ?? firestoreNotifyBacZero;
+
           // Seed display preferences from Firestore on first emission.
           final prefs = appUser != null
               ? FormatPreferences.fromMap(appUser.preferences)
@@ -113,10 +135,28 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
               const SizedBox(height: 4),
               SwitchListTile(
+                title: const Text('Notify when poured for me'),
+                subtitle: const Text(
+                  'Get notified when someone pours beer on your behalf',
+                ),
+                value: effectiveNotifyPourForMe,
+                onChanged: (val) {
+                  setState(() => _notifyPourForMe = val);
+                  _savePreference('notify_pour_for_me', val);
+                },
+                tileColor: BeerColors.surfaceVariant,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              const SizedBox(height: 4),
+              SwitchListTile(
                 title: const Text('Keg nearly empty'),
-                value: _notifyKegNearlyEmpty,
-                onChanged: (val) =>
-                    setState(() => _notifyKegNearlyEmpty = val),
+                value: effectiveNotifyKegNearlyEmpty,
+                onChanged: (val) {
+                  setState(() => _notifyKegNearlyEmpty = val);
+                  _savePreference('notify_keg_nearly_empty', val);
+                },
                 tileColor: BeerColors.surfaceVariant,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -125,9 +165,27 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               const SizedBox(height: 4),
               SwitchListTile(
                 title: const Text('Keg done'),
-                value: _notifyKegDone,
-                onChanged: (val) =>
-                    setState(() => _notifyKegDone = val),
+                value: effectiveNotifyKegDone,
+                onChanged: (val) {
+                  setState(() => _notifyKegDone = val);
+                  _savePreference('notify_keg_done', val);
+                },
+                tileColor: BeerColors.surfaceVariant,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              const SizedBox(height: 4),
+              SwitchListTile(
+                title: const Text('Ready to drive'),
+                subtitle: const Text(
+                  'Get notified when your estimated BAC reaches 0',
+                ),
+                value: effectiveNotifyBacZero,
+                onChanged: (val) {
+                  setState(() => _notifyBacZero = val);
+                  _savePreference('notify_bac_zero', val);
+                },
                 tileColor: BeerColors.surfaceVariant,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),

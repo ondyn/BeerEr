@@ -49,6 +49,7 @@ dependencies:
   cloud_functions: ^6.0.7
   app_links: ^6.4.0
   http: ^1.6.0
+  flutter_local_notifications: ^19.0.0
 
 dev_dependencies:
   flutter_test:

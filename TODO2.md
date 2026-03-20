@@ -12,11 +12,15 @@
 - consolidate participants and accounts details - to participants detail add consumed price. To Accounts add icon of beer and beer count
 - when keg done, show statistics - participatns, accounts, total keg time (from tap to done)
 - SKIP FOR NOW, need clarification: "Make keg done" can be executed only by keg session creator. other users should have this menu option not visible and cant finish the keg
-- review the BAC calculation, one 0,5l 10° beer should be approx 0,2 promile, based on info from internet.
+- review the BAC calculation, one 0,5l 10° beer should be approx 0,2 promile, based on info from internet. https://drunkcalc.com/#step-one, https://www.calculator.net/bac-calculator.html
 - when another user do the update on keg session detial (pour a beer) then for other users sestion with participants blink as it is reloading and shortly shows loading circle. Update the participants on background and avoid showing loading ring when change happenns.
 - ALREADY IMPLEMENTED: enable tonchange BAC visibility and statistic visibility even during keg session, not only when joining session
 - add detail view after clicking on participant in the list - show same as for "My stats" and add graph of consumtion beer volume vs time, BAC vs time 
 - put information from "Est. BAC:" card into My stats. Add car icon for time to drive. Remove "Please drink responsibly" add warning that it is an estimation - short note, but clear and visible.
+- zero BAC estimation. Keep one second update on user app, but reduce calculation at "cloud functions" to 20min to reduce paid cloud functions load
+- notificattion icon in android's status bar is just white circle, should be the logo
+- notification for "Ready to drive!" BAC=0 is sent twice
+- fix: keg empty notification not sent
 
 
 - cleanup: DB will be cleared, rething about all names, database attributes, screen names, variables if it makes sense. Rename accordingly. Analyze code, if something is repeating put it into shared code. Make sure all graphics types useses same dimensions, colors and theme everywhere.

@@ -51,3 +51,8 @@ Each session has its own REPL:
 ### VS Code alternative
 
 Use a `compounds` launch config in `.vscode/launch.json` to start both devices at once, each as a separate configuration with a different `-d` flag.
+
+### Debug & Emulation
+```zsh
+flutter emulators --launch pixel_8A
+```

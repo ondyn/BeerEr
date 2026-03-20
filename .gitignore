@@ -62,3 +62,6 @@ functions/.secret.*
 .idea/
 *.iml
 .vscode/settings.json
+
+# Misc
+support

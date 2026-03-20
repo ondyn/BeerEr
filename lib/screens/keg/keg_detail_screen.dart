@@ -19,6 +19,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:beerer/services/notification_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// Main keg session detail screen — adapts to keg status.
@@ -946,6 +947,10 @@ class _BacSection extends ConsumerStatefulWidget {
 class _BacSectionState extends ConsumerState<_BacSection> {
   Timer? _ticker;
 
+  /// Tracks the last BAC-zero duration we scheduled (in whole minutes)
+  /// so we avoid re-scheduling every second rebuild.
+  int? _lastScheduledMinutes;
+
   @override
   void initState() {
     super.initState();
@@ -958,6 +963,22 @@ class _BacSectionState extends ConsumerState<_BacSection> {
   void dispose() {
     _ticker?.cancel();
     super.dispose();
+  }
+
+  /// Schedule or cancel the BAC-zero local notification.
+  void _syncBacZeroNotification(double bac, bool enabled) {
+    if (!enabled || bac <= 0) {
+      if (_lastScheduledMinutes != null) {
+        NotificationService.instance.cancelBacZeroNotification();
+        _lastScheduledMinutes = null;
+      }
+      return;
+    }
+    final timeToZero = BacCalculator.timeToZero(bac);
+    final minutes = timeToZero?.inMinutes;
+    if (minutes == _lastScheduledMinutes) return; // no meaningful change
+    _lastScheduledMinutes = minutes;
+    NotificationService.instance.scheduleBacZeroNotification(timeToZero);
   }
 
   @override
@@ -987,6 +1008,12 @@ class _BacSectionState extends ConsumerState<_BacSection> {
           gender: user.gender,
           elapsedMinutes: elapsed,
         );
+
+        // Schedule / cancel BAC-zero notification based on preference.
+        final notifyBacZero =
+            user.preferences['notify_bac_zero'] as bool? ?? true;
+        _syncBacZeroNotification(bac, notifyBacZero);
+
         return BacBanner(bacValue: bac);
       },
       loading: () => const SizedBox.shrink(),
