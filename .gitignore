@@ -22,6 +22,8 @@ google-services.json
 # iOS Firebase config (contains API key)
 GoogleService-Info.plist
 **/GoogleService-Info.plist
+# Firebase hosting cache
+.firebase/
 
 # iOS
 ios/Pods/
@@ -46,6 +48,13 @@ functions/.env
 functions/.env.*
 functions/.secret.*
 
+# Root-level Node.js (from scripts/firebase-admin usage)
+node_modules/
+package-lock.json
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
 # Environment / secrets — general safety net
 .env
 .env.*
@@ -53,6 +62,8 @@ functions/.secret.*
 *.pem
 *.p12
 *.pfx
+*service-account*.json
+*firebase-adminsdk*.json
 
 # macOS
 .DS_Store

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Beerer — Privacy Policy</title>
+  <style>
+    :root {
+      --bg: #1A1208;
+      --surface: #2C1F0E;
+      --amber: #F5A623;
+      --text: #F5ECD7;
+      --text-secondary: #A89880;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      padding: 0 16px;
+    }
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 40px 0 80px;
+    }
+    h1 {
+      color: var(--amber);
+      font-size: 2rem;
+      margin-bottom: 4px;
+    }
+    .updated {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      margin-bottom: 32px;
+    }
+    h2 {
+      color: var(--amber);
+      font-size: 1.25rem;
+      margin-top: 32px;
+      margin-bottom: 8px;
+    }
+    h3 {
+      font-size: 1.05rem;
+      margin-top: 16px;
+      margin-bottom: 4px;
+    }
+    p, ul {
+      margin-bottom: 12px;
+    }
+    ul {
+      padding-left: 24px;
+    }
+    li {
+      margin-bottom: 4px;
+    }
+    a {
+      color: var(--amber);
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    .footer {
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid var(--surface);
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Beerer — Privacy Policy</h1>
+    <p class="updated">Last updated: 20 March 2026</p>
+
+    <h2>1. Introduction</h2>
+    <p>
+      Beerer ("the App") is a mobile application for tracking beer consumption
+      from a keg at social events. This Privacy Policy explains what data we
+      collect, how we use it, and your rights regarding that data.
+    </p>
+    <p>
+      By using Beerer you agree to the practices described in this policy.
+    </p>
+
+    <h2>2. Data We Collect</h2>
+
+    <h3>2.1 Account information</h3>
+    <p>
+      When you create an account we store your email address and a display
+      nickname in Firebase Authentication and Cloud Firestore. If you sign in
+      with a social provider (e.g.&nbsp;Google) we receive the name and email
+      associated with that provider.
+    </p>
+
+    <h3>2.2 Profile data (optional)</h3>
+    <p>
+      You may optionally provide your weight, age, and gender to enable the
+      Blood-Alcohol Content (BAC) estimation feature. These fields are stored
+      in your Firestore user document and are never shared with other users
+      unless you explicitly enable the "Show BAC estimate" visibility setting.
+    </p>
+
+    <h3>2.3 Keg session &amp; pour data</h3>
+    <p>
+      When you create or join a keg session we store the session details
+      (beer name, volume, price, alcohol&nbsp;%, participants). Each pour you
+      log records the volume, timestamp, and which user poured for whom. This
+      data is visible to all participants of the session.
+    </p>
+
+    <h3>2.4 Guest participants</h3>
+    <p>
+      Session creators can add guest (manual) participants by nickname. Guest
+      data consists only of a nickname and is stored in a Firestore
+      sub-collection of the session. When a real user joins and merges with a
+      guest, the guest record is deleted and their pours are reassigned.
+    </p>
+
+    <h3>2.5 Device tokens</h3>
+    <p>
+      If you allow push notifications we store your Firebase Cloud Messaging
+      (FCM) device token in your user document. This token is used solely to
+      deliver notifications about session events (e.g.&nbsp;someone poured for
+      you, keg nearly empty, keg done).
+    </p>
+
+    <h2>3. How We Use Your Data</h2>
+    <ul>
+      <li>Display your nickname and pour history to session participants.</li>
+      <li>Calculate per-user statistics (drinking rate, cost share, keg depletion estimate).</li>
+      <li>Estimate BAC on your device only — the calculated BAC value is never stored or transmitted.</li>
+      <li>Send push notifications for session events you have opted into.</li>
+      <li>Generate a cost summary (bill review) at the end of a session.</li>
+    </ul>
+
+    <h2>4. BAC Estimation</h2>
+    <p>
+      BAC is estimated on your device using the Widmark formula based on your
+      locally stored weight, age, gender, and pour history. The calculated BAC
+      value is never written to Firestore or any server. It is for
+      informational purposes only and must not be used to determine fitness to
+      drive or operate machinery.
+    </p>
+
+    <h2>5. Third-Party Services</h2>
+
+    <h3>5.1 Firebase (Google)</h3>
+    <p>
+      Beerer uses Firebase Authentication, Cloud Firestore, Cloud Functions,
+      and Firebase Cloud Messaging. Data is processed under Google's terms of
+      service and data processing agreements. Firebase servers are located in
+      the EU (europe-west1). For details see
+      <a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener">
+        firebase.google.com/support/privacy</a>.
+    </p>
+
+    <h3>5.2 BeerWeb.cz</h3>
+    <p>
+      When you search for a beer while creating a keg session, Beerer may
+      query the public search API at beerweb.cz (a Czech beer database)
+      through a server-side Cloud Function. Only the search term you type is
+      sent to beerweb.cz — no personal data is transmitted. BeerWeb.cz is an
+      independent third-party service; please refer to their website for their
+      privacy practices.
+    </p>
+
+    <h3>5.3 Revolut</h3>
+    <p>
+      The App contains an optional "Tip via Revolut" link (revolut.me/hnyko)
+      that opens in your browser or the Revolut app. Beerer does not process
+      any payment data. Any transaction you make is handled entirely by
+      Revolut under their own terms and privacy policy.
+    </p>
+
+    <h2>6. Data Sharing</h2>
+    <p>
+      Your nickname, pour history, and (if you opt in) stats and BAC estimate
+      are visible to other participants of the same keg session. We do not
+      sell, rent, or share your personal data with any third parties beyond
+      the service providers listed in Section&nbsp;5.
+    </p>
+
+    <h2>7. Data Retention</h2>
+    <p>
+      Session and pour data is retained as long as the session exists. The
+      session creator can delete a session, which removes all associated
+      pours, guest participants, and joint accounts.
+    </p>
+    <p>
+      Your user profile is retained until you delete your account. You can
+      request account deletion at any time through the app settings.
+    </p>
+
+    <h2>8. Offline Data</h2>
+    <p>
+      Beerer uses Firebase's built-in offline persistence, which caches data
+      locally on your device so the app works without an internet connection.
+      Cached data is automatically synced when connectivity is restored. No
+      custom peer-to-peer sync mechanism is used.
+    </p>
+
+    <h2>9. Security</h2>
+    <p>
+      All communication between the app and Firebase is encrypted via TLS.
+      Firestore security rules enforce that users can only read and write data
+      they are authorised to access. API keys for third-party services
+      (BeerWeb.cz) are stored server-side in Cloud Function environment
+      configuration and are never exposed to the client app.
+    </p>
+
+    <h2>10. Children</h2>
+    <p>
+      Beerer is not intended for use by anyone under the legal drinking age in
+      their jurisdiction. We do not knowingly collect data from minors. If you
+      believe a minor has created an account, please contact us so we can
+      remove the data.
+    </p>
+
+    <h2>11. Your Rights</h2>
+    <p>
+      Under applicable data protection laws (including the EU General Data
+      Protection Regulation) you have the right to:
+    </p>
+    <ul>
+      <li>Access the personal data we hold about you.</li>
+      <li>Correct inaccurate data via your profile settings.</li>
+      <li>Delete your account and associated data.</li>
+      <li>Withdraw consent for optional data processing (e.g.&nbsp;BAC-related fields, push notifications).</li>
+    </ul>
+    <p>
+      To exercise these rights, use the in-app settings or contact us at the
+      address below.
+    </p>
+
+    <h2>12. Changes to This Policy</h2>
+    <p>
+      We may update this Privacy Policy from time to time. The "Last updated"
+      date at the top of this page will be revised accordingly. Continued use
+      of the App after changes constitutes acceptance of the updated policy.
+    </p>
+
+    <h2>13. Contact</h2>
+    <p>
+      If you have questions about this Privacy Policy or your data, please
+      contact:
+    </p>
+    <p>
+      <strong>Beerer Developer</strong><br>
+      Email: <a href="mailto:ondrej.hnyk@gmail.com">ondrej.hnyk@gmail.com</a>
+    </p>
+
+    <div class="footer">
+      <p>&copy; 2026 Beerer. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>

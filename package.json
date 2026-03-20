@@ -1,0 +1,28 @@
+{
+  "name": "beerer",
+  "version": "1.0.0",
+  "description": "counting beers from a keg at a party",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ondyn/BeerEr.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/ondyn/BeerEr/issues"
+  },
+  "homepage": "https://github.com/ondyn/BeerEr#readme",
+  "dependencies": {
+    "firebase-admin": "^13.7.0"
+  }
+}
