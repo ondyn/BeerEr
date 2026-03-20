@@ -40,7 +40,14 @@ Stream<List<KegSession>> watchAllSessions(Ref ref) {
 @riverpod
 Stream<List<KegSession>> watchDoneSessions(Ref ref) {
   final repo = ref.watch(kegRepositoryProvider);
-  return repo.watchDoneSessions();
+  final authAsync = ref.watch(authStateProvider);
+  final user = authAsync.value;
+
+  if (user == null) {
+    return const Stream<List<KegSession>>.empty();
+  }
+
+  return repo.watchDoneSessions(user.uid);
 }
 
 /// Watches participant IDs for a session.

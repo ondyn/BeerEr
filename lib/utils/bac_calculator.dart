@@ -5,7 +5,11 @@ import 'dart:math';
 class BacCalculator {
   const BacCalculator._();
 
-  /// Returns estimated BAC (g/dL) for the given parameters.
+  /// Returns estimated BAC in ‰ (per mille, g/L) for the given parameters.
+  ///
+  /// Uses the Widmark formula:
+  ///   BAC (g/dL) = A / (r × W_kg × 10)
+  ///   BAC (‰)    = BAC (g/dL) × 10
   ///
   /// [totalAlcoholGrams] — total grams of pure alcohol consumed.
   /// [weightKg] — body weight in kilograms.
@@ -23,13 +27,14 @@ class BacCalculator {
     // Widmark r factor: 0.68 for male, 0.55 for female
     final r = gender == 'female' ? 0.55 : 0.68;
 
-    // Body water constant (g → dL conversion)
-    // BAC (g/dL) = A / (r * W * 10) - (0.015 * t/60)
-    final weightG = weightKg * 1000;
-    final rawBac = totalAlcoholGrams / (r * weightG * 0.1);
-    final metabolised = 0.015 * (elapsedMinutes / 60);
+    // BAC in g/dL = A / (r × W_kg × 10)
+    // BAC in ‰    = BAC_gdL × 10 = A / (r × W_kg)
+    final rawBacPromille = totalAlcoholGrams / (r * weightKg);
 
-    return max(0, rawBac - metabolised);
+    // Metabolism rate: ~0.15 ‰ per hour (Widmark β)
+    final metabolised = 0.15 * (elapsedMinutes / 60);
+
+    return max(0, rawBacPromille - metabolised);
   }
 
   /// Converts a volume of beer to grams of pure alcohol.
@@ -45,12 +50,12 @@ class BacCalculator {
 
   /// Estimated duration until BAC reaches 0 (sober / "ready to drive").
   ///
-  /// The body metabolises alcohol at approximately 0.015 g/dL per hour.
+  /// The body metabolises alcohol at approximately 0.15 ‰ per hour.
   /// Returns `null` when the current BAC is already 0.
-  static Duration? timeToZero(double currentBac) {
-    if (currentBac <= 0) return null;
-    // hours = BAC / metabolic rate
-    final hours = currentBac / 0.015;
+  static Duration? timeToZero(double currentBacPromille) {
+    if (currentBacPromille <= 0) return null;
+    // hours = BAC(‰) / metabolic rate (‰/h)
+    final hours = currentBacPromille / 0.15;
     return Duration(minutes: (hours * 60).ceil());
   }
 }

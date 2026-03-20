@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -22,7 +23,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     importance: Importance.high,
   );
 
-  final title = message.data['title'] as String? ?? 'BeerEr';
+  final title = message.data['title'] as String? ?? 'Beerer';
   final body = message.data['body'] as String? ?? '';
 
   await plugin.show(
@@ -36,7 +37,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
         channelDescription: androidChannel.description,
         importance: Importance.high,
         priority: Priority.high,
-        icon: '@mipmap/ic_launcher',
+        icon: '@drawable/ic_notification',
       ),
       iOS: const DarwinNotificationDetails(),
     ),
@@ -58,7 +59,7 @@ class NotificationService {
   /// Android notification channel for beer-related pushes.
   static const _androidChannel = AndroidNotificationChannel(
     'beerer_default',
-    'BeerEr Notifications',
+    'Beerer Notifications',
     description: 'Notifications about pours, keg status, and BAC.',
     importance: Importance.high,
   );
@@ -79,7 +80,7 @@ class NotificationService {
     FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
     // 3. Initialise flutter_local_notifications.
-    const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidInit = AndroidInitializationSettings('@drawable/ic_notification');
     const darwinInit = DarwinInitializationSettings(
       requestAlertPermission: false, // already asked via FCM
       requestBadgePermission: false,
@@ -167,33 +168,24 @@ class NotificationService {
   /// scheduling a new one automatically replaces the old one.
   static const _bacZeroNotificationId = 999;
 
+  /// Timer used to fire the BAC-zero notification after the estimated
+  /// duration. Tracked so we can cancel it before scheduling a new one.
+  Timer? _bacZeroTimer;
+
   /// Schedules (or re-schedules) a local notification that fires when the
   /// user's BAC is estimated to reach zero.
   ///
   /// Pass `null` to cancel a previously scheduled notification (e.g. when
   /// BAC is already 0 or the user disabled the setting).
   Future<void> scheduleBacZeroNotification(Duration? timeToZero) async {
-    // Always cancel the old one first.
+    // Always cancel the old timer and platform notification first.
+    _bacZeroTimer?.cancel();
+    _bacZeroTimer = null;
     await _local.cancel(_bacZeroNotificationId);
 
     if (timeToZero == null || timeToZero.inSeconds <= 0) return;
 
-    // flutter_local_notifications does not have a simple "schedule after
-    // duration" API — we compute the exact date/time instead.
-    // For simplicity we use `zonedSchedule` with the TZ-aware datetime.
-    // However, that requires the timezone package init. To keep things simple
-    // and avoid the timezone init ceremony, we approximate with a periodic
-    // check or just show when the remaining time is small.
-
-    // Pragmatic approach: schedule via the platform channel directly.
-    // On Android, use `schedule` (deprecated but simple) via the plugin's
-    // `zonedSchedule`. On iOS, same API.
-    //
-    // For now, we use the simpler delayed-show approach: fire a delayed
-    // future. This works as long as the app process is alive (foreground or
-    // background). For a fully robust solution a WorkManager / BGTaskScheduler
-    // would be needed — that's an enhancement for later.
-    Future.delayed(timeToZero, () async {
+    _bacZeroTimer = Timer(timeToZero, () async {
       await _local.show(
         _bacZeroNotificationId,
         '🚗 Ready to drive!',
@@ -205,16 +197,19 @@ class NotificationService {
             channelDescription: _androidChannel.description,
             importance: Importance.high,
             priority: Priority.high,
-            icon: '@mipmap/ic_launcher',
+            icon: '@drawable/ic_notification',
           ),
           iOS: const DarwinNotificationDetails(),
         ),
       );
+      _bacZeroTimer = null;
     });
   }
 
   /// Cancels a previously scheduled BAC-zero notification.
   Future<void> cancelBacZeroNotification() async {
+    _bacZeroTimer?.cancel();
+    _bacZeroTimer = null;
     await _local.cancel(_bacZeroNotificationId);
   }
 
@@ -248,7 +243,7 @@ class NotificationService {
           channelDescription: _androidChannel.description,
           importance: Importance.defaultImportance,
           priority: Priority.defaultPriority,
-          icon: '@mipmap/ic_launcher',
+          icon: '@drawable/ic_notification',
         ),
         iOS: const DarwinNotificationDetails(),
       ),

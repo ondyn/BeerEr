@@ -1,6 +1,7 @@
 import 'package:beerer/models/models.dart';
 import 'package:beerer/repositories/user_repository.dart';
 import 'package:beerer/theme/beer_theme.dart';
+import 'package:beerer/utils/local_profile.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -25,6 +26,24 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   String _gender = 'male';
   bool _isLoading = false;
   String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLocalProfile();
+  }
+
+  Future<void> _loadLocalProfile() async {
+    final local = await LocalProfile.instance.load();
+    if (!mounted) return;
+    if (local.weightKg > 0 && _weightController.text.isEmpty) {
+      _weightController.text = local.weightKg.toStringAsFixed(0);
+    }
+    if (local.age > 0 && _ageController.text.isEmpty) {
+      _ageController.text = local.age.toString();
+    }
+    setState(() => _gender = local.gender);
+  }
 
   @override
   void dispose() {
@@ -66,15 +85,23 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
       // Create user profile in Firestore
       final userRepo = ref.read(userRepositoryProvider);
+      final weight = double.tryParse(_weightController.text) ?? 0;
+      final age = int.tryParse(_ageController.text) ?? 0;
       await userRepo.createOrUpdateUser(AppUser(
         id: uid,
         nickname: _nicknameController.text.trim(),
         email: user.email ?? '',
-        weightKg: double.tryParse(_weightController.text) ?? 0,
-        age: int.tryParse(_ageController.text) ?? 0,
+        weightKg: weight,
+        age: age,
         gender: _gender,
         authProvider: 'email',
       ));
+      // Persist weight/age/gender locally.
+      await LocalProfile.instance.save(
+        weightKg: weight,
+        age: age,
+        gender: _gender,
+      );
 
       if (mounted) {
         // Sign out so the user cannot use the app until email is verified.

@@ -27,7 +27,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'BeerEr — Privacy Policy',
+              'Beerer — Privacy Policy',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     color: BeerColors.primaryAmber,
                     fontWeight: FontWeight.bold,
@@ -46,11 +46,11 @@ class PrivacyPolicyScreen extends StatelessWidget {
               title: '1. Introduction',
               titleStyle: titleStyle,
               body:
-                  'BeerEr ("the App") is a mobile application for tracking '
+                  'Beerer ("the App") is a mobile application for tracking '
                   'beer consumption from a keg at social events. This Privacy '
                   'Policy explains what data we collect, how we use it, and '
                   'your rights regarding that data.\n\n'
-                  'By using BeerEr you agree to the practices described in '
+                  'By using Beerer you agree to the practices described in '
                   'this policy.',
               bodyStyle: bodyStyle,
             ),
@@ -166,7 +166,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
               context,
               title: '5.1 Firebase (Google)',
               body:
-                  'BeerEr uses Firebase Authentication, Cloud Firestore, '
+                  'Beerer uses Firebase Authentication, Cloud Firestore, '
                   'Cloud Functions, and Firebase Cloud Messaging. Data is '
                   'processed under Google\u2019s terms of service and data '
                   'processing agreements. Firebase servers are located in '
@@ -179,7 +179,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
               title: '5.2 BeerWeb.cz',
               body:
                   'When you search for a beer while creating a keg session, '
-                  'BeerEr may query the public search API at beerweb.cz '
+                  'Beerer may query the public search API at beerweb.cz '
                   '(a Czech beer database) through a server-side Cloud '
                   'Function. Only the search term you type is sent to '
                   'beerweb.cz — no personal data is transmitted. '
@@ -193,7 +193,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
               body:
                   'The App contains an optional "Tip via Revolut" link '
                   '(revolut.me/hnyko) that opens in your browser or the '
-                  'Revolut app. BeerEr does not process any payment data. '
+                  'Revolut app. Beerer does not process any payment data. '
                   'Any transaction you make is handled entirely by Revolut '
                   'under their own terms and privacy policy.',
               bodyStyle: bodyStyle,
@@ -235,7 +235,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
               title: '8. Offline Data',
               titleStyle: titleStyle,
               body:
-                  'BeerEr uses Firebase\u2019s built-in offline persistence, '
+                  'Beerer uses Firebase\u2019s built-in offline persistence, '
                   'which caches data locally on your device so the app '
                   'works without an internet connection. Cached data is '
                   'automatically synced when connectivity is restored. No '
@@ -265,7 +265,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
               title: '10. Children',
               titleStyle: titleStyle,
               body:
-                  'BeerEr is not intended for use by anyone under the legal '
+                  'Beerer is not intended for use by anyone under the legal '
                   'drinking age in their jurisdiction. We do not knowingly '
                   'collect data from minors. If you believe a minor has '
                   'created an account, please contact us so we can remove '
@@ -313,7 +313,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
               body:
                   'If you have questions about this Privacy Policy or '
                   'your data, please contact:\n\n'
-                  'BeerEr Developer\n'
+                  'Beerer Developer\n'
                   'Email: ondrej.hnyk@gmail.com',
               bodyStyle: bodyStyle,
             ),

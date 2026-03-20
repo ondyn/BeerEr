@@ -77,6 +77,6 @@ class TimeFormatter {
   }) {
     final p = prefs ?? const FormatPreferences();
     final sym = symbol ?? p.currency;
-    return '$sym${p.formatDecimal(amount, 2)}';
+    return '${p.formatDecimal(amount, 2)} $sym';
   }
 }

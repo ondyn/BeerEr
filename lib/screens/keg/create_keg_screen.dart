@@ -305,8 +305,10 @@ class _CreateKegScreenState extends ConsumerState<CreateKegScreen> {
 
     try {
       final repo = ref.read(kegRepositoryProvider);
-      final volumeLitres = double.parse(_volumeController.text);
-      final alcoholText = _alcoholController.text.trim();
+      final volumeLitres =
+          double.parse(_volumeController.text.replaceAll(',', '.'));
+      final alcoholText =
+          _alcoholController.text.trim().replaceAll(',', '.');
       final session = KegSession(
         id: '',
         creatorId: user.uid,
@@ -314,7 +316,9 @@ class _CreateKegScreenState extends ConsumerState<CreateKegScreen> {
         untappdBeerId: null,
         volumeTotalMl: volumeLitres * 1000,
         volumeRemainingMl: volumeLitres * 1000,
-        kegPrice: double.parse(_priceController.text),
+        kegPrice: double.parse(
+          _priceController.text.replaceAll(',', '.'),
+        ),
         alcoholPercent: double.tryParse(alcoholText) ?? 0.0,
         predefinedVolumesMl: _predefinedVolumes,
         brewery: _breweryController.text.trim().isNotEmpty
@@ -379,7 +383,9 @@ class _CreateKegScreenState extends ConsumerState<CreateKegScreen> {
             ),
             FilledButton(
               onPressed: () {
-                final val = double.tryParse(controller.text);
+                final val = double.tryParse(
+                  controller.text.replaceAll(',', '.'),
+                );
                 if (val != null && val > 0) {
                   setState(() => _predefinedVolumes.add(val));
                 }
@@ -397,7 +403,15 @@ class _CreateKegScreenState extends ConsumerState<CreateKegScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: BackButton(onPressed: () => context.go('/home')),
+        leading: BackButton(
+          onPressed: () {
+            if (Navigator.of(context).canPop()) {
+              context.pop();
+            } else {
+              context.go('/home');
+            }
+          },
+        ),
         title: Text('New Keg Session  $_step/2'),
       ),
       body: SafeArea(

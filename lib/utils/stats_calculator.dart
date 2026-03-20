@@ -205,4 +205,42 @@ class StatsCalculator {
 
     return sinceLastPour > avgIntervalSec * recentRatioThreshold;
   }
+
+  // --------------------------------------------------------------------------
+  // Alcohol volume helpers
+  // --------------------------------------------------------------------------
+
+  /// Pure alcohol volume in ml consumed from the keg (all pours).
+  static double pureAlcoholMl(List<Pour> pours, double alcoholPercent) {
+    final totalMl = totalPouredMl(pours);
+    return totalMl * (alcoholPercent / 100);
+  }
+
+  /// Pure alcohol volume in ml consumed by a specific user.
+  static double userPureAlcoholMl(
+    List<Pour> pours,
+    String userId,
+    double alcoholPercent,
+  ) {
+    final ml = userPouredMl(pours, userId);
+    return ml * (alcoholPercent / 100);
+  }
+
+  /// Pure alcohol remaining in the keg in ml.
+  static double pureAlcoholRemainingMl(
+    double volumeRemainingMl,
+    double alcoholPercent,
+  ) {
+    return volumeRemainingMl * (alcoholPercent / 100);
+  }
+
+  /// Beer count with one decimal place (total volume / reference volume).
+  static double beerCount(
+    List<Pour> pours,
+    String userId, {
+    double referenceMl = 500,
+  }) {
+    final ml = userPouredMl(pours, userId);
+    return ml / referenceMl;
+  }
 }

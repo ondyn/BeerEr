@@ -52,7 +52,7 @@ class HistoryScreen extends ConsumerWidget {
               padding: const EdgeInsets.only(bottom: 12),
               child: SessionCard(
                 session: sessions[i],
-                onTap: () => context.go('/keg/${sessions[i].id}'),
+                onTap: () => context.push('/keg/${sessions[i].id}'),
               ),
             ),
           );

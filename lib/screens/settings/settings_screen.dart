@@ -2,6 +2,7 @@ import 'package:beerer/providers/providers.dart';
 import 'package:beerer/repositories/user_repository.dart';
 import 'package:beerer/theme/beer_theme.dart';
 import 'package:beerer/utils/format_preferences.dart';
+import 'package:beerer/utils/local_profile.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -304,6 +305,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 onTap: () async {
+                  await LocalProfile.instance.clear();
                   await FirebaseAuth.instance.signOut();
                   if (context.mounted) context.go('/welcome');
                 },

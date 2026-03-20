@@ -50,6 +50,9 @@ dependencies:
   app_links: ^6.4.0
   http: ^1.6.0
   flutter_local_notifications: ^19.0.0
+  shared_preferences: ^2.3.4
+  mobile_scanner: ^6.0.2
+  fl_chart: ^0.70.2
 
 dev_dependencies:
   flutter_test:

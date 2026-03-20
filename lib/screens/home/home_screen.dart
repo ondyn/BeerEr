@@ -1,6 +1,9 @@
 import 'package:beerer/models/models.dart';
 import 'package:beerer/providers/providers.dart';
+import 'package:beerer/screens/keg/qr_scanner_screen.dart';
 import 'package:beerer/theme/beer_theme.dart';
+import 'package:beerer/utils/local_profile.dart';
+import 'package:beerer/widgets/avatar_icon.dart';
 import 'package:beerer/widgets/session_card.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -21,7 +24,7 @@ class HomeScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('BeerEr'),
+        title: const Text('Beerer'),
         actions: [
           IconButton(
             icon: const CircleAvatar(
@@ -126,7 +129,7 @@ class HomeScreen extends ConsumerWidget {
                           isOwner: session.creatorId == currentUserId,
                           highlighted: true,
                           onTap: () =>
-                              context.go('/keg/${session.id}'),
+                              context.push('/keg/${session.id}'),
                         ),
                       ),
                   ],
@@ -159,7 +162,7 @@ class HomeScreen extends ConsumerWidget {
           const SizedBox(height: 12),
           FloatingActionButton.extended(
             heroTag: 'new_keg',
-            onPressed: () => context.go('/keg/new'),
+            onPressed: () => context.push('/keg/new'),
             icon: const Icon(Icons.add),
             label: const Text('New Keg Session'),
           ),
@@ -206,6 +209,24 @@ void _showJoinDialog(BuildContext context) {
                   }
                 },
               ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Center(
+            child: OutlinedButton.icon(
+              onPressed: () async {
+                final sessionId = await Navigator.of(ctx).push<String>(
+                  MaterialPageRoute(
+                    builder: (_) => const QrScannerScreen(),
+                  ),
+                );
+                if (sessionId != null && ctx.mounted) {
+                  Navigator.pop(ctx);
+                  context.go('/join/$sessionId');
+                }
+              },
+              icon: const Icon(Icons.qr_code_scanner),
+              label: const Text('Scan QR code'),
             ),
           ),
         ],
@@ -270,7 +291,6 @@ class _BeerErDrawer extends ConsumerWidget {
     final displayName = appUser?.nickname.isNotEmpty == true
         ? appUser!.nickname
         : user?.email ?? 'Guest';
-    final avatarLetter = displayName[0].toUpperCase();
 
     return Drawer(
       child: ListView(
@@ -289,16 +309,11 @@ class _BeerErDrawer extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  CircleAvatar(
+                  AvatarCircle(
+                    displayName: displayName,
+                    avatarIcon: appUser?.avatarIcon,
                     radius: 30,
-                    backgroundColor: BeerColors.primaryAmber,
-                    child: Text(
-                      avatarLetter,
-                      style: Theme.of(context)
-                          .textTheme
-                          .headlineMedium
-                          ?.copyWith(color: BeerColors.background),
-                    ),
+                    isHighlighted: true,
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -351,6 +366,7 @@ class _BeerErDrawer extends ConsumerWidget {
             title: const Text('Sign out'),
             onTap: () async {
               Navigator.pop(context);
+              await LocalProfile.instance.clear();
               await FirebaseAuth.instance.signOut();
               if (context.mounted) context.go('/welcome');
             },

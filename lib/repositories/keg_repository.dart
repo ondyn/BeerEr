@@ -59,10 +59,11 @@ class KegRepository {
     });
   }
 
-  /// Watches done sessions for history.
-  Stream<List<KegSession>> watchDoneSessions() {
+  /// Watches done sessions for history (only those the user participates in).
+  Stream<List<KegSession>> watchDoneSessions(String uid) {
     return _sessions
         .where('status', isEqualTo: 'done')
+        .where('participant_ids', arrayContains: uid)
         .snapshots()
         .map((qs) {
       final sessions = qs.docs

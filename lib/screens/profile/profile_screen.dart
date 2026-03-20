@@ -2,6 +2,9 @@ import 'package:beerer/models/models.dart';
 import 'package:beerer/providers/providers.dart';
 import 'package:beerer/repositories/user_repository.dart';
 import 'package:beerer/theme/beer_theme.dart';
+import 'package:beerer/utils/local_profile.dart';
+import 'package:beerer/widgets/avatar_icon.dart';
+import 'package:beerer/widgets/avatar_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -49,7 +52,7 @@ class ProfileScreen extends ConsumerWidget {
                       ? fbUser.displayName!.trim()
                       : (fbUser.email != null && fbUser.email!.isNotEmpty
                           ? fbUser.email!.split('@').first
-                          : 'BeerEr user');
+                          : 'Beerer user');
               await repo.createOrUpdateUser(
                 AppUser(
                   id: fbUser.uid,
@@ -86,17 +89,41 @@ class ProfileScreen extends ConsumerWidget {
       padding: const EdgeInsets.all(24),
       child: Column(
         children: [
-          // Avatar
-          CircleAvatar(
-            radius: 50,
-            backgroundColor: BeerColors.primaryAmber,
-            child: Text(
-              user.nickname.isNotEmpty
-                  ? user.nickname[0].toUpperCase()
-                  : '?',
-              style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                    color: BeerColors.background,
+          // Avatar — tap to change
+          GestureDetector(
+            onTap: () async {
+              final picked = await showAvatarPicker(
+                context,
+                currentCodePoint: user.avatarIcon,
+              );
+              if (picked == null) return; // dismissed
+              final repo = ref.read(userRepositoryProvider);
+              final newIcon = picked == -1 ? null : picked;
+              await repo.createOrUpdateUser(
+                user.copyWith(avatarIcon: newIcon),
+              );
+            },
+            child: Stack(
+              children: [
+                AvatarCircle(
+                  displayName: user.displayName,
+                  avatarIcon: user.avatarIcon,
+                  radius: 50,
+                  isHighlighted: true,
+                ),
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: BeerColors.surfaceVariant,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.edit, size: 16),
                   ),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 16),
@@ -201,9 +228,21 @@ class ProfileScreen extends ConsumerWidget {
     WidgetRef ref,
     String userId,
   ) {
-    final nicknameCtrl = TextEditingController();
-    final weightCtrl = TextEditingController();
-    final ageCtrl = TextEditingController();
+    // Prefill with current user data.
+    final currentUser = ref.read(watchCurrentUserProvider(userId)).asData?.value;
+    final nicknameCtrl = TextEditingController(
+      text: currentUser?.nickname ?? '',
+    );
+    final weightCtrl = TextEditingController(
+      text: currentUser != null && currentUser.weightKg > 0
+          ? currentUser.weightKg.toString()
+          : '',
+    );
+    final ageCtrl = TextEditingController(
+      text: currentUser != null && currentUser.age > 0
+          ? currentUser.age.toString()
+          : '',
+    );
 
     showModalBottomSheet<void>(
       context: context,
@@ -275,13 +314,29 @@ class ProfileScreen extends ConsumerWidget {
                   child: FilledButton(
                     onPressed: () async {
                       final userRepo = ref.read(userRepositoryProvider);
+                      final existing = ref.read(
+                        watchCurrentUserProvider(userId),
+                      ).asData?.value;
+                      final weight =
+                          double.tryParse(weightCtrl.text) ?? 0;
+                      final age = int.tryParse(ageCtrl.text) ?? 0;
+                      final gender = existing?.gender ?? 'male';
                       await userRepo.createOrUpdateUser(AppUser(
                         id: userId,
                         nickname: nicknameCtrl.text.trim(),
-                        weightKg:
-                            double.tryParse(weightCtrl.text) ?? 0,
-                        age: int.tryParse(ageCtrl.text) ?? 0,
+                        email: existing?.email ?? '',
+                        weightKg: weight,
+                        age: age,
+                        gender: gender,
+                        authProvider: existing?.authProvider ?? 'email',
+                        preferences: existing?.preferences ?? {},
                       ));
+                      // Persist locally for next login.
+                      await LocalProfile.instance.save(
+                        weightKg: weight,
+                        age: age,
+                        gender: gender,
+                      );
                       if (ctx.mounted) Navigator.pop(ctx);
                     },
                     child: const Text('Save'),

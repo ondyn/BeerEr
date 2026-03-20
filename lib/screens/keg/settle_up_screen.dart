@@ -23,7 +23,7 @@ class SettleUpScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         leading: BackButton(
-          onPressed: () => context.go('/keg/$sessionId'),
+          onPressed: () => context.pop(),
         ),
         title: const Text('Export to Settle Up'),
       ),

@@ -2,6 +2,8 @@ import 'package:beerer/models/models.dart';
 import 'package:beerer/providers/providers.dart';
 import 'package:beerer/repositories/joint_account_repository.dart';
 import 'package:beerer/theme/beer_theme.dart';
+import 'package:beerer/widgets/avatar_icon.dart';
+import 'package:beerer/widgets/avatar_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -26,6 +28,7 @@ class JointAccountSheet extends ConsumerStatefulWidget {
 class _JointAccountSheetState extends ConsumerState<JointAccountSheet> {
   final _nameController = TextEditingController();
   bool _isCreating = false;
+  int? _selectedAvatarIcon;
 
   @override
   void dispose() {
@@ -107,7 +110,10 @@ class _JointAccountSheetState extends ConsumerState<JointAccountSheet> {
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.group, color: BeerColors.primaryAmber),
+                    GroupAvatarCircle(
+                      avatarIcon: account.avatarIcon,
+                      radius: 16,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -133,21 +139,11 @@ class _JointAccountSheetState extends ConsumerState<JointAccountSheet> {
                           padding: const EdgeInsets.symmetric(vertical: 4),
                           child: Row(
                             children: [
-                              CircleAvatar(
+                              AvatarCircle(
+                                displayName: user.displayName,
+                                avatarIcon: user.avatarIcon,
                                 radius: 14,
-                                backgroundColor: user.id == uid
-                                    ? BeerColors.primaryAmber
-                                    : BeerColors.surfaceVariant,
-                                child: Text(
-                                  user.displayName[0].toUpperCase(),
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: user.id == uid
-                                        ? BeerColors.background
-                                        : BeerColors.onSurface,
-                                  ),
-                                ),
+                                isHighlighted: user.id == uid,
                               ),
                               const SizedBox(width: 8),
                               Text(
@@ -219,13 +215,37 @@ class _JointAccountSheetState extends ConsumerState<JointAccountSheet> {
           style: Theme.of(context).textTheme.titleSmall,
         ),
         const SizedBox(height: 8),
-        TextField(
-          controller: _nameController,
-          decoration: const InputDecoration(
-            hintText: 'Group name (e.g. "Novák family")',
-            border: OutlineInputBorder(),
-          ),
-          textCapitalization: TextCapitalization.sentences,
+        Row(
+          children: [
+            // Avatar picker
+            GestureDetector(
+              onTap: () async {
+                final picked = await showAvatarPicker(
+                  context,
+                  currentCodePoint: _selectedAvatarIcon,
+                );
+                if (picked == null) return;
+                setState(() {
+                  _selectedAvatarIcon = picked == -1 ? null : picked;
+                });
+              },
+              child: GroupAvatarCircle(
+                avatarIcon: _selectedAvatarIcon,
+                radius: 22,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: TextField(
+                controller: _nameController,
+                decoration: const InputDecoration(
+                  hintText: 'Group name (e.g. "Novák family")',
+                  border: OutlineInputBorder(),
+                ),
+                textCapitalization: TextCapitalization.sentences,
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 12),
         FilledButton.icon(
@@ -261,9 +281,9 @@ class _JointAccountSheetState extends ConsumerState<JointAccountSheet> {
           Card(
             margin: const EdgeInsets.only(bottom: 8),
             child: ListTile(
-              leading: const Icon(
-                Icons.group,
-                color: BeerColors.primaryAmber,
+              leading: GroupAvatarCircle(
+                avatarIcon: account.avatarIcon,
+                radius: 18,
               ),
               title: Text(account.groupName),
               subtitle: Text(
@@ -310,6 +330,7 @@ class _JointAccountSheetState extends ConsumerState<JointAccountSheet> {
           groupName: name,
           creatorId: uid,
           memberUserIds: [uid],
+          avatarIcon: _selectedAvatarIcon,
         ),
       );
       if (mounted) Navigator.of(context).pop();

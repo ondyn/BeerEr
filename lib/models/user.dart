@@ -14,6 +14,7 @@ abstract class AppUser with _$AppUser {
     @Default('male') String gender,
     @Default('email') String authProvider,
     @Default({}) Map<String, dynamic> preferences,
+    int? avatarIcon,
   }) = _AppUser;
 
   const AppUser._();

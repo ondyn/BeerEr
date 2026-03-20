@@ -11,6 +11,7 @@ abstract class JointAccount with _$JointAccount {
     required String groupName,
     required String creatorId,
     @Default([]) List<String> memberUserIds,
+    int? avatarIcon,
   }) = _JointAccount;
 
   factory JointAccount.fromJson(Map<String, dynamic> json) =>

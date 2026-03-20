@@ -28,7 +28,7 @@ class AboutScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'BeerEr',
+              'Beerer',
               style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                     color: BeerColors.primaryAmber,
                   ),
@@ -40,7 +40,7 @@ class AboutScreen extends StatelessWidget {
             ),
             const SizedBox(height: 32),
             Text(
-              'BeerEr is a keg beer tracker for parties. '
+              'Beerer is a keg beer tracker for parties. '
               'Track every pour, see real-time stats, '
               'and settle costs easily.',
               textAlign: TextAlign.center,
@@ -61,7 +61,7 @@ class AboutScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Enjoy using BeerEr?',
+                      'Enjoy using Beerer?',
                       style: Theme.of(context).textTheme.titleSmall,
                     ),
                     const SizedBox(height: 4),
@@ -167,6 +167,41 @@ class AboutScreen extends StatelessWidget {
                 ],
               ),
             ),
+            const SizedBox(height: 16),
+
+            // ----- Beer tasting guide -----
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: BeerColors.surfaceVariant,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                children: [
+                  const Icon(
+                    Icons.local_bar,
+                    color: BeerColors.primaryAmber,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Want to learn beer tasting?',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  const SizedBox(height: 8),
+                  OutlinedButton.icon(
+                    onPressed: () => launchUrl(
+                      Uri.parse(
+                        'https://beerweb.cz/o-pivu/degustace-piva',
+                      ),
+                      mode: LaunchMode.externalApplication,
+                    ),
+                    icon: const Icon(Icons.open_in_new, size: 16),
+                    label: const Text('beerweb.cz — Degustace piva'),
+                  ),
+                ],
+              ),
+            ),
             const SizedBox(height: 24),
             const Divider(),
             const SizedBox(height: 8),
@@ -180,7 +215,7 @@ class AboutScreen extends StatelessWidget {
               onPressed: () {
                 showLicensePage(
                   context: context,
-                  applicationName: 'BeerEr',
+                  applicationName: 'Beerer',
                   applicationVersion: '1.0.0',
                   applicationIcon: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 16),
@@ -191,7 +226,7 @@ class AboutScreen extends StatelessWidget {
                     ),
                   ),
                   applicationLegalese:
-                      '\u00A9 2026 BeerEr. All rights reserved.',
+                      '\u00A9 2026 Beerer. All rights reserved.',
                 );
               },
               child: const Text('Open-source licences'),

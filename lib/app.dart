@@ -13,7 +13,7 @@ class BeerErApp extends ConsumerWidget {
     final router = ref.watch(routerProvider);
 
     return MaterialApp.router(
-      title: 'BeerEr',
+      title: 'Beerer',
       debugShowCheckedModeBanner: false,
       theme: buildBeerTheme(),
       routerConfig: router,

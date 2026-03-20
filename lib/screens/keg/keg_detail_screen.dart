@@ -4,12 +4,13 @@ import 'package:beerer/models/models.dart';
 import 'package:beerer/providers/providers.dart';
 import 'package:beerer/repositories/keg_repository.dart';
 import 'package:beerer/screens/keg/joint_account_sheet.dart';
+import 'package:beerer/screens/keg/participant_detail_screen.dart';
 import 'package:beerer/theme/beer_theme.dart';
 import 'package:beerer/utils/bac_calculator.dart';
 import 'package:beerer/utils/format_preferences.dart';
 import 'package:beerer/utils/stats_calculator.dart';
 import 'package:beerer/utils/time_formatter.dart';
-import 'package:beerer/widgets/bac_banner.dart';
+import 'package:beerer/widgets/avatar_icon.dart';
 import 'package:beerer/widgets/keg_fill_bar.dart';
 import 'package:beerer/widgets/pour_button.dart';
 import 'package:beerer/widgets/stat_tile.dart';
@@ -83,7 +84,15 @@ class _KegDetailBody extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        leading: BackButton(onPressed: () => context.go('/home')),
+        leading: BackButton(
+          onPressed: () {
+            if (Navigator.of(context).canPop()) {
+              context.pop();
+            } else {
+              context.go('/home');
+            }
+          },
+        ),
         title: Text(session.beerName),
         actions: [
           PopupMenuButton<String>(
@@ -94,35 +103,35 @@ class _KegDetailBody extends ConsumerWidget {
                 value: 'info',
                 child: Text('Keg Information'),
               ),
+              const PopupMenuItem(
+                value: 'share',
+                child: Text('Share join link'),
+              ),
               if (session.status == KegStatus.created && isCreator)
                 const PopupMenuItem(
                   value: 'edit',
                   child: Text('Edit session'),
                 ),
-              if (session.status == KegStatus.created && isCreator)
-                const PopupMenuItem(
-                  value: 'delete',
-                  child: Text('Delete session'),
-                ),
-              if (session.status == KegStatus.active && isCreator)
+              if (session.status == KegStatus.active)
                 const PopupMenuItem(
                   value: 'pause',
                   child: Text('Untap unfinished keg'),
                 ),
-              if (session.status == KegStatus.paused && isCreator)
+              if (session.status == KegStatus.paused)
                 const PopupMenuItem(
                   value: 'resume',
                   child: Text('Tap keg again'),
                 ),
-              const PopupMenuItem(
-                value: 'share',
-                child: Text('Share join link'),
-              ),
               if (session.status != KegStatus.done &&
                   session.status != KegStatus.created)
                 const PopupMenuItem(
                   value: 'done',
                   child: Text('Mark keg as done'),
+                ),
+              if (session.status == KegStatus.created && isCreator)
+                const PopupMenuItem(
+                  value: 'delete',
+                  child: Text('Delete session'),
                 ),
             ],
           ),
@@ -148,7 +157,7 @@ class _KegDetailBody extends ConsumerWidget {
     final repo = ref.read(kegRepositoryProvider);
     switch (action) {
       case 'info':
-        context.go('/keg/${session.id}/info');
+        context.push('/keg/${session.id}/info');
       case 'edit':
         // TODO: navigate to edit screen
         break;
@@ -161,7 +170,7 @@ class _KegDetailBody extends ConsumerWidget {
       case 'done':
         _confirmDone(context, repo);
       case 'share':
-        context.go('/keg/${session.id}/share');
+        context.push('/keg/${session.id}/share');
     }
   }
 
@@ -382,6 +391,7 @@ class _KegDetailBody extends ConsumerWidget {
         users.where((u) => !userAccountMap.containsKey(u.id)).toList();
 
     return ListView(
+      key: const PageStorageKey('done_body_list'),
       padding: const EdgeInsets.all(16),
       children: [
         // Completion card
@@ -396,13 +406,8 @@ class _KegDetailBody extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'KEG EMPTY',
+                  'SESSION COMPLETE',
                   style: Theme.of(context).textTheme.headlineSmall,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Session complete! ${TimeFormatter.formatDuration(elapsed)}',
-                  style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],
             ),
@@ -422,12 +427,23 @@ class _KegDetailBody extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
                 StatTile(
+                  icon: Icons.timer,
+                  label: 'Total keg time',
+                  value: TimeFormatter.formatDuration(elapsed),
+                ),
+                StatTile(
                   icon: Icons.sports_bar,
                   label: 'Total poured',
                   value: TimeFormatter.formatVolumeMl(
                     totalPouredMl,
                     prefs: prefs,
                   ),
+                ),
+                StatTile(
+                  icon: Icons.science,
+                  label: 'Pure alcohol',
+                  value:
+                      '${prefs.formatDecimal(StatsCalculator.pureAlcoholMl(pours, session.alcoholPercent), 0)} ml',
                 ),
                 StatTile(
                   icon: Icons.people,
@@ -493,6 +509,20 @@ class _KegDetailBody extends ConsumerWidget {
                     kegPrice: session.kegPrice,
                     isMe: user.id == uid,
                     prefs: prefs,
+                    session: session,
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => ParticipantDetailScreen(
+                            user: user,
+                            session: session,
+                            pours: pours,
+                            isMe: user.id == uid,
+                            prefs: prefs,
+                          ),
+                        ),
+                      );
+                    },
                   ),
               ],
             ),
@@ -502,7 +532,7 @@ class _KegDetailBody extends ConsumerWidget {
         if (isCreator) ...[
           FilledButton.icon(
             onPressed: () =>
-                context.go('/keg/${session.id}/review'),
+                context.push('/keg/${session.id}/review'),
             icon: const Icon(Icons.edit_note),
             label: const Text('Review Bill'),
           ),
@@ -528,7 +558,7 @@ class _KegDetailBody extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Enjoy using BeerEr?',
+                  'Enjoy using Beerer?',
                   style: Theme.of(context).textTheme.titleSmall,
                 ),
                 const SizedBox(height: 4),
@@ -654,6 +684,7 @@ class _KegDetailBody extends ConsumerWidget {
       ..showSnackBar(
         SnackBar(
           content: Text(message),
+          behavior: SnackBarBehavior.floating,
           duration: const Duration(seconds: 5),
           action: SnackBarAction(
             label: 'Undo',
@@ -689,6 +720,10 @@ class _ActiveBody extends ConsumerStatefulWidget {
 class _ActiveBodyState extends ConsumerState<_ActiveBody> {
   Timer? _ticker;
 
+  /// Tracks the last BAC-zero duration we scheduled (in whole minutes)
+  /// so we avoid re-scheduling every second rebuild.
+  int? _lastScheduledMinutes;
+
   @override
   void initState() {
     super.initState();
@@ -701,6 +736,22 @@ class _ActiveBodyState extends ConsumerState<_ActiveBody> {
   void dispose() {
     _ticker?.cancel();
     super.dispose();
+  }
+
+  /// Schedule or cancel the BAC-zero local notification.
+  void _syncBacZeroNotification(double bac, bool enabled) {
+    if (!enabled || bac <= 0) {
+      if (_lastScheduledMinutes != null) {
+        NotificationService.instance.cancelBacZeroNotification();
+        _lastScheduledMinutes = null;
+      }
+      return;
+    }
+    final timeToZero = BacCalculator.timeToZero(bac);
+    final minutes = timeToZero?.inMinutes;
+    if (minutes == _lastScheduledMinutes) return; // no meaningful change
+    _lastScheduledMinutes = minutes;
+    NotificationService.instance.scheduleBacZeroNotification(timeToZero);
   }
 
   @override
@@ -773,7 +824,35 @@ class _ActiveBodyState extends ConsumerState<_ActiveBody> {
       NotificationService.instance.cancelSlowdownNotification();
     }
 
+    // Alcohol volume helpers for display
+    final alcoholDrunkMl = StatsCalculator.pureAlcoholMl(
+      pours,
+      session.alcoholPercent,
+    );
+    final alcoholRemainingMl = StatsCalculator.pureAlcoholRemainingMl(
+      session.volumeRemainingMl,
+      session.alcoholPercent,
+    );
+    final myAlcoholMl = StatsCalculator.userPureAlcoholMl(
+      pours,
+      uid,
+      session.alcoholPercent,
+    );
+    final myBeerCount = StatsCalculator.beerCount(pours, uid);
+
+    // BAC — compute timeToZero for drive time
+    Duration? timeToZeroDur;
+    if (myBac != null && myBac > 0) {
+      timeToZeroDur = BacCalculator.timeToZero(myBac);
+    }
+
+    // Schedule / cancel BAC-zero notification.
+    final notifyBacZero =
+        appUser?.preferences['notify_bac_zero'] as bool? ?? true;
+    _syncBacZeroNotification(myBac ?? 0, notifyBacZero);
+
     return ListView(
+      key: const PageStorageKey('active_body_list'),
       padding: const EdgeInsets.all(16),
       children: [
         // Combined keg level + my stats card
@@ -782,9 +861,28 @@ class _ActiveBodyState extends ConsumerState<_ActiveBody> {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                Text(
-                  'KEG LEVEL',
-                  style: Theme.of(context).textTheme.labelMedium,
+                // Header row: KEG LEVEL + 0.5l price
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'KEG LEVEL',
+                        style:
+                            Theme.of(context).textTheme.labelMedium,
+                      ),
+                    ),
+                    if (beerPrice != null)
+                      Text(
+                        '${StatsCalculator.referenceBeerLabel(prefs.volumeUnit)}: '
+                        '${TimeFormatter.formatCurrency(beerPrice, prefs: prefs)}',
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodySmall
+                            ?.copyWith(
+                              color: BeerColors.onSurfaceSecondary,
+                            ),
+                      ),
+                  ],
                 ),
                 const SizedBox(height: 12),
                 Row(
@@ -815,8 +913,21 @@ class _ActiveBodyState extends ConsumerState<_ActiveBody> {
                                 .textTheme
                                 .bodySmall,
                           ),
+                          const SizedBox(height: 8),
+                          // Alcohol volume drunk / remaining
+                          Text(
+                            '🧪 ${prefs.formatDecimal(alcoholDrunkMl, 0)} ml / '
+                            '${prefs.formatDecimal(alcoholRemainingMl, 0)} ml alc.',
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(
+                                  color:
+                                      BeerColors.onSurfaceSecondary,
+                                ),
+                          ),
                           if (predictedEmpty != null) ...[
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 4),
                             Text(
                               '~${TimeFormatter.formatDuration(predictedEmpty)} until empty',
                               style: Theme.of(context)
@@ -863,7 +974,7 @@ class _ActiveBodyState extends ConsumerState<_ActiveBody> {
                   icon: Icons.bar_chart,
                   label: 'Avg rate',
                   value:
-                      '${(avgRate / 1000).toStringAsFixed(1)} l/h',
+                      '${prefs.formatDecimal(avgRate / 1000, 1)} l/h',
                 ),
                 StatTile(
                   icon: Icons.local_drink,
@@ -874,41 +985,54 @@ class _ActiveBodyState extends ConsumerState<_ActiveBody> {
                   ),
                 ),
                 StatTile(
+                  icon: Icons.science,
+                  label: 'Pure alcohol',
+                  value: '${prefs.formatDecimal(myAlcoholMl, 1)} ml',
+                ),
+                StatTile(
                   icon: Icons.euro,
                   label: 'My total',
                   value:
                       TimeFormatter.formatCurrency(myCost, prefs: prefs),
                 ),
-                if (beerPrice != null)
-                  StatTile(
-                    icon: Icons.sell,
-                    label: StatsCalculator.referenceBeerLabel(
-                      prefs.volumeUnit,
-                    ),
-                    value: TimeFormatter.formatCurrency(
-                      beerPrice,
-                      prefs: prefs,
-                    ),
-                  ),
-                if (myBac != null && myBac > 0)
+                StatTile(
+                  icon: Icons.sports_bar_outlined,
+                  label: 'Beers',
+                  value: prefs.formatDecimal(myBeerCount, 1),
+                ),
+                if (myBac != null && myBac > 0) ...[
                   StatTile(
                     icon: Icons.science,
                     label: 'BAC estimate',
-                    value: '${myBac.toStringAsFixed(2)} ‰',
+                    value: '${prefs.formatDecimal(myBac, 2)} ‰',
+                  ),
+                  if (timeToZeroDur != null)
+                    StatTile(
+                      icon: Icons.directions_car,
+                      label: 'Drive in',
+                      value:
+                          '~${TimeFormatter.formatDuration(timeToZeroDur)}',
+                    ),
+                ],
+                if (myBac != null && myBac > 0)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      '⚠ BAC is an estimate only — actual values may differ.',
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodySmall
+                          ?.copyWith(
+                            color: BeerColors.warning,
+                            fontStyle: FontStyle.italic,
+                            fontSize: 11,
+                          ),
+                    ),
                   ),
               ],
             ),
           ),
         ),
-        // BAC estimate (only if user has weight set)
-        if (currentUser != null) ...[
-          const SizedBox(height: 12),
-          _BacSection(
-            userPours: userPours,
-            session: session,
-            userId: uid,
-          ),
-        ],
         const SizedBox(height: 16),
         // Pour button
         PourButton(
@@ -932,100 +1056,6 @@ class _ActiveBodyState extends ConsumerState<_ActiveBody> {
           ref: ref,
         ),
       ],
-    );
-  }
-}
-
-/// BAC section — calculates BAC on device only, updates every second.
-class _BacSection extends ConsumerStatefulWidget {
-  const _BacSection({
-    required this.userPours,
-    required this.session,
-    required this.userId,
-  });
-
-  final List<Pour> userPours;
-  final KegSession session;
-  final String userId;
-
-  @override
-  ConsumerState<_BacSection> createState() => _BacSectionState();
-}
-
-class _BacSectionState extends ConsumerState<_BacSection> {
-  Timer? _ticker;
-
-  /// Tracks the last BAC-zero duration we scheduled (in whole minutes)
-  /// so we avoid re-scheduling every second rebuild.
-  int? _lastScheduledMinutes;
-
-  @override
-  void initState() {
-    super.initState();
-    _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (mounted) setState(() {});
-    });
-  }
-
-  @override
-  void dispose() {
-    _ticker?.cancel();
-    super.dispose();
-  }
-
-  /// Schedule or cancel the BAC-zero local notification.
-  void _syncBacZeroNotification(double bac, bool enabled) {
-    if (!enabled || bac <= 0) {
-      if (_lastScheduledMinutes != null) {
-        NotificationService.instance.cancelBacZeroNotification();
-        _lastScheduledMinutes = null;
-      }
-      return;
-    }
-    final timeToZero = BacCalculator.timeToZero(bac);
-    final minutes = timeToZero?.inMinutes;
-    if (minutes == _lastScheduledMinutes) return; // no meaningful change
-    _lastScheduledMinutes = minutes;
-    NotificationService.instance.scheduleBacZeroNotification(timeToZero);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final userAsync =
-        ref.watch(watchCurrentUserProvider(widget.userId));
-    return userAsync.when(
-      data: (user) {
-        if (user == null || user.weightKg <= 0) {
-          return const SizedBox.shrink();
-        }
-        final totalAlcGrams = widget.userPours.fold(0.0, (sum, p) {
-          return sum +
-              BacCalculator.pureAlcoholGrams(
-                volumeMl: p.volumeMl,
-                abv: widget.session.alcoholPercent,
-              );
-        });
-        final elapsed = widget.session.startTime != null
-            ? DateTime.now()
-                .difference(widget.session.startTime!)
-                .inMinutes
-            : 0;
-        final bac = BacCalculator.calculate(
-          totalAlcoholGrams: totalAlcGrams,
-          weightKg: user.weightKg,
-          gender: user.gender,
-          elapsedMinutes: elapsed,
-        );
-
-        // Schedule / cancel BAC-zero notification based on preference.
-        final notifyBacZero =
-            user.preferences['notify_bac_zero'] as bool? ?? true;
-        _syncBacZeroNotification(bac, notifyBacZero);
-
-        return BacBanner(bacValue: bac);
-      },
-      loading: () => const SizedBox.shrink(),
-      error: (_, st) => const SizedBox.shrink(),
     );
   }
 }
@@ -1090,7 +1120,11 @@ class _ParticipantsSection extends ConsumerWidget {
         ),
         const SizedBox(height: 8),
         usersAsync.when(
-          data: (users) => Column(
+          skipLoadingOnReload: true,
+          data: (users) {
+            final prefs = ref.watch(formatPreferencesProvider);
+            final currentUid = FirebaseAuth.instance.currentUser?.uid;
+            return Column(
             children: [
               for (final user in users)
                 _ParticipantRow(
@@ -1099,6 +1133,19 @@ class _ParticipantsSection extends ConsumerWidget {
                   session: session,
                   ref: ref,
                   groupName: userGroupNames[user.id],
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => ParticipantDetailScreen(
+                          user: user,
+                          session: session,
+                          pours: pours,
+                          isMe: user.id == currentUid,
+                          prefs: prefs,
+                        ),
+                      ),
+                    );
+                  },
                   onPourFor: () {
                     if (!user.allowPourForMe) {
                       ScaffoldMessenger.of(context)
@@ -1128,7 +1175,8 @@ class _ParticipantsSection extends ConsumerWidget {
                   onRemove: () => _removeGuest(context, ref, guest),
                 ),
             ],
-          ),
+          );
+          },
           loading: () => const Center(
             child: CircularProgressIndicator(strokeWidth: 2),
           ),
@@ -1223,8 +1271,14 @@ class _ManualParticipantRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final guestPours =
         pours.where((p) => p.userId == guest.id && !p.undone).toList();
-    final beerCount = guestPours.length;
+    final beerCountVal = StatsCalculator.beerCount(pours, guest.id);
     final lastPourTime = StatsCalculator.timeSinceLastPour(guestPours);
+    final guestCost = StatsCalculator.userCost(
+      pours,
+      guest.id,
+      session.kegPrice,
+      session.volumeTotalMl,
+    );
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
@@ -1234,17 +1288,9 @@ class _ManualParticipantRow extends StatelessWidget {
         child: Row(
           children: [
             // Avatar
-            CircleAvatar(
+            AvatarCircle(
+              displayName: guest.nickname,
               radius: 18,
-              backgroundColor: BeerColors.surfaceVariant,
-              child: Text(
-                guest.nickname[0].toUpperCase(),
-                style: const TextStyle(
-                  color: BeerColors.onSurface,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 14,
-                ),
-              ),
             ),
             const SizedBox(width: 12),
             // Name + stats
@@ -1288,7 +1334,12 @@ class _ManualParticipantRow extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        '🍺 $beerCount',
+                        '🍺 ${beerCountVal.toStringAsFixed(1)}',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        '💰 ${TimeFormatter.formatCurrency(guestCost)}',
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                       if (lastPourTime != null) ...[
@@ -1342,6 +1393,7 @@ class _ParticipantRow extends StatelessWidget {
     required this.ref,
     required this.onPourFor,
     this.groupName,
+    this.onTap,
   });
 
   final AppUser user;
@@ -1350,15 +1402,22 @@ class _ParticipantRow extends StatelessWidget {
   final WidgetRef ref;
   final VoidCallback onPourFor;
   final String? groupName;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final userPours =
         pours.where((p) => p.userId == user.id && !p.undone).toList();
-    final beerCount = userPours.length;
+    final beerCountVal = StatsCalculator.beerCount(pours, user.id);
     final lastPourTime = StatsCalculator.timeSinceLastPour(userPours);
     final currentUid = FirebaseAuth.instance.currentUser?.uid;
     final isMe = user.id == currentUid;
+    final userCost = StatsCalculator.userCost(
+      pours,
+      user.id,
+      session.kegPrice,
+      session.volumeTotalMl,
+    );
 
     // BAC — only if the user has opted in and has weight set
     final showBac =
@@ -1385,26 +1444,19 @@ class _ParticipantRow extends StatelessWidget {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        child: Row(
-          children: [
-            // Avatar
-            CircleAvatar(
-              radius: 18,
-              backgroundColor: isMe
-                  ? BeerColors.primaryAmber
-                  : BeerColors.surfaceVariant,
-              child: Text(
-                user.displayName[0].toUpperCase(),
-                style: TextStyle(
-                  color: isMe
-                      ? BeerColors.background
-                      : BeerColors.onSurface,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 14,
-                ),
-              ),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          child: Row(
+            children: [
+              // Avatar
+              AvatarCircle(
+                displayName: user.displayName,
+                avatarIcon: user.avatarIcon,
+                radius: 18,
+                isHighlighted: isMe,
             ),
             const SizedBox(width: 12),
             // Name + stats
@@ -1453,15 +1505,21 @@ class _ParticipantRow extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        '🍺 $beerCount',
+                        '🍺 ${beerCountVal.toStringAsFixed(1)}',
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                       const SizedBox(width: 12),
-                      if (lastPourTime != null)
+                      Text(
+                        '💰 ${TimeFormatter.formatCurrency(userCost)}',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      if (lastPourTime != null) ...[
+                        const SizedBox(width: 12),
                         Text(
                           '⏱ ${TimeFormatter.formatDuration(lastPourTime)} ago',
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
+                      ],
                       if (bac != null) ...[
                         const SizedBox(width: 12),
                         Text(
@@ -1485,6 +1543,7 @@ class _ParticipantRow extends StatelessWidget {
                 onPressed: onPourFor,
               ),
           ],
+          ),
         ),
       ),
     );
@@ -1600,6 +1659,12 @@ class _AccountCard extends StatelessWidget {
       session.kegPrice,
       session.volumeTotalMl,
     );
+    // Total beer count for the group
+    final groupBeerCount = account.memberUserIds.fold(
+      0.0,
+      (double sum, String uid) =>
+          sum + StatsCalculator.beerCount(pours, uid),
+    );
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
@@ -1607,7 +1672,10 @@ class _AccountCard extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         child: Row(
           children: [
-            const Icon(Icons.group, color: BeerColors.primaryAmber),
+            GroupAvatarCircle(
+              avatarIcon: account.avatarIcon,
+              radius: 18,
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -1622,6 +1690,7 @@ class _AccountCard extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     '${account.memberUserIds.length} members · '
+                    '🍺 ${groupBeerCount.toStringAsFixed(1)} · '
                     '${TimeFormatter.formatVolumeMl(totalVolumeMl)} · '
                     '${TimeFormatter.formatCurrency(totalCost)}',
                     style: Theme.of(context).textTheme.bodySmall,
@@ -1713,6 +1782,8 @@ class _DoneParticipantRow extends StatelessWidget {
     required this.kegPrice,
     required this.isMe,
     required this.prefs,
+    required this.session,
+    this.onTap,
   });
 
   final AppUser user;
@@ -1720,6 +1791,8 @@ class _DoneParticipantRow extends StatelessWidget {
   final double kegPrice;
   final bool isMe;
   final FormatPreferences prefs;
+  final KegSession session;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -1728,56 +1801,50 @@ class _DoneParticipantRow extends StatelessWidget {
     final cost =
         StatsCalculator.userCostByConsumption(pours, user.id, kegPrice);
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 16,
-            backgroundColor: isMe
-                ? BeerColors.primaryAmber
-                : BeerColors.surfaceVariant,
-            child: Text(
-              user.displayName[0].toUpperCase(),
-              style: TextStyle(
-                color: isMe
-                    ? BeerColors.background
-                    : BeerColors.onSurface,
-                fontWeight: FontWeight.w600,
-                fontSize: 12,
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          children: [
+            AvatarCircle(
+              displayName: user.displayName,
+              avatarIcon: user.avatarIcon,
+              radius: 16,
+              isHighlighted: isMe,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    user.displayName + (isMe ? ' (you)' : ''),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '${TimeFormatter.formatVolumeMl(volumeMl, prefs: prefs)} · '
+                    '${(ratio * 100).toStringAsFixed(0)}%',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: BeerColors.onSurfaceSecondary,
+                        ),
+                  ),
+                ],
               ),
             ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  user.displayName + (isMe ? ' (you)' : ''),
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  '${TimeFormatter.formatVolumeMl(volumeMl, prefs: prefs)} · '
-                  '${(ratio * 100).toStringAsFixed(0)}%',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: BeerColors.onSurfaceSecondary,
-                      ),
-                ),
-              ],
+            Text(
+              TimeFormatter.formatCurrency(cost, prefs: prefs),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
             ),
-          ),
-          Text(
-            TimeFormatter.formatCurrency(cost, prefs: prefs),
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
