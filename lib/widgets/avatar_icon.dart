@@ -47,11 +47,19 @@ const List<IconData> kAvatarIcons = [
   Icons.palette, // 🎨
 ];
 
-/// Resolves a stored [codePoint] back to an [IconData].
-/// Returns `null` when [codePoint] is `null` or not recognised.
+/// Resolves a stored [codePoint] back to an [IconData] from the known
+/// [kAvatarIcons] list.  Returns `null` when [codePoint] is `null` or not
+/// found in the predefined set.
+///
+/// Using a lookup into constant [IconData] instances (rather than
+/// `IconData(codePoint, …)`) keeps all references compile-time constant,
+/// which lets `flutter build` tree-shake unused icon fonts.
 IconData? iconFromCodePoint(int? codePoint) {
   if (codePoint == null) return null;
-  return IconData(codePoint, fontFamily: 'MaterialIcons');
+  for (final icon in kAvatarIcons) {
+    if (icon.codePoint == codePoint) return icon;
+  }
+  return null;
 }
 
 /// A circle avatar that shows either the chosen Material icon or falls

@@ -2,8 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:beerer/models/models.dart';
+import 'package:beerer/providers/providers.dart';
 import 'package:beerer/repositories/keg_repository.dart';
 import 'package:beerer/theme/beer_theme.dart';
+import 'package:beerer/utils/format_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -41,10 +43,11 @@ class _CreateKegScreenState extends ConsumerState<CreateKegScreen> {
 
   // Step 2 fields
   final _volumeController = TextEditingController(text: '30');
-  final _priceController = TextEditingController(text: '100.00');
+  final _priceController = TextEditingController();
   final List<double> _predefinedVolumes = [500, 300];
 
   bool _isCreating = false;
+  bool _prefsInitialized = false;
 
   @override
   void dispose() {
@@ -401,6 +404,14 @@ class _CreateKegScreenState extends ConsumerState<CreateKegScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final prefs = ref.watch(formatPreferencesProvider);
+
+    // Set default price text with correct decimal separator on first build.
+    if (!_prefsInitialized) {
+      _prefsInitialized = true;
+      _priceController.text = prefs.formatDecimal(100, 2);
+    }
+
     return Scaffold(
       appBar: AppBar(
         leading: BackButton(
@@ -415,7 +426,7 @@ class _CreateKegScreenState extends ConsumerState<CreateKegScreen> {
         title: Text('New Keg Session  $_step/2'),
       ),
       body: SafeArea(
-        child: _step == 1 ? _buildStep1() : _buildStep2(),
+        child: _step == 1 ? _buildStep1() : _buildStep2(prefs),
       ),
     );
   }
@@ -583,7 +594,7 @@ class _CreateKegScreenState extends ConsumerState<CreateKegScreen> {
     );
   }
 
-  Widget _buildStep2() {
+  Widget _buildStep2(FormatPreferences prefs) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Form(
@@ -624,7 +635,8 @@ class _CreateKegScreenState extends ConsumerState<CreateKegScreen> {
                 hintText: 'e.g. 25',
               ),
               validator: (val) {
-                if (val == null || double.tryParse(val) == null) {
+                if (val == null ||
+                    double.tryParse(val.replaceAll(',', '.')) == null) {
                   return 'Enter a valid number';
                 }
                 return null;
@@ -635,11 +647,12 @@ class _CreateKegScreenState extends ConsumerState<CreateKegScreen> {
               controller: _priceController,
               keyboardType:
                   const TextInputType.numberWithOptions(decimal: true),
-              decoration: const InputDecoration(
-                labelText: 'Keg price (€)',
+              decoration: InputDecoration(
+                labelText: 'Keg price (${prefs.currency})',
               ),
               validator: (val) {
-                if (val == null || double.tryParse(val) == null) {
+                if (val == null ||
+                    double.tryParse(val.replaceAll(',', '.')) == null) {
                   return 'Enter a valid number';
                 }
                 return null;
