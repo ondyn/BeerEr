@@ -1,0 +1,1 @@
+GOOGLE_APPLICATION_CREDENTIALS=/path/to/serviceAccount.json node scripts/create_test_user.js

@@ -64,6 +64,7 @@ yarn-error.log*
 *.pfx
 *service-account*.json
 *firebase-adminsdk*.json
+*sdk_key
 
 # macOS
 .DS_Store
