@@ -505,12 +505,13 @@ class _KegDetailBody extends ConsumerWidget {
             icon: const Icon(Icons.edit_note),
             label: const Text('Review Bill'),
           ),
-          const SizedBox(height: 8),
-          FilledButton(
-            onPressed: () =>
-                context.go('/keg/${session.id}/settle'),
-            child: const Text('Export to Settle Up'),
-          ),
+          // Step 14: Settle Up export disabled — keep code, hide UI.
+          // if (false)
+          //   FilledButton(
+          //     onPressed: () =>
+          //         context.go('/keg/${session.id}/settle'),
+          //     child: const Text('Export to Settle Up'),
+          //   ),
           const SizedBox(height: 12),
         ],
         // Tip the developer

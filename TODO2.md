@@ -14,7 +14,9 @@
 - SKIP FOR NOW, need clarification: "Make keg done" can be executed only by keg session creator. other users should have this menu option not visible and cant finish the keg
 - review the BAC calculation, one 0,5l 10° beer should be approx 0,2 promile, based on info from internet.
 - when another user do the update on keg session detial (pour a beer) then for other users sestion with participants blink as it is reloading and shortly shows loading circle. Update the participants on background and avoid showing loading ring when change happenns.
-- enable tonchange BAC visibility and statistic visibility even during keg session, not only when joining session
+- ALREADY IMPLEMENTED: enable tonchange BAC visibility and statistic visibility even during keg session, not only when joining session
 - add detail view after clicking on participant in the list - show same as for "My stats" and add graph of consumtion beer volume vs time, BAC vs time 
+- put information from "Est. BAC:" card into My stats. Add car icon for time to drive. Remove "Please drink responsibly" add warning that it is an estimation - short note, but clear and visible.
+
 
 - cleanup: DB will be cleared, rething about all names, database attributes, screen names, variables if it makes sense. Rename accordingly. Analyze code, if something is repeating put it into shared code. Make sure all graphics types useses same dimensions, colors and theme everywhere.
