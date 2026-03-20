@@ -116,6 +116,14 @@ GoRouter router(Ref ref) {
               return SettleUpScreen(sessionId: sessionId);
             },
           ),
+          GoRoute(
+            path: 'review',
+            builder: (context, state) {
+              final sessionId =
+                  state.pathParameters['sessionId']!;
+              return BillReviewScreen(sessionId: sessionId);
+            },
+          ),
         ],
       ),
 

@@ -137,6 +137,23 @@ class KegRepository {
     });
   }
 
+  /// Adds a pour during bill review (keg is already done).
+  ///
+  /// Unlike [addPour], this does NOT check keg status or modify
+  /// `volume_remaining_ml` — it only creates the pour document.
+  Future<Pour> addPourForReview(Pour pour) async {
+    final data = pour.toJson()..remove('id');
+    final ref = await _pours.add(data);
+    return pour.copyWith(id: ref.id);
+  }
+
+  /// Soft-deletes a pour during bill review (keg is already done).
+  ///
+  /// Unlike [undoPour], this does NOT modify `volume_remaining_ml`.
+  Future<void> undoPourForReview(Pour pour) async {
+    await _pours.doc(pour.id).update({'undone': true});
+  }
+
   Future<void> updateStatus(String sessionId, KegStatus status) async {
     await _sessions.doc(sessionId).update({'status': status.name});
   }

@@ -8,6 +8,7 @@ export 'auth/sign_in_screen.dart';
 export 'auth/welcome_screen.dart';
 export 'history/history_screen.dart';
 export 'home/home_screen.dart';
+export 'keg/bill_review_screen.dart';
 export 'keg/create_keg_screen.dart';
 export 'keg/join_session_screen.dart';
 export 'keg/keg_detail_screen.dart';

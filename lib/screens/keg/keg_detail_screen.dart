@@ -499,6 +499,13 @@ class _KegDetailBody extends ConsumerWidget {
         ),
         const SizedBox(height: 12),
         if (isCreator) ...[
+          FilledButton.icon(
+            onPressed: () =>
+                context.go('/keg/${session.id}/review'),
+            icon: const Icon(Icons.edit_note),
+            label: const Text('Review Bill'),
+          ),
+          const SizedBox(height: 8),
           FilledButton(
             onPressed: () =>
                 context.go('/keg/${session.id}/settle'),
