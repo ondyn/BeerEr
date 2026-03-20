@@ -21,6 +21,8 @@
 - notificattion icon in android's status bar and in notification itself is just white circle, should be the logo
 - notification for "Ready to drive!" BAC=0 is sent twice
 - check the app name where it is visible for user at screens and make sure everywhere it is "Beerer", not "BeerEr"
+- join keg session via camera - QR recognition. When sharing keg session QR is generated, but when user wants to join he is not able to take picture of QR.
+- remember gender, weight and age at device. Load it when app is started.
 
 
 

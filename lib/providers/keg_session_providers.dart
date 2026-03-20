@@ -49,3 +49,10 @@ Stream<List<String>> watchParticipantIds(Ref ref, String sessionId) {
   final repo = ref.watch(kegRepositoryProvider);
   return repo.watchParticipantIds(sessionId);
 }
+
+/// Watches manual (guest) users for a session.
+@riverpod
+Stream<List<ManualUser>> watchManualUsers(Ref ref, String sessionId) {
+  final repo = ref.watch(kegRepositoryProvider);
+  return repo.watchManualUsers(sessionId);
+}

@@ -204,4 +204,65 @@ class KegRepository {
             .map((d) => Pour.fromJson(firestoreDoc(d.id, d.data())))
             .toList());
   }
+
+  // ---------------------------------------------------------------------------
+  // Manual (guest) users
+  // ---------------------------------------------------------------------------
+
+  /// Subcollection reference for manual users within a session.
+  CollectionReference<Map<String, dynamic>> _manualUsers(String sessionId) =>
+      _sessions.doc(sessionId).collection('manualUsers');
+
+  /// Creates a guest participant in the session.
+  Future<ManualUser> addManualUser(
+      String sessionId, String nickname) async {
+    final ref = _manualUsers(sessionId).doc();
+    final guest = ManualUser(
+      id: ref.id,
+      sessionId: sessionId,
+      nickname: nickname,
+    );
+    final data = guest.toJson()..remove('id');
+    await ref.set(data);
+    return guest;
+  }
+
+  /// Removes a manual user document.
+  Future<void> removeManualUser(String sessionId, String manualUserId) async {
+    await _manualUsers(sessionId).doc(manualUserId).delete();
+  }
+
+  /// Watches all manual users for a session.
+  Stream<List<ManualUser>> watchManualUsers(String sessionId) {
+    return _manualUsers(sessionId).snapshots().map((qs) => qs.docs
+        .map((d) => ManualUser.fromJson(firestoreDoc(d.id, d.data())))
+        .toList());
+  }
+
+  /// Merges a manual user into a real user:
+  /// 1. Reassigns all pours whose `user_id` matches [manualUserId] to
+  ///    [realUserId].
+  /// 2. Deletes the manual user document.
+  ///
+  /// Uses a batched write for atomicity.
+  Future<void> mergeManualUser({
+    required String sessionId,
+    required String manualUserId,
+    required String realUserId,
+  }) async {
+    final poursSnap = await _pours
+        .where('session_id', isEqualTo: sessionId)
+        .where('user_id', isEqualTo: manualUserId)
+        .get();
+
+    final batch = _db.batch();
+    for (final doc in poursSnap.docs) {
+      batch.update(doc.reference, {
+        'user_id': realUserId,
+        'poured_by_id': realUserId,
+      });
+    }
+    batch.delete(_manualUsers(sessionId).doc(manualUserId));
+    await batch.commit();
+  }
 }

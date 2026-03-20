@@ -94,6 +94,31 @@ service cloud.firestore {
 
       allow delete: if isSignedIn()
                     && resource.data.creator_id == uid();
+
+      // -------------------------------------------------------------
+      // kegSessions/{sessionId}/manualUsers/{manualUserId}
+      //
+      // • READ: any signed-in user (needed on the join screen before
+      //   the user is a participant so they can pick a guest to merge).
+      // • CREATE / UPDATE: only the session creator.
+      // • DELETE: session creator OR any participant (a joining user
+      //   deletes the guest doc when merging with that guest).
+      // -------------------------------------------------------------
+      match /manualUsers/{manualUserId} {
+        allow read:   if isSignedIn();
+
+        allow create: if isSignedIn()
+                      && isSessionCreator(sessionId);
+
+        allow update: if isSignedIn()
+                      && isSessionCreator(sessionId);
+
+        allow delete: if isSignedIn()
+                      && (
+                        isSessionCreator(sessionId)
+                        || isParticipant(sessionId)
+                      );
+      }
     }
 
     // ---------------------------------------------------------------
@@ -121,12 +146,26 @@ service cloud.firestore {
 
       allow update: if isSignedIn()
                     && (
-                      resource.data.poured_by_id == uid()
-                      || isSessionCreator(resource.data.session_id)
-                    )
-                    // Only the 'undone' field may change on an update.
-                    && request.resource.data.diff(resource.data).affectedKeys()
-                        .hasOnly(['undone']);
+                      // Undo a pour: only poured_by user or session
+                      // creator may flip the 'undone' flag.
+                      (
+                        (
+                          resource.data.poured_by_id == uid()
+                          || isSessionCreator(resource.data.session_id)
+                        )
+                        && request.resource.data.diff(resource.data).affectedKeys()
+                            .hasOnly(['undone'])
+                      )
+                      ||
+                      // Merge guest → real user: a participant may
+                      // reassign user_id and poured_by_id on pours
+                      // that belong to a manual (guest) user.
+                      (
+                        isParticipant(resource.data.session_id)
+                        && request.resource.data.diff(resource.data).affectedKeys()
+                            .hasOnly(['user_id', 'poured_by_id'])
+                      )
+                    );
 
       allow delete: if false;
     }

@@ -921,7 +921,6 @@ class _ActiveBodyState extends ConsumerState<_ActiveBody> {
           participantIdsAsync: widget.participantIdsAsync,
           session: session,
           pours: pours,
-          ref: ref,
           onPourFor: widget.onShowPourForSheet,
         ),
         const SizedBox(height: 16),
@@ -1032,30 +1031,32 @@ class _BacSectionState extends ConsumerState<_BacSection> {
 }
 
 /// Participants list with per-user stats and pour-for action.
-class _ParticipantsSection extends StatelessWidget {
+class _ParticipantsSection extends ConsumerWidget {
   const _ParticipantsSection({
     required this.participantIdsAsync,
     required this.session,
     required this.pours,
-    required this.ref,
     required this.onPourFor,
   });
 
   final AsyncValue<List<String>> participantIdsAsync;
   final KegSession session;
   final List<Pour> pours;
-  final WidgetRef ref;
   final void Function(String userId, String nickname) onPourFor;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final ids = participantIdsAsync.value ?? [];
-    if (ids.isEmpty) return const SizedBox.shrink();
+    final currentUid = FirebaseAuth.instance.currentUser?.uid;
+    final isCreator = currentUid == session.creatorId;
 
     final usersAsync = ref.watch(watchUsersProvider(ids));
     final accountsAsync =
         ref.watch(watchSessionAccountsProvider(session.id));
     final accounts = accountsAsync.asData?.value ?? [];
+    final manualUsersAsync =
+        ref.watch(watchManualUsersProvider(session.id));
+    final manualUsers = manualUsersAsync.asData?.value ?? [];
 
     // Build a userId → groupName lookup.
     final Map<String, String> userGroupNames = {};
@@ -1068,11 +1069,24 @@ class _ParticipantsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Participants',
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                color: BeerColors.onSurfaceSecondary,
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                'Participants',
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      color: BeerColors.onSurfaceSecondary,
+                    ),
               ),
+            ),
+            if (isCreator &&
+                session.status != KegStatus.done)
+              TextButton.icon(
+                onPressed: () => _showAddGuestDialog(context, ref),
+                icon: const Icon(Icons.person_add, size: 18),
+                label: const Text('Add Guest'),
+              ),
+          ],
         ),
         const SizedBox(height: 8),
         usersAsync.when(
@@ -1102,6 +1116,17 @@ class _ParticipantsSection extends StatelessWidget {
                     onPourFor(user.id, user.displayName);
                   },
                 ),
+              // Manual (guest) users
+              for (final guest in manualUsers)
+                _ManualParticipantRow(
+                  guest: guest,
+                  pours: pours,
+                  session: session,
+                  isCreator: isCreator,
+                  onPourFor: () =>
+                      onPourFor(guest.id, guest.nickname),
+                  onRemove: () => _removeGuest(context, ref, guest),
+                ),
             ],
           ),
           loading: () => const Center(
@@ -1110,6 +1135,199 @@ class _ParticipantsSection extends StatelessWidget {
           error: (e, _) => Text('Error: $e'),
         ),
       ],
+    );
+  }
+
+  Future<void> _showAddGuestDialog(
+      BuildContext context, WidgetRef ref) async {
+    final controller = TextEditingController();
+    final name = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Add Guest'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          textCapitalization: TextCapitalization.words,
+          decoration: const InputDecoration(
+            hintText: 'Guest name',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () =>
+                Navigator.pop(ctx, controller.text.trim()),
+            child: const Text('Add'),
+          ),
+        ],
+      ),
+    );
+    if (name == null || name.isEmpty) return;
+
+    final repo = ref.read(kegRepositoryProvider);
+    await repo.addManualUser(session.id, name);
+  }
+
+  Future<void> _removeGuest(
+      BuildContext context, WidgetRef ref, ManualUser guest) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Remove Guest'),
+        content: Text(
+          'Remove "${guest.nickname}" and all their pours from '
+          'this session?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Remove'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    final repo = ref.read(kegRepositoryProvider);
+    await repo.removeManualUser(session.id, guest.id);
+  }
+}
+
+/// A row for a manual (guest) participant.
+class _ManualParticipantRow extends StatelessWidget {
+  const _ManualParticipantRow({
+    required this.guest,
+    required this.pours,
+    required this.session,
+    required this.isCreator,
+    required this.onPourFor,
+    required this.onRemove,
+  });
+
+  final ManualUser guest;
+  final List<Pour> pours;
+  final KegSession session;
+  final bool isCreator;
+  final VoidCallback onPourFor;
+  final VoidCallback onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    final guestPours =
+        pours.where((p) => p.userId == guest.id && !p.undone).toList();
+    final beerCount = guestPours.length;
+    final lastPourTime = StatsCalculator.timeSinceLastPour(guestPours);
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Padding(
+        padding:
+            const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        child: Row(
+          children: [
+            // Avatar
+            CircleAvatar(
+              radius: 18,
+              backgroundColor: BeerColors.surfaceVariant,
+              child: Text(
+                guest.nickname[0].toUpperCase(),
+                style: const TextStyle(
+                  color: BeerColors.onSurface,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            // Name + stats
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          guest.nickname,
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.copyWith(fontWeight: FontWeight.w600),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          'guest',
+                          style: Theme.of(context)
+                              .textTheme
+                              .labelSmall
+                              ?.copyWith(color: Colors.grey),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 2),
+                  Row(
+                    children: [
+                      Text(
+                        '🍺 $beerCount',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      if (lastPourTime != null) ...[
+                        const SizedBox(width: 12),
+                        Text(
+                          '⏱ ${TimeFormatter.formatDuration(lastPourTime)} ago',
+                          style:
+                              Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ],
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            // Pour-for button
+            if (session.status == KegStatus.active)
+              IconButton(
+                icon: const Icon(
+                  Icons.sports_bar,
+                  color: BeerColors.primaryAmber,
+                ),
+                tooltip: 'Pour for ${guest.nickname}',
+                onPressed: onPourFor,
+              ),
+            // Remove button (creator only)
+            if (isCreator)
+              IconButton(
+                icon: Icon(
+                  Icons.close,
+                  color: Colors.grey.shade400,
+                  size: 20,
+                ),
+                tooltip: 'Remove guest',
+                onPressed: onRemove,
+              ),
+          ],
+        ),
+      ),
     );
   }
 }

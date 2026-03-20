@@ -24,6 +24,9 @@ class _JoinSessionScreenState extends ConsumerState<JoinSessionScreen> {
   bool _showBac = false;
   bool _isJoining = false;
 
+  /// If the user chose to merge with a manual user, this holds the id.
+  String? _mergeWithManualUserId;
+
   Future<void> _join() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
@@ -61,6 +64,15 @@ class _JoinSessionScreenState extends ConsumerState<JoinSessionScreen> {
 
       // Add participant
       await kegRepo.addParticipant(widget.sessionId, user.uid);
+
+      // Merge with manual user if selected.
+      if (_mergeWithManualUserId != null) {
+        await kegRepo.mergeManualUser(
+          sessionId: widget.sessionId,
+          manualUserId: _mergeWithManualUserId!,
+          realUserId: user.uid,
+        );
+      }
 
       if (mounted) context.go('/keg/${widget.sessionId}');
     } catch (e) {
@@ -101,6 +113,10 @@ class _JoinSessionScreenState extends ConsumerState<JoinSessionScreen> {
   }
 
   Widget _buildContent(BuildContext context, KegSession session) {
+    final manualUsersAsync =
+        ref.watch(watchManualUsersProvider(session.id));
+    final manualUsers = manualUsersAsync.asData?.value ?? [];
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -177,6 +193,43 @@ class _JoinSessionScreenState extends ConsumerState<JoinSessionScreen> {
               borderRadius: BorderRadius.circular(12),
             ),
           ),
+          // Merge with existing guest
+          if (manualUsers.isNotEmpty) ...[
+            const SizedBox(height: 24),
+            Text(
+              'Are you one of these guests?',
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Select yourself to take over their pours, or skip.',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final guest in manualUsers)
+                  ChoiceChip(
+                    label: Text(guest.nickname),
+                    selected: _mergeWithManualUserId == guest.id,
+                    onSelected: (selected) {
+                      setState(() {
+                        _mergeWithManualUserId =
+                            selected ? guest.id : null;
+                      });
+                    },
+                    selectedColor: BeerColors.primaryAmber,
+                    labelStyle: TextStyle(
+                      color: _mergeWithManualUserId == guest.id
+                          ? BeerColors.background
+                          : null,
+                    ),
+                  ),
+              ],
+            ),
+          ],
           const SizedBox(height: 32),
           FilledButton.icon(
             onPressed: _isJoining ? null : _join,
@@ -190,7 +243,9 @@ class _JoinSessionScreenState extends ConsumerState<JoinSessionScreen> {
                       color: BeerColors.background,
                     ),
                   )
-                : const Text('Join Session'),
+                : Text(_mergeWithManualUserId != null
+                    ? 'Join & Merge'
+                    : 'Join Session'),
           ),
         ],
       ),
