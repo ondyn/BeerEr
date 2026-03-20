@@ -235,7 +235,7 @@
 
 **Changes:**
 - Determine logic: compare last-N-pours rate to overall average rate. If ratio drops below threshold → trigger.
-- This is best done client-side with a local scheduled check or a Cloud Function that runs periodically.
+- This is best done client-side with a local scheduled check.
 - `lib/screens/settings/settings_screen.dart` — Add toggle for "Slowdown reminder".
 - Implement the detection logic and local notification scheduling.
 

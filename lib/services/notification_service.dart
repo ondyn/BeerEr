@@ -217,4 +217,48 @@ class NotificationService {
   Future<void> cancelBacZeroNotification() async {
     await _local.cancel(_bacZeroNotificationId);
   }
+
+  // --------------------------------------------------------------------------
+  // Slowdown reminder notification
+  // --------------------------------------------------------------------------
+
+  /// Fixed notification id for the slowdown reminder so that repeated
+  /// triggers replace the old notification instead of stacking.
+  static const _slowdownNotificationId = 998;
+
+  /// Whether the slowdown notification has already been shown during the
+  /// current detection window. Reset via [cancelSlowdownNotification].
+  bool _slowdownShown = false;
+
+  /// Shows a local "you've slowed down" notification **once** per slowdown
+  /// window. Calling this multiple times while [_slowdownShown] is `true`
+  /// is a no-op, avoiding notification spam from the 1-second ticker.
+  Future<void> showSlowdownNotification() async {
+    if (_slowdownShown) return;
+    _slowdownShown = true;
+
+    await _local.show(
+      _slowdownNotificationId,
+      '🍺 Feeling thirsty?',
+      "Looks like you've slowed down - ready for another round?",
+      NotificationDetails(
+        android: AndroidNotificationDetails(
+          _androidChannel.id,
+          _androidChannel.name,
+          channelDescription: _androidChannel.description,
+          importance: Importance.defaultImportance,
+          priority: Priority.defaultPriority,
+          icon: '@mipmap/ic_launcher',
+        ),
+        iOS: const DarwinNotificationDetails(),
+      ),
+    );
+  }
+
+  /// Cancels the slowdown notification and resets the shown flag so the
+  /// notification can fire again on the next slowdown detection.
+  Future<void> cancelSlowdownNotification() async {
+    await _local.cancel(_slowdownNotificationId);
+    _slowdownShown = false;
+  }
 }

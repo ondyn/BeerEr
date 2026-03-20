@@ -18,9 +18,10 @@
 - add detail view after clicking on participant in the list - show same as for "My stats" and add graph of consumtion beer volume vs time, BAC vs time 
 - put information from "Est. BAC:" card into My stats. Add car icon for time to drive. Remove "Please drink responsibly" add warning that it is an estimation - short note, but clear and visible.
 - zero BAC estimation. Keep one second update on user app, but reduce calculation at "cloud functions" to 20min to reduce paid cloud functions load
-- notificattion icon in android's status bar is just white circle, should be the logo
+- notificattion icon in android's status bar and in notification itself is just white circle, should be the logo
 - notification for "Ready to drive!" BAC=0 is sent twice
-- fix: keg empty notification not sent
+- check the app name where it is visible for user at screens and make sure everywhere it is "Beerer", not "BeerEr"
+
 
 
 - cleanup: DB will be cleared, rething about all names, database attributes, screen names, variables if it makes sense. Rename accordingly. Analyze code, if something is repeating put it into shared code. Make sure all graphics types useses same dimensions, colors and theme everywhere.

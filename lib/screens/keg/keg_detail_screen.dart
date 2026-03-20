@@ -764,6 +764,15 @@ class _ActiveBodyState extends ConsumerState<_ActiveBody> {
       );
     }
 
+    // Slowdown detection — show/cancel local notification based on pref.
+    final notifySlowdown =
+        appUser?.preferences['notify_slowdown'] as bool? ?? true;
+    if (notifySlowdown && StatsCalculator.isSlowingDown(userPours)) {
+      NotificationService.instance.showSlowdownNotification();
+    } else {
+      NotificationService.instance.cancelSlowdownNotification();
+    }
+
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [

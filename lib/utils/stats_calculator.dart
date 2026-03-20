@@ -162,4 +162,47 @@ class StatsCalculator {
       (sum, uid) => sum + userCostByConsumption(pours, uid, kegPrice),
     );
   }
+
+  // --------------------------------------------------------------------------
+  // Slowdown detection
+  // --------------------------------------------------------------------------
+
+  /// Detects whether the user has significantly slowed down their drinking
+  /// pace compared to their session average.
+  ///
+  /// Returns `true` when:
+  /// 1. The user has at least [minPours] active pours.
+  /// 2. The time since their last pour exceeds [recentRatioThreshold] times
+  ///    the user's average interval between pours.
+  ///
+  /// [recentRatioThreshold] defaults to **2.0** — i.e. the user hasn't
+  /// poured for at least twice their average inter-pour interval.
+  /// [minPours] defaults to **3** to avoid noisy detections early on.
+  static bool isSlowingDown(
+    List<Pour> userPours, {
+    double recentRatioThreshold = 2.0,
+    int minPours = 3,
+  }) {
+    final active = userPours.where((p) => !p.undone).toList();
+    if (active.length < minPours) return false;
+
+    // Sort oldest → newest.
+    active.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+
+    // Average interval between consecutive pours.
+    final intervals = <Duration>[];
+    for (var i = 1; i < active.length; i++) {
+      intervals.add(active[i].timestamp.difference(active[i - 1].timestamp));
+    }
+    final avgIntervalSec =
+        intervals.fold(0, (int s, d) => s + d.inSeconds) / intervals.length;
+
+    if (avgIntervalSec <= 0) return false;
+
+    // Time since the most recent pour.
+    final sinceLastPour =
+        DateTime.now().difference(active.last.timestamp).inSeconds;
+
+    return sinceLastPour > avgIntervalSec * recentRatioThreshold;
+  }
 }

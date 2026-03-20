@@ -22,6 +22,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool? _notifyKegNearlyEmpty;
   bool? _notifyKegDone;
   bool? _notifyBacZero;
+  bool? _notifySlowdown;
 
   // Local mirrors for display preferences — seeded from Firestore on first
   // data emission and written back on every change.
@@ -96,6 +97,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               appUser?.preferences['notify_keg_done'] as bool? ?? true;
           final firestoreNotifyBacZero =
               appUser?.preferences['notify_bac_zero'] as bool? ?? true;
+          final firestoreNotifySlowdown =
+              appUser?.preferences['notify_slowdown'] as bool? ?? true;
 
           final effectiveNotifyPourForMe =
               _notifyPourForMe ?? firestoreNotifyPourForMe;
@@ -105,6 +108,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               _notifyKegDone ?? firestoreNotifyKegDone;
           final effectiveNotifyBacZero =
               _notifyBacZero ?? firestoreNotifyBacZero;
+          final effectiveNotifySlowdown =
+              _notifySlowdown ?? firestoreNotifySlowdown;
 
           // Seed display preferences from Firestore on first emission.
           final prefs = appUser != null
@@ -185,6 +190,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 onChanged: (val) {
                   setState(() => _notifyBacZero = val);
                   _savePreference('notify_bac_zero', val);
+                },
+                tileColor: BeerColors.surfaceVariant,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              const SizedBox(height: 4),
+              SwitchListTile(
+                title: const Text('Slowdown reminder'),
+                subtitle: const Text(
+                  'Get nudged when your drinking pace drops',
+                ),
+                value: effectiveNotifySlowdown,
+                onChanged: (val) {
+                  setState(() => _notifySlowdown = val);
+                  _savePreference('notify_slowdown', val);
                 },
                 tileColor: BeerColors.surfaceVariant,
                 shape: RoundedRectangleBorder(
