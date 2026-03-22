@@ -3,6 +3,7 @@ import 'package:beerer/providers/providers.dart';
 import 'package:beerer/repositories/keg_repository.dart';
 import 'package:beerer/repositories/user_repository.dart';
 import 'package:beerer/theme/beer_theme.dart';
+import 'package:beerer/utils/time_formatter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -153,7 +154,7 @@ class _JoinSessionScreenState extends ConsumerState<JoinSessionScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    '${(session.volumeTotalMl / 1000).toStringAsFixed(0)} l · '
+                    '${TimeFormatter.formatVolumeMl(session.volumeTotalMl)} · '
                     '${session.alcoholPercent}%',
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),

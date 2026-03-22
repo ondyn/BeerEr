@@ -5,6 +5,7 @@ import 'package:beerer/providers/providers.dart';
 import 'package:beerer/repositories/keg_repository.dart';
 import 'package:beerer/screens/keg/joint_account_sheet.dart';
 import 'package:beerer/screens/keg/participant_detail_screen.dart';
+import 'package:beerer/services/notification_service.dart';
 import 'package:beerer/theme/beer_theme.dart';
 import 'package:beerer/utils/bac_calculator.dart';
 import 'package:beerer/utils/format_preferences.dart';
@@ -20,7 +21,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:beerer/services/notification_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// Main keg session detail screen — adapts to keg status.
@@ -261,7 +261,7 @@ class _KegDetailBody extends ConsumerWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      '${(session.volumeTotalMl / 1000).toStringAsFixed(0)} l'
+                      '${TimeFormatter.formatVolumeMl(session.volumeTotalMl)}'
                       '  ·  ${session.alcoholPercent}%'
                       '  ·  ${TimeFormatter.formatCurrency(session.kegPrice)}',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -781,7 +781,7 @@ class _ActiveBodyState extends ConsumerState<_ActiveBody> {
     );
     final myConsumedMl = StatsCalculator.userPouredMl(pours, uid);
     final currentBeerDur =
-        StatsCalculator.currentBeerDuration(userPours);
+        StatsCalculator.timeSinceLastPour(userPours);
     final timeSinceLast =
         StatsCalculator.timeSinceLastPour(userPours);
     final prefs = ref.watch(formatPreferencesProvider);
@@ -798,17 +798,9 @@ class _ActiveBodyState extends ConsumerState<_ActiveBody> {
     if (appUser != null &&
         appUser.weightKg > 0 &&
         session.startTime != null) {
-      final totalAlcGrams = userPours
-          .where((p) => !p.undone)
-          .fold(0.0, (sum, p) {
-        return sum +
-            BacCalculator.pureAlcoholGrams(
-              volumeMl: p.volumeMl,
-              abv: session.alcoholPercent,
-            );
-      });
-      myBac = BacCalculator.calculate(
-        totalAlcoholGrams: totalAlcGrams,
+      myBac = BacCalculator.estimateFromPours(
+        pours: userPours,
+        abv: session.alcoholPercent,
         weightKg: appUser.weightKg,
         gender: appUser.gender,
         elapsedMinutes: elapsed.inMinutes,
@@ -1334,7 +1326,7 @@ class _ManualParticipantRow extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        '🍺 ${beerCountVal.toStringAsFixed(1)}',
+                        '🍺 ${TimeFormatter.formatBeerCount(beerCountVal)}',
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                       const SizedBox(width: 12),
@@ -1425,17 +1417,11 @@ class _ParticipantRow extends StatelessWidget {
         user.weightKg > 0;
     double? bac;
     if (showBac && session.startTime != null) {
-      final totalAlcGrams = userPours.fold(0.0, (sum, p) {
-        return sum +
-            BacCalculator.pureAlcoholGrams(
-              volumeMl: p.volumeMl,
-              abv: session.alcoholPercent,
-            );
-      });
       final elapsed =
           DateTime.now().difference(session.startTime!).inMinutes;
-      bac = BacCalculator.calculate(
-        totalAlcoholGrams: totalAlcGrams,
+      bac = BacCalculator.estimateFromPours(
+        pours: userPours,
+        abv: session.alcoholPercent,
         weightKg: user.weightKg,
         gender: user.gender,
         elapsedMinutes: elapsed,
@@ -1505,7 +1491,7 @@ class _ParticipantRow extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        '🍺 ${beerCountVal.toStringAsFixed(1)}',
+                        '🍺 ${TimeFormatter.formatBeerCount(beerCountVal)}',
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                       const SizedBox(width: 12),
@@ -1523,7 +1509,7 @@ class _ParticipantRow extends StatelessWidget {
                       if (bac != null) ...[
                         const SizedBox(width: 12),
                         Text(
-                          '🧪 ${bac.toStringAsFixed(2)} ‰',
+                          '🧪 ${TimeFormatter.formatBac(bac)}',
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
                       ],
@@ -1648,10 +1634,9 @@ class _AccountCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final totalVolumeMl = account.memberUserIds.fold(
-      0.0,
-      (double sum, String uid) =>
-          sum + StatsCalculator.userPouredMl(pours, uid),
+    final totalVolumeMl = StatsCalculator.groupPouredMl(
+      pours,
+      account.memberUserIds,
     );
     final totalCost = StatsCalculator.groupCost(
       pours,
@@ -1690,7 +1675,7 @@ class _AccountCard extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     '${account.memberUserIds.length} members · '
-                    '🍺 ${groupBeerCount.toStringAsFixed(1)} · '
+                    '🍺 ${TimeFormatter.formatBeerCount(groupBeerCount)} · '
                     '${TimeFormatter.formatVolumeMl(totalVolumeMl)} · '
                     '${TimeFormatter.formatCurrency(totalCost)}',
                     style: Theme.of(context).textTheme.bodySmall,
@@ -1829,7 +1814,7 @@ class _DoneParticipantRow extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     '${TimeFormatter.formatVolumeMl(volumeMl, prefs: prefs)} · '
-                    '${(ratio * 100).toStringAsFixed(0)}%',
+                    '${TimeFormatter.formatRatio(ratio)}',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: BeerColors.onSurfaceSecondary,
                         ),
@@ -1874,14 +1859,14 @@ class _DoneGroupRow extends StatelessWidget {
       account.memberUserIds,
       kegPrice,
     );
-    final groupVolumeMl = account.memberUserIds.fold(
-      0.0,
-      (double sum, String uid) =>
-          sum + StatsCalculator.userPouredMl(pours, uid),
+    final groupVolumeMl = StatsCalculator.groupPouredMl(
+      pours,
+      account.memberUserIds,
     );
-    final groupRatio = StatsCalculator.totalPouredMl(pours) > 0
-        ? groupVolumeMl / StatsCalculator.totalPouredMl(pours)
-        : 0.0;
+    final groupRatio = StatsCalculator.groupConsumptionRatio(
+      pours,
+      account.memberUserIds,
+    );
 
     // Resolve member AppUser objects
     final memberUsers = account.memberUserIds
@@ -1928,7 +1913,7 @@ class _DoneGroupRow extends StatelessWidget {
               padding: const EdgeInsets.only(left: 26),
               child: Text(
                 '${TimeFormatter.formatVolumeMl(groupVolumeMl, prefs: prefs)} · '
-                '${(groupRatio * 100).toStringAsFixed(0)}%',
+                '${TimeFormatter.formatRatio(groupRatio)}',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: BeerColors.onSurfaceSecondary,
                     ),

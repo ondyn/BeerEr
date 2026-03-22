@@ -66,6 +66,32 @@ class TimeFormatter {
     return '${percent.toStringAsFixed(0)}%';
   }
 
+  /// Formats a ratio (0.0–1.0) as a rounded percentage string.
+  ///
+  /// Example: `0.42` → `"42%"`.
+  static String formatRatio(double ratio) {
+    return '${(ratio * 100).toStringAsFixed(0)}%';
+  }
+
+  /// Formats a beer count (e.g. `2.3`) respecting the user's decimal
+  /// separator when [prefs] is provided.
+  static String formatBeerCount(double count, {FormatPreferences? prefs}) {
+    final p = prefs ?? const FormatPreferences();
+    return p.formatDecimal(count, 1);
+  }
+
+  /// Formats a BAC value in ‰ (per mille) for display.
+  ///
+  /// Uses [fractionDigits] decimal places (default 2) and appends ` ‰`.
+  static String formatBac(
+    double bac, {
+    int fractionDigits = 2,
+    FormatPreferences? prefs,
+  }) {
+    final p = prefs ?? const FormatPreferences();
+    return '${p.formatDecimal(bac, fractionDigits)} ‰';
+  }
+
   /// Formats a currency amount.
   ///
   /// When [prefs] is provided, the user's chosen currency symbol and

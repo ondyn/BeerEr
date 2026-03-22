@@ -309,8 +309,8 @@ You need to prepare:
 .fvm/flutter_sdk/bin/flutter run --release -d <device_id>
 
 # Take screenshot via ADB
-adb shell screencap -p /sdcard/screenshot.png
-adb pull /sdcard/screenshot.png ./screenshots/
+adb -s emulator-5554 shell screencap -p /sdcard/screenshot.png
+adb -s emulator-5554 pull /sdcard/screenshot.png ./screenshots/
 ```
 
 **Recommended screenshots (in order):**

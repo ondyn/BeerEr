@@ -1,5 +1,7 @@
 import 'dart:math';
 
+import 'package:beerer/models/models.dart';
+
 /// BAC estimation using the Widmark formula.
 /// All calculation happens on-device; the result is NEVER stored in Firestore.
 class BacCalculator {
@@ -57,5 +59,50 @@ class BacCalculator {
     // hours = BAC(‰) / metabolic rate (‰/h)
     final hours = currentBacPromille / 0.15;
     return Duration(minutes: (hours * 60).ceil());
+  }
+
+  /// Computes the total grams of pure alcohol from a list of pours.
+  ///
+  /// Only active (non-undone) pours are considered. When [cutoffTime]
+  /// is provided, only pours with a timestamp on or before that time
+  /// are included — useful for charting BAC at past points.
+  static double totalAlcoholGramsFromPours(
+    List<Pour> pours, {
+    required double abv,
+    DateTime? cutoffTime,
+  }) {
+    var filtered = pours.where((p) => !p.undone);
+    if (cutoffTime != null) {
+      filtered = filtered.where((p) => !p.timestamp.isAfter(cutoffTime));
+    }
+    return filtered.fold(0.0, (sum, p) {
+      return sum + pureAlcoholGrams(volumeMl: p.volumeMl, abv: abv);
+    });
+  }
+
+  /// Convenience: estimates current BAC from a list of pours in one call.
+  ///
+  /// Returns `null` when [weightKg] is ≤ 0 or [pours] has no active
+  /// pours. Only active (non-undone) pours are counted.
+  static double? estimateFromPours({
+    required List<Pour> pours,
+    required double abv,
+    required double weightKg,
+    required String gender,
+    required int elapsedMinutes,
+  }) {
+    if (weightKg <= 0) return null;
+    final activePours = pours.where((p) => !p.undone).toList();
+    if (activePours.isEmpty) return null;
+    final totalAlcGrams = totalAlcoholGramsFromPours(
+      activePours,
+      abv: abv,
+    );
+    return calculate(
+      totalAlcoholGrams: totalAlcGrams,
+      weightKg: weightKg,
+      gender: gender,
+      elapsedMinutes: elapsedMinutes,
+    );
   }
 }

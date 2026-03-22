@@ -60,21 +60,15 @@ class ParticipantDetailScreen extends StatelessWidget {
     double? bacValue;
     Duration? timeToZero;
     if (user.weightKg > 0 && userPours.isNotEmpty && sessionStart != null) {
-      final totalAlcGrams = userPours.fold(0.0, (sum, p) {
-        return sum +
-            BacCalculator.pureAlcoholGrams(
-              volumeMl: p.volumeMl,
-              abv: session.alcoholPercent,
-            );
-      });
       final elapsed = DateTime.now().difference(sessionStart).inMinutes;
-      bacValue = BacCalculator.calculate(
-        totalAlcoholGrams: totalAlcGrams,
+      bacValue = BacCalculator.estimateFromPours(
+        pours: userPours,
+        abv: session.alcoholPercent,
         weightKg: user.weightKg,
         gender: user.gender,
         elapsedMinutes: elapsed,
       );
-      timeToZero = BacCalculator.timeToZero(bacValue);
+      timeToZero = BacCalculator.timeToZero(bacValue ?? 0);
     }
 
     return Scaffold(
@@ -237,7 +231,7 @@ class ParticipantDetailScreen extends StatelessWidget {
             _StatRow(
               icon: '📈',
               label: 'Share of keg',
-              value: '${(ratio * 100).toStringAsFixed(0)}%',
+              value: TimeFormatter.formatRatio(ratio),
             ),
             _StatRow(
               icon: '⏱',
@@ -529,15 +523,11 @@ class _BacChart extends StatelessWidget {
   /// Only pours that occurred before the given minute are counted.
   double _bacAtMinute(int minute) {
     final cutoff = sessionStart.add(Duration(minutes: minute));
-    final totalAlcGrams = pours
-        .where((p) => !p.timestamp.isAfter(cutoff))
-        .fold(0.0, (sum, p) {
-      return sum +
-          BacCalculator.pureAlcoholGrams(
-            volumeMl: p.volumeMl,
-            abv: alcoholPercent,
-          );
-    });
+    final totalAlcGrams = BacCalculator.totalAlcoholGramsFromPours(
+      pours,
+      abv: alcoholPercent,
+      cutoffTime: cutoff,
+    );
     return BacCalculator.calculate(
       totalAlcoholGrams: totalAlcGrams,
       weightKg: weightKg,

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Beerer — Delete Your Account</title>
+  <style>
+    :root {
+      --bg: #1A1208;
+      --surface: #2C1F0E;
+      --amber: #F5A623;
+      --text: #F5ECD7;
+      --text-secondary: #A89880;
+      --error: #E53935;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      padding: 0 16px;
+    }
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 40px 0 80px;
+    }
+    h1 {
+      color: var(--amber);
+      font-size: 2rem;
+      margin-bottom: 4px;
+    }
+    .updated {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      margin-bottom: 32px;
+    }
+    h2 {
+      color: var(--amber);
+      font-size: 1.25rem;
+      margin-top: 36px;
+      margin-bottom: 8px;
+    }
+    p, ul, ol {
+      margin-bottom: 12px;
+    }
+    ul, ol {
+      padding-left: 24px;
+    }
+    li {
+      margin-bottom: 6px;
+    }
+    a {
+      color: var(--amber);
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    .callout {
+      background: var(--surface);
+      border-left: 4px solid var(--amber);
+      border-radius: 4px;
+      padding: 16px 20px;
+      margin: 20px 0;
+    }
+    .callout.danger {
+      border-left-color: var(--error);
+    }
+    .callout p {
+      margin-bottom: 0;
+    }
+    .step-list {
+      counter-reset: steps;
+      list-style: none;
+      padding-left: 0;
+    }
+    .step-list li {
+      counter-increment: steps;
+      display: flex;
+      gap: 14px;
+      margin-bottom: 14px;
+      align-items: flex-start;
+    }
+    .step-list li::before {
+      content: counter(steps);
+      background: var(--amber);
+      color: var(--bg);
+      font-weight: 700;
+      font-size: 0.85rem;
+      border-radius: 50%;
+      min-width: 26px;
+      height: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 2px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0 24px;
+      font-size: 0.95rem;
+    }
+    th {
+      background: var(--surface);
+      color: var(--amber);
+      text-align: left;
+      padding: 10px 14px;
+      font-weight: 600;
+    }
+    td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--surface);
+      vertical-align: top;
+    }
+    tr:last-child td {
+      border-bottom: none;
+    }
+    .badge-deleted {
+      color: var(--error);
+      font-weight: 600;
+    }
+    .badge-retained {
+      color: var(--amber);
+      font-weight: 600;
+    }
+    .footer {
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid var(--surface);
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🍺 Beerer — Delete Your Account</h1>
+    <p class="updated">Last updated: 20 March 2026 · Developer: Ondrej Hnyk</p>
+
+    <p>
+      This page explains how to request the deletion of your <strong>Beerer</strong> account
+      and associated data, as required by Google Play's data deletion policy.
+    </p>
+
+    <h2>How to Delete Your Account</h2>
+
+    <p>You can delete your account directly from within the Beerer app:</p>
+
+    <ol class="step-list">
+      <li>Open the <strong>Beerer</strong> app and sign in.</li>
+      <li>Tap your profile avatar or go to <strong>Settings</strong>.</li>
+      <li>Scroll to the bottom and tap <strong>"Delete Account"</strong>.</li>
+      <li>Confirm the deletion in the dialog that appears.</li>
+      <li>Your account and all associated data will be permanently deleted within <strong>30 days</strong>.</li>
+    </ol>
+
+    <div class="callout">
+      <p>
+        <strong>Note:</strong> You must be signed in to delete your account via the app.
+        If you no longer have access to your account, use the email request method below.
+      </p>
+    </div>
+
+    <h2>Request Deletion by Email</h2>
+
+    <p>
+      If you are unable to access the app, you can submit a deletion request by email:
+    </p>
+
+    <ol class="step-list">
+      <li>Send an email to <a href="mailto:ondrej.hnyk@gmail.com">ondrej.hnyk@gmail.com</a>.</li>
+      <li>Use the subject line: <strong>"Beerer — Account Deletion Request"</strong>.</li>
+      <li>Include the email address associated with your Beerer account.</li>
+      <li>We will process your request and confirm deletion within <strong>30 days</strong>.</li>
+    </ol>
+
+    <h2>What Data Is Deleted</h2>
+
+    <p>
+      When your account is deleted, the following data is <span class="badge-deleted">permanently deleted</span>:
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Data type</th>
+          <th>Action</th>
+          <th>Retention after request</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Firebase Authentication record (email, sign-in provider)</td>
+          <td><span class="badge-deleted">Deleted</span></td>
+          <td>Immediately on deletion</td>
+        </tr>
+        <tr>
+          <td>User profile (nickname, weight, age, gender, preferences)</td>
+          <td><span class="badge-deleted">Deleted</span></td>
+          <td>Within 30 days</td>
+        </tr>
+        <tr>
+          <td>FCM push notification token</td>
+          <td><span class="badge-deleted">Deleted</span></td>
+          <td>Within 30 days</td>
+        </tr>
+        <tr>
+          <td>Your personal pour records in sessions you participated in</td>
+          <td><span class="badge-deleted">Deleted</span></td>
+          <td>Within 30 days</td>
+        </tr>
+        <tr>
+          <td>Keg sessions you created (and all associated pours &amp; joint accounts)</td>
+          <td><span class="badge-deleted">Deleted</span></td>
+          <td>Within 30 days</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>What Data May Be Retained</h2>
+
+    <div class="callout danger">
+      <p>
+        <strong>Anonymised session contributions:</strong> In sessions created by <em>other users</em>
+        that you participated in, your pour records may be retained in anonymised form
+        (the user ID is removed, the nickname shown becomes "Deleted User") so that the
+        session statistics and cost summaries remain accurate for the other participants.
+        This anonymised data contains no information that can identify you.
+      </p>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Data type</th>
+          <th>Action</th>
+          <th>Retention period</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Anonymised pour volumes in other users' sessions</td>
+          <td><span class="badge-retained">Anonymised</span></td>
+          <td>Until the session creator deletes the session</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>
+      BAC estimates are <strong>never stored</strong> on any server — they are calculated
+      on your device only and are not subject to retention or deletion requests.
+    </p>
+
+    <h2>Questions?</h2>
+
+    <p>
+      If you have any questions about your data or the deletion process, please contact:
+    </p>
+    <p>
+      <strong>Ondrej Hnyk (Beerer Developer)</strong><br>
+      Email: <a href="mailto:ondrej.hnyk@gmail.com">ondrej.hnyk@gmail.com</a>
+    </p>
+    <p>
+      See also our <a href="/privacy.html">Privacy Policy</a>.
+    </p>
+
+    <div class="footer">
+      <p>&copy; 2026 Beerer · Developed by Ondrej Hnyk</p>
+    </div>
+  </div>
+</body>
+</html>

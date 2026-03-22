@@ -71,12 +71,12 @@ class StatsCalculator {
   }
 
   /// Duration the user has been drinking their current beer.
-  static Duration? currentBeerDuration(List<Pour> userPours) {
-    final activePours = userPours.where((p) => !p.undone).toList();
-    if (activePours.isEmpty) return null;
-    activePours.sort((a, b) => b.timestamp.compareTo(a.timestamp));
-    return DateTime.now().difference(activePours.first.timestamp);
-  }
+  ///
+  /// This is equivalent to [timeSinceLastPour] — the time elapsed since
+  /// the most recent active pour.
+  @Deprecated('Use timeSinceLastPour instead — they are identical.')
+  static Duration? currentBeerDuration(List<Pour> userPours) =>
+      timeSinceLastPour(userPours);
 
   /// Total cost for a group of users (joint account).
   static double groupCost(
@@ -89,6 +89,25 @@ class StatsCalculator {
       0.0,
       (sum, uid) => sum + userCost(pours, uid, kegPrice, volumeTotalMl),
     );
+  }
+
+  /// Total volume poured by a group of users (joint account).
+  static double groupPouredMl(List<Pour> pours, List<String> userIds) {
+    return userIds.fold(
+      0.0,
+      (double sum, String uid) => sum + userPouredMl(pours, uid),
+    );
+  }
+
+  /// The consumption ratio for a group of users (0.0–1.0) relative to the
+  /// total poured volume across all participants.
+  static double groupConsumptionRatio(
+    List<Pour> pours,
+    List<String> userIds,
+  ) {
+    final total = totalPouredMl(pours);
+    if (total == 0) return 0;
+    return groupPouredMl(pours, userIds) / total;
   }
 
   /// Price per reference beer (0.5 l for litres, 1 pint for pints,

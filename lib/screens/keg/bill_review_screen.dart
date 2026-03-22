@@ -350,7 +350,7 @@ class _ParticipantSection extends ConsumerWidget {
       title: user.displayName + (isMe ? ' (you)' : ''),
       subtitle:
           '${TimeFormatter.formatVolumeMl(volumeMl, prefs: prefs)} · '
-          '${(ratio * 100).toStringAsFixed(0)}%',
+          '${TimeFormatter.formatRatio(ratio)}',
       cost: TimeFormatter.formatCurrency(cost, prefs: prefs),
       avatarLetter: user.displayName[0].toUpperCase(),
       isHighlighted: isMe,
@@ -390,14 +390,14 @@ class _GroupSection extends ConsumerWidget {
       account.memberUserIds,
       session.kegPrice,
     );
-    final groupVolumeMl = account.memberUserIds.fold(
-      0.0,
-      (double sum, String uid) =>
-          sum + StatsCalculator.userPouredMl(pours, uid),
+    final groupVolumeMl = StatsCalculator.groupPouredMl(
+      pours,
+      account.memberUserIds,
     );
-    final totalPoured = StatsCalculator.totalPouredMl(pours);
-    final groupRatio =
-        totalPoured > 0 ? groupVolumeMl / totalPoured : 0.0;
+    final groupRatio = StatsCalculator.groupConsumptionRatio(
+      pours,
+      account.memberUserIds,
+    );
 
     final memberUsers = account.memberUserIds
         .map((id) => users.where((u) => u.id == id).firstOrNull)
@@ -430,7 +430,7 @@ class _GroupSection extends ConsumerWidget {
                       ),
                       Text(
                         '${TimeFormatter.formatVolumeMl(groupVolumeMl, prefs: prefs)} · '
-                        '${(groupRatio * 100).toStringAsFixed(0)}%',
+                        '${TimeFormatter.formatRatio(groupRatio)}',
                         style:
                             Theme.of(context).textTheme.bodySmall?.copyWith(
                                   color: BeerColors.onSurfaceSecondary,

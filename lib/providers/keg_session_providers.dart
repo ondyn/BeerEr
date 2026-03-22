@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:beerer/models/models.dart';
+import 'package:beerer/providers/auth_provider.dart';
 import 'package:beerer/repositories/keg_repository.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:beerer/providers/auth_provider.dart';
 
 part 'keg_session_providers.g.dart';
 
