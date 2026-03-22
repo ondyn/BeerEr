@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:beerer/models/models.dart';
+import 'package:beerer/l10n/app_localizations.dart';
 import 'package:beerer/theme/beer_theme.dart';
 import 'package:beerer/utils/bac_calculator.dart';
 import 'package:beerer/utils/format_preferences.dart';
@@ -99,7 +100,7 @@ class ParticipantDetailScreen extends StatelessWidget {
           // Volume chart
           if (userPours.isNotEmpty && sessionStart != null) ...[
             Text(
-              'CONSUMPTION OVER TIME',
+              AppLocalizations.of(context)!.consumptionOverTime,
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
                     color: BeerColors.onSurfaceSecondary,
                     letterSpacing: 1.1,
@@ -122,7 +123,7 @@ class ParticipantDetailScreen extends StatelessWidget {
               user.weightKg > 0 &&
               sessionStart != null) ...[
             Text(
-              'ESTIMATED BAC OVER TIME',
+              AppLocalizations.of(context)!.estimatedBacOverTime,
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
                     color: BeerColors.onSurfaceSecondary,
                     letterSpacing: 1.1,
@@ -141,8 +142,7 @@ class ParticipantDetailScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              '⚠ BAC is an estimate only — do not use it to determine '
-              'fitness to drive.',
+              AppLocalizations.of(context)!.bacDoNotUseForDriving,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: BeerColors.warning,
                     fontStyle: FontStyle.italic,
@@ -170,13 +170,13 @@ class ParticipantDetailScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                user.displayName + (isMe ? ' (you)' : ''),
+                user.displayName + (isMe ? AppLocalizations.of(context)!.youSuffix : ''),
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               if (user.weightKg > 0)
                 Text(
                   '${user.weightKg.toStringAsFixed(0)} kg · '
-                  '${user.gender == 'male' ? 'Male' : 'Female'}',
+                  '${user.gender == 'male' ? AppLocalizations.of(context)!.male : AppLocalizations.of(context)!.female}',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: BeerColors.onSurfaceSecondary,
                       ),
@@ -206,7 +206,7 @@ class ParticipantDetailScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'STATS',
+              AppLocalizations.of(context)!.stats,
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
                     color: BeerColors.onSurfaceSecondary,
                     letterSpacing: 1.1,
@@ -215,47 +215,47 @@ class ParticipantDetailScreen extends StatelessWidget {
             const SizedBox(height: 8),
             _StatRow(
               icon: '🍺',
-              label: 'Beer count',
+              label: AppLocalizations.of(context)!.beerCount,
               value: prefs.formatDecimal(beerCount, 1),
             ),
             _StatRow(
               icon: '📊',
-              label: 'Volume',
+              label: AppLocalizations.of(context)!.volume,
               value: TimeFormatter.formatVolumeMl(totalMl, prefs: prefs),
             ),
             _StatRow(
               icon: '🧪',
-              label: 'Pure alcohol',
+              label: AppLocalizations.of(context)!.pureAlcohol,
               value: '${prefs.formatDecimal(pureAlcMl, 1)} ml',
             ),
             _StatRow(
               icon: '📈',
-              label: 'Share of keg',
+              label: AppLocalizations.of(context)!.shareOfKeg,
               value: TimeFormatter.formatRatio(ratio),
             ),
             _StatRow(
               icon: '⏱',
-              label: 'Avg. rate',
+              label: AppLocalizations.of(context)!.avgRateLabel,
               value: avgRate > 0
                   ? '${TimeFormatter.formatVolumeMl(avgRate, prefs: prefs)}/h'
                   : '—',
             ),
             _StatRow(
               icon: '💰',
-              label: 'Cost',
+              label: AppLocalizations.of(context)!.cost,
               value: TimeFormatter.formatCurrency(cost, prefs: prefs),
             ),
             if (bacValue != null) ...[
               const Divider(height: 16),
               _StatRow(
                 icon: '🩸',
-                label: 'Est. BAC',
+                label: AppLocalizations.of(context)!.estBac,
                 value: '${prefs.formatDecimal(bacValue, 2)} ‰',
               ),
               if (timeToZero != null && bacValue > 0)
                 _StatRow(
                   icon: '🚗',
-                  label: 'Est. time to drive',
+                  label: AppLocalizations.of(context)!.estTimeToDrive,
                   value: '~${TimeFormatter.formatDuration(timeToZero)}',
                 ),
             ],

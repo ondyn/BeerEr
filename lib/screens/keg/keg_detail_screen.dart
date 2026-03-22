@@ -16,6 +16,7 @@ import 'package:beerer/widgets/keg_fill_bar.dart';
 import 'package:beerer/widgets/pour_button.dart';
 import 'package:beerer/widgets/stat_tile.dart';
 import 'package:beerer/widgets/volume_picker_sheet.dart';
+import 'package:beerer/l10n/app_localizations.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -41,7 +42,7 @@ class KegDetailScreen extends ConsumerWidget {
         if (session == null) {
           return Scaffold(
             appBar: AppBar(),
-            body: const Center(child: Text('Session not found')),
+            body: Center(child: Text(AppLocalizations.of(context)!.sessionNotFound)),
           );
         }
         return _KegDetailBody(
@@ -60,7 +61,7 @@ class KegDetailScreen extends ConsumerWidget {
       ),
       error: (e, _) => Scaffold(
         appBar: AppBar(),
-        body: Center(child: Text('Error: $e')),
+        body: Center(child: Text(AppLocalizations.of(context)!.errorWithMessage(e.toString()))),
       ),
     );
   }
@@ -98,42 +99,45 @@ class _KegDetailBody extends ConsumerWidget {
           PopupMenuButton<String>(
             onSelected: (value) =>
                 _handleAction(context, ref, value),
-            itemBuilder: (_) => [
-              const PopupMenuItem(
+            itemBuilder: (ctx) {
+              final l10n = AppLocalizations.of(ctx)!;
+              return [
+              PopupMenuItem(
                 value: 'info',
-                child: Text('Keg Information'),
+                child: Text(l10n.kegInformation),
               ),
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'share',
-                child: Text('Share join link'),
+                child: Text(l10n.shareJoinLink),
               ),
               if (session.status == KegStatus.created && isCreator)
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'edit',
-                  child: Text('Edit session'),
+                  child: Text(l10n.editSession),
                 ),
               if (session.status == KegStatus.active)
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'pause',
-                  child: Text('Untap unfinished keg'),
+                  child: Text(l10n.untapUnfinishedKeg),
                 ),
               if (session.status == KegStatus.paused)
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'resume',
-                  child: Text('Tap keg again'),
+                  child: Text(l10n.tapKegAgain),
                 ),
               if (session.status != KegStatus.done &&
                   session.status != KegStatus.created)
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'done',
-                  child: Text('Mark keg as done'),
+                  child: Text(l10n.markKegAsDone),
                 ),
               if (session.status == KegStatus.created && isCreator)
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'delete',
-                  child: Text('Delete session'),
+                  child: Text(l10n.deleteSessionQuestion),
                 ),
-            ],
+            ];
+            },
           ),
         ],
       ),
@@ -177,41 +181,41 @@ class _KegDetailBody extends ConsumerWidget {
   void _confirmDone(BuildContext context, KegRepository repo) {
     showDialog<void>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Mark keg as done?'),
-        content: const Text(
-          'The session will become read-only. This cannot be undone.',
-        ),
+      builder: (ctx) {
+        final l10n = AppLocalizations.of(ctx)!;
+        return AlertDialog(
+        title: Text(l10n.markKegAsDoneQuestion),
+        content: Text(l10n.sessionReadOnlyWarning),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           FilledButton(
             onPressed: () {
               repo.updateStatus(session.id, KegStatus.done);
               Navigator.pop(ctx);
             },
-            child: const Text('Keg Done'),
+            child: Text(l10n.kegDone),
           ),
         ],
-      ),
+      );
+      },
     );
   }
 
   void _confirmDelete(BuildContext context, KegRepository repo) {
     showDialog<void>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Delete session?'),
-        content: const Text(
-          'This will permanently delete the keg session. '
-          'This cannot be undone.',
-        ),
+      builder: (ctx) {
+        final l10n = AppLocalizations.of(ctx)!;
+        return AlertDialog(
+        title: Text(l10n.deleteSessionQuestion),
+        content: Text(l10n.deleteSessionWarning),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
@@ -222,10 +226,11 @@ class _KegDetailBody extends ConsumerWidget {
               if (ctx.mounted) Navigator.pop(ctx);
               if (context.mounted) context.go('/home');
             },
-            child: const Text('Delete'),
+            child: Text(l10n.delete),
           ),
         ],
-      ),
+      );
+      },
     );
   }
 
@@ -245,7 +250,7 @@ class _KegDetailBody extends ConsumerWidget {
                 child: Column(
                   children: [
                     Text(
-                      'SESSION READY',
+                      AppLocalizations.of(context)!.sessionReady,
                       style: Theme.of(context).textTheme.labelMedium,
                     ),
                     const SizedBox(height: 16),
@@ -270,7 +275,7 @@ class _KegDetailBody extends ConsumerWidget {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Tap the keg to start!',
+                      AppLocalizations.of(context)!.tapTheKegToStart,
                       style: Theme.of(context).textTheme.bodyLarge,
                     ),
                   ],
@@ -286,7 +291,7 @@ class _KegDetailBody extends ConsumerWidget {
                     ref.read(kegRepositoryProvider).tapKeg(session.id);
                   },
                   icon: const Icon(Icons.sports_bar),
-                  label: const Text('Tap Keg!'),
+                  label: Text(AppLocalizations.of(context)!.tapKeg),
                   style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     textStyle: Theme.of(context).textTheme.titleMedium,
@@ -325,12 +330,12 @@ class _KegDetailBody extends ConsumerWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Keg is untapped',
+                    AppLocalizations.of(context)!.kegIsUntapped,
                     style: Theme.of(context).textTheme.headlineSmall,
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Pouring is disabled.',
+                    AppLocalizations.of(context)!.pouringDisabled,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ],
@@ -343,7 +348,7 @@ class _KegDetailBody extends ConsumerWidget {
                   ref.read(kegRepositoryProvider).tapKeg(session.id);
                 },
                 icon: const Icon(Icons.sports_bar),
-                label: const Text('Tap Keg Again'),
+                label: Text(AppLocalizations.of(context)!.tapKegAgain),
               ),
           ],
         ),
@@ -406,7 +411,7 @@ class _KegDetailBody extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'SESSION COMPLETE',
+                  AppLocalizations.of(context)!.sessionComplete,
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
               ],
@@ -422,18 +427,18 @@ class _KegDetailBody extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Final stats',
+                  AppLocalizations.of(context)!.finalStats,
                   style: Theme.of(context).textTheme.titleSmall,
                 ),
                 const SizedBox(height: 8),
                 StatTile(
                   icon: Icons.timer,
-                  label: 'Total keg time',
+                  label: AppLocalizations.of(context)!.totalKegTime,
                   value: TimeFormatter.formatDuration(elapsed),
                 ),
                 StatTile(
                   icon: Icons.sports_bar,
-                  label: 'Total poured',
+                  label: AppLocalizations.of(context)!.totalPoured,
                   value: TimeFormatter.formatVolumeMl(
                     totalPouredMl,
                     prefs: prefs,
@@ -441,18 +446,18 @@ class _KegDetailBody extends ConsumerWidget {
                 ),
                 StatTile(
                   icon: Icons.science,
-                  label: 'Pure alcohol',
+                  label: AppLocalizations.of(context)!.pureAlcohol,
                   value:
                       '${prefs.formatDecimal(StatsCalculator.pureAlcoholMl(pours, session.alcoholPercent), 0)} ml',
                 ),
                 StatTile(
                   icon: Icons.people,
-                  label: 'Participants',
+                  label: AppLocalizations.of(context)!.participantsLabel,
                   value: '${participantIds.length}',
                 ),
                 StatTile(
                   icon: Icons.euro,
-                  label: 'My total',
+                  label: AppLocalizations.of(context)!.myTotal,
                   value: TimeFormatter.formatCurrency(
                     myCost,
                     prefs: prefs,
@@ -460,7 +465,7 @@ class _KegDetailBody extends ConsumerWidget {
                 ),
                 StatTile(
                   icon: Icons.attach_money,
-                  label: 'Keg price',
+                  label: AppLocalizations.of(context)!.kegPriceLabel2,
                   value: TimeFormatter.formatCurrency(
                     session.kegPrice,
                     prefs: prefs,
@@ -479,12 +484,12 @@ class _KegDetailBody extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Bill split',
+                  AppLocalizations.of(context)!.billSplit,
                   style: Theme.of(context).textTheme.titleSmall,
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Based on actual consumption',
+                  AppLocalizations.of(context)!.basedOnActualConsumption,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: BeerColors.onSurfaceSecondary,
                       ),
@@ -534,7 +539,7 @@ class _KegDetailBody extends ConsumerWidget {
             onPressed: () =>
                 context.push('/keg/${session.id}/review'),
             icon: const Icon(Icons.edit_note),
-            label: const Text('Review Bill'),
+            label: Text(AppLocalizations.of(context)!.reviewBill),
           ),
           // Step 14: Settle Up export disabled — keep code, hide UI.
           // if (false)
@@ -558,12 +563,12 @@ class _KegDetailBody extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Enjoy using Beerer?',
+                  AppLocalizations.of(context)!.enjoyUsingBeerer,
                   style: Theme.of(context).textTheme.titleSmall,
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Buy the developer a beer!',
+                  AppLocalizations.of(context)!.buyDeveloperBeer,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: BeerColors.onSurfaceSecondary,
                       ),
@@ -575,7 +580,7 @@ class _KegDetailBody extends ConsumerWidget {
                     mode: LaunchMode.externalApplication,
                   ),
                   icon: const Icon(Icons.favorite, size: 18),
-                  label: const Text('Tip via Revolut'),
+                  label: Text(AppLocalizations.of(context)!.tipViaRevolut),
                 ),
               ],
             ),
@@ -610,14 +615,14 @@ class _KegDetailBody extends ConsumerWidget {
     try {
       final created = await ref.read(kegRepositoryProvider).addPour(pour);
       if (context.mounted) {
-        _showPourSnackBar(context, ref, 'Pour logged!', created);
+        _showPourSnackBar(context, ref, AppLocalizations.of(context)!.pourLogged, created);
       }
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
           ..showSnackBar(
-            SnackBar(content: Text('Pour failed: $e')),
+            SnackBar(content: Text(AppLocalizations.of(context)!.pourFailed(e.toString()))),
           );
       }
     }
@@ -636,7 +641,7 @@ class _KegDetailBody extends ConsumerWidget {
       isScrollControlled: true,
       builder: (_) => VolumePickerSheet(
         predefinedVolumesMl: session.predefinedVolumesMl,
-        title: 'Pour for $targetNickname',
+        title: AppLocalizations.of(context)!.pourForNickname(targetNickname),
       ),
     );
 
@@ -657,7 +662,7 @@ class _KegDetailBody extends ConsumerWidget {
         _showPourSnackBar(
           context,
           ref,
-          'Poured for $targetNickname!',
+          AppLocalizations.of(context)!.pouredForNickname(targetNickname),
           created,
         );
       }
@@ -666,7 +671,7 @@ class _KegDetailBody extends ConsumerWidget {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
           ..showSnackBar(
-            SnackBar(content: Text('Pour failed: $e')),
+            SnackBar(content: Text(AppLocalizations.of(context)!.pourFailed(e.toString()))),
           );
       }
     }
@@ -687,7 +692,7 @@ class _KegDetailBody extends ConsumerWidget {
           behavior: SnackBarBehavior.floating,
           duration: const Duration(seconds: 5),
           action: SnackBarAction(
-            label: 'Undo',
+            label: AppLocalizations.of(context)!.undo,
             onPressed: () {
               ref.read(kegRepositoryProvider).undoPour(createdPour);
             },
@@ -858,7 +863,7 @@ class _ActiveBodyState extends ConsumerState<_ActiveBody> {
                   children: [
                     Expanded(
                       child: Text(
-                        'KEG LEVEL',
+                        AppLocalizations.of(context)!.kegLevel,
                         style:
                             Theme.of(context).textTheme.labelMedium,
                       ),
@@ -900,7 +905,7 @@ class _ActiveBodyState extends ConsumerState<_ActiveBody> {
                                 .headlineSmall,
                           ),
                           Text(
-                            'remaining',
+                            AppLocalizations.of(context)!.remaining,
                             style: Theme.of(context)
                                 .textTheme
                                 .bodySmall,
@@ -921,7 +926,7 @@ class _ActiveBodyState extends ConsumerState<_ActiveBody> {
                           if (predictedEmpty != null) ...[
                             const SizedBox(height: 4),
                             Text(
-                              '~${TimeFormatter.formatDuration(predictedEmpty)} until empty',
+                              '~${TimeFormatter.formatDuration(predictedEmpty)} ${AppLocalizations.of(context)!.untilEmpty}',
                               style: Theme.of(context)
                                   .textTheme
                                   .bodySmall
@@ -941,7 +946,7 @@ class _ActiveBodyState extends ConsumerState<_ActiveBody> {
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    'My stats',
+                    AppLocalizations.of(context)!.myStats,
                     style: Theme.of(context).textTheme.titleSmall,
                   ),
                 ),
@@ -949,7 +954,7 @@ class _ActiveBodyState extends ConsumerState<_ActiveBody> {
                 if (currentBeerDur != null)
                   StatTile(
                     icon: Icons.sports_bar,
-                    label: 'Current beer',
+                    label: AppLocalizations.of(context)!.currentBeer,
                     value: TimeFormatter.formatTimer(
                       currentBeerDur,
                     ),
@@ -957,20 +962,20 @@ class _ActiveBodyState extends ConsumerState<_ActiveBody> {
                 if (timeSinceLast != null)
                   StatTile(
                     icon: Icons.timer,
-                    label: 'Since last',
+                    label: AppLocalizations.of(context)!.sinceLast,
                     value: TimeFormatter.formatTimer(
                       timeSinceLast,
                     ),
                   ),
                 StatTile(
                   icon: Icons.bar_chart,
-                  label: 'Avg rate',
+                  label: AppLocalizations.of(context)!.avgRate,
                   value:
                       '${prefs.formatDecimal(avgRate / 1000, 1)} l/h',
                 ),
                 StatTile(
                   icon: Icons.local_drink,
-                  label: 'My volume',
+                  label: AppLocalizations.of(context)!.myVolume,
                   value: TimeFormatter.formatVolumeMl(
                     myConsumedMl,
                     prefs: prefs,
@@ -978,30 +983,30 @@ class _ActiveBodyState extends ConsumerState<_ActiveBody> {
                 ),
                 StatTile(
                   icon: Icons.science,
-                  label: 'Pure alcohol',
+                  label: AppLocalizations.of(context)!.pureAlcohol,
                   value: '${prefs.formatDecimal(myAlcoholMl, 1)} ml',
                 ),
                 StatTile(
                   icon: Icons.euro,
-                  label: 'My total',
+                  label: AppLocalizations.of(context)!.myTotal,
                   value:
                       TimeFormatter.formatCurrency(myCost, prefs: prefs),
                 ),
                 StatTile(
                   icon: Icons.sports_bar_outlined,
-                  label: 'Beers',
+                  label: AppLocalizations.of(context)!.beers,
                   value: prefs.formatDecimal(myBeerCount, 1),
                 ),
                 if (myBac != null && myBac > 0) ...[
                   StatTile(
                     icon: Icons.science,
-                    label: 'BAC estimate',
+                    label: AppLocalizations.of(context)!.bacEstimate,
                     value: '${prefs.formatDecimal(myBac, 2)} ‰',
                   ),
                   if (timeToZeroDur != null)
                     StatTile(
                       icon: Icons.directions_car,
-                      label: 'Drive in',
+                      label: AppLocalizations.of(context)!.driveIn,
                       value:
                           '~${TimeFormatter.formatDuration(timeToZeroDur)}',
                     ),
@@ -1010,7 +1015,7 @@ class _ActiveBodyState extends ConsumerState<_ActiveBody> {
                   Padding(
                     padding: const EdgeInsets.only(top: 4),
                     child: Text(
-                      '⚠ BAC is an estimate only — actual values may differ.',
+                      AppLocalizations.of(context)!.bacEstimateWarning,
                       style: Theme.of(context)
                           .textTheme
                           .bodySmall
@@ -1028,7 +1033,7 @@ class _ActiveBodyState extends ConsumerState<_ActiveBody> {
         const SizedBox(height: 16),
         // Pour button
         PourButton(
-          label: 'I got beer',
+          label: AppLocalizations.of(context)!.iGotBeer,
           onPressed: widget.onShowPourSheet,
         ),
         const SizedBox(height: 16),
@@ -1095,7 +1100,7 @@ class _ParticipantsSection extends ConsumerWidget {
           children: [
             Expanded(
               child: Text(
-                'Participants',
+                AppLocalizations.of(context)!.participantsLabel,
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       color: BeerColors.onSurfaceSecondary,
                     ),
@@ -1106,7 +1111,7 @@ class _ParticipantsSection extends ConsumerWidget {
               TextButton.icon(
                 onPressed: () => _showAddGuestDialog(context, ref),
                 icon: const Icon(Icons.person_add, size: 18),
-                label: const Text('Add Guest'),
+                label: Text(AppLocalizations.of(context)!.addGuest),
               ),
           ],
         ),
@@ -1172,7 +1177,7 @@ class _ParticipantsSection extends ConsumerWidget {
           loading: () => const Center(
             child: CircularProgressIndicator(strokeWidth: 2),
           ),
-          error: (e, _) => Text('Error: $e'),
+          error: (e, _) => Text(AppLocalizations.of(context)!.errorWithMessage(e.toString())),
         ),
       ],
     );
@@ -1184,24 +1189,24 @@ class _ParticipantsSection extends ConsumerWidget {
     final name = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Add Guest'),
+        title: Text(AppLocalizations.of(context)!.addGuest),
         content: TextField(
           controller: controller,
           autofocus: true,
           textCapitalization: TextCapitalization.words,
-          decoration: const InputDecoration(
-            hintText: 'Guest name',
+          decoration: InputDecoration(
+            hintText: AppLocalizations.of(context)!.guestName,
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           FilledButton(
             onPressed: () =>
                 Navigator.pop(ctx, controller.text.trim()),
-            child: const Text('Add'),
+            child: Text(AppLocalizations.of(context)!.add),
           ),
         ],
       ),
@@ -1217,19 +1222,18 @@ class _ParticipantsSection extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Remove Guest'),
+        title: Text(AppLocalizations.of(context)!.removeGuest),
         content: Text(
-          'Remove "${guest.nickname}" and all their pours from '
-          'this session?',
+          AppLocalizations.of(context)!.removeGuestConfirm(guest.nickname),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Remove'),
+            child: Text(AppLocalizations.of(context)!.remove),
           ),
         ],
       ),
@@ -1313,7 +1317,7 @@ class _ManualParticipantRow extends StatelessWidget {
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
-                          'guest',
+                          AppLocalizations.of(context)!.guestLower,
                           style: Theme.of(context)
                               .textTheme
                               .labelSmall
@@ -1337,7 +1341,7 @@ class _ManualParticipantRow extends StatelessWidget {
                       if (lastPourTime != null) ...[
                         const SizedBox(width: 12),
                         Text(
-                          '⏱ ${TimeFormatter.formatDuration(lastPourTime)} ago',
+                          '⏱ ${TimeFormatter.formatDuration(lastPourTime)} ${AppLocalizations.of(context)!.ago}',
                           style:
                               Theme.of(context).textTheme.bodySmall,
                         ),
@@ -1354,7 +1358,7 @@ class _ManualParticipantRow extends StatelessWidget {
                   Icons.sports_bar,
                   color: BeerColors.primaryAmber,
                 ),
-                tooltip: 'Pour for ${guest.nickname}',
+                tooltip: AppLocalizations.of(context)!.pourForNickname(guest.nickname),
                 onPressed: onPourFor,
               ),
             // Remove button (creator only)
@@ -1365,7 +1369,7 @@ class _ManualParticipantRow extends StatelessWidget {
                   color: Colors.grey.shade400,
                   size: 20,
                 ),
-                tooltip: 'Remove guest',
+                tooltip: AppLocalizations.of(context)!.removeGuestTooltip,
                 onPressed: onRemove,
               ),
           ],
@@ -1454,7 +1458,7 @@ class _ParticipantRow extends StatelessWidget {
                     children: [
                       Flexible(
                         child: Text(
-                          user.displayName + (isMe ? ' (you)' : ''),
+                          user.displayName + (isMe ? AppLocalizations.of(context)!.youSuffix : ''),
                           style: Theme.of(context)
                               .textTheme
                               .bodyMedium
@@ -1502,7 +1506,7 @@ class _ParticipantRow extends StatelessWidget {
                       if (lastPourTime != null) ...[
                         const SizedBox(width: 12),
                         Text(
-                          '⏱ ${TimeFormatter.formatDuration(lastPourTime)} ago',
+                          '⏱ ${TimeFormatter.formatDuration(lastPourTime)} ${AppLocalizations.of(context)!.ago}',
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
                       ],
@@ -1525,7 +1529,7 @@ class _ParticipantRow extends StatelessWidget {
                   Icons.sports_bar,
                   color: BeerColors.primaryAmber,
                 ),
-                tooltip: 'Pour for ${user.displayName}',
+                tooltip: AppLocalizations.of(context)!.pourForNickname(user.displayName),
                 onPressed: onPourFor,
               ),
           ],
@@ -1561,7 +1565,7 @@ class _AccountsSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Accounts / Bills',
+          AppLocalizations.of(context)!.accountsBills,
           style: Theme.of(context).textTheme.titleSmall?.copyWith(
                 color: BeerColors.onSurfaceSecondary,
               ),
@@ -1612,7 +1616,7 @@ class _AccountsSection extends StatelessWidget {
               );
             },
             icon: const Icon(Icons.group_add, size: 18),
-            label: const Text('Join / Create Account'),
+            label: Text(AppLocalizations.of(context)!.joinCreateAccount),
           ),
         ),
       ],
@@ -1674,7 +1678,7 @@ class _AccountCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '${account.memberUserIds.length} members · '
+                    '${AppLocalizations.of(context)!.membersCount(account.memberUserIds.length)} · '
                     '🍺 ${TimeFormatter.formatBeerCount(groupBeerCount)} · '
                     '${TimeFormatter.formatVolumeMl(totalVolumeMl)} · '
                     '${TimeFormatter.formatCurrency(totalCost)}',
@@ -1733,7 +1737,7 @@ class _SoloAccountCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '$displayName (solo)',
+                    '$displayName (${AppLocalizations.of(context)!.solo})',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
@@ -1805,7 +1809,7 @@ class _DoneParticipantRow extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    user.displayName + (isMe ? ' (you)' : ''),
+                    user.displayName + (isMe ? AppLocalizations.of(context)!.youSuffix : ''),
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           fontWeight: FontWeight.w600,
                         ),

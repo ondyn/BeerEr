@@ -1,3 +1,4 @@
+import 'package:beerer/l10n/app_localizations.dart';
 import 'package:beerer/providers/providers.dart';
 import 'package:beerer/theme/beer_theme.dart';
 import 'package:beerer/utils/stats_calculator.dart';
@@ -25,12 +26,12 @@ class SettleUpScreen extends ConsumerWidget {
         leading: BackButton(
           onPressed: () => context.pop(),
         ),
-        title: const Text('Export to Settle Up'),
+        title: Text(AppLocalizations.of(context)!.exportToSettleUp),
       ),
       body: sessionAsync.when(
         data: (session) {
           if (session == null) {
-            return const Center(child: Text('Session not found'));
+            return Center(child: Text(AppLocalizations.of(context)!.sessionNotFound));
           }
 
           final pours = poursAsync.value ?? [];
@@ -40,7 +41,7 @@ class SettleUpScreen extends ConsumerWidget {
             padding: const EdgeInsets.all(24),
             children: [
               Text(
-                'Review the bill split',
+                AppLocalizations.of(context)!.reviewBillSplit,
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: 16),
@@ -49,7 +50,7 @@ class SettleUpScreen extends ConsumerWidget {
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: Text(
-                      'No joint accounts found. Individual costs will be exported.',
+                      AppLocalizations.of(context)!.noJointAccountsFound,
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   ),
@@ -79,11 +80,11 @@ class SettleUpScreen extends ConsumerWidget {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            '${account.memberUserIds.length} members',
+                            AppLocalizations.of(context)!.membersCount(account.memberUserIds.length),
                             style: Theme.of(context).textTheme.bodySmall,
                           ),
                           Text(
-                            'Total: ${TimeFormatter.formatCurrency(StatsCalculator.groupCost(pours, account.memberUserIds, session.kegPrice, session.volumeTotalMl))}',
+                            AppLocalizations.of(context)!.totalWithAmount(TimeFormatter.formatCurrency(StatsCalculator.groupCost(pours, account.memberUserIds, session.kegPrice, session.volumeTotalMl))),
                             style: Theme.of(context)
                                 .textTheme
                                 .bodyMedium
@@ -98,11 +99,11 @@ class SettleUpScreen extends ConsumerWidget {
               const SizedBox(height: 24),
               FilledButton(
                 onPressed: () => _export(context),
-                child: const Text('Export to Settle Up'),
+                child: Text(AppLocalizations.of(context)!.exportToSettleUp),
               ),
               const SizedBox(height: 12),
               Text(
-                'ℹ Settle Up will create a group with these amounts.',
+                AppLocalizations.of(context)!.settleUpInfo,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: BeerColors.onSurfaceSecondary,
                     ),
@@ -115,7 +116,7 @@ class SettleUpScreen extends ConsumerWidget {
             color: BeerColors.primaryAmber,
           ),
         ),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        error: (e, _) => Center(child: Text(AppLocalizations.of(context)!.errorWithMessage(e.toString()))),
       ),
     );
   }
@@ -128,15 +129,15 @@ class SettleUpScreen extends ConsumerWidget {
       await callable.call<dynamic>({'sessionId': sessionId});
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Exported to Settle Up successfully!'),
+            SnackBar(
+            content: Text(AppLocalizations.of(context)!.exportedSuccessfully),
           ),
         );
       }
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Export failed: $e')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.exportFailed(e.toString()))),
         );
       }
     }

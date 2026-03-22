@@ -23,9 +23,3 @@
 - join keg session via camera - QR recognition. When sharing keg session QR is generated, but when user wants to join he is not able to take picture of QR.
 - remember gender, weight and age at user device. Load it when app is started until user logged out or delete account.
 - add link to https://beerweb.cz/o-pivu/degustace-piva. Where?
-
-
-- DO NOT DO IT NOW: implement steps 19-22 from implemetation_steps.md
-- DO NOT DO IT NOW: cleanup: DB will be cleared, rething about all names, database attributes, screen names, variables if it makes sense. Rename accordingly. Analyze code, if something is repeating put it into shared code. Make sure all graphics types useses same dimensions, colors and theme everywhere.
-- forgot password - mail not sent
-- verification email, reset password - how to change templates?

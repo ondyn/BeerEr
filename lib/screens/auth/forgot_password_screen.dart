@@ -1,3 +1,4 @@
+import 'package:beerer/l10n/app_localizations.dart';
 import 'package:beerer/theme/beer_theme.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -26,7 +27,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   Future<void> _sendReset() async {
     final email = _emailController.text.trim();
     if (email.isEmpty || !email.contains('@')) {
-      setState(() => _error = 'Please enter a valid email address');
+      setState(() => _error = AppLocalizations.of(context)!.pleaseEnterValidEmail);
       return;
     }
 
@@ -69,12 +70,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          'Forgot password?',
+          AppLocalizations.of(context)!.forgotPasswordTitle,
           style: Theme.of(context).textTheme.headlineMedium,
         ),
         const SizedBox(height: 8),
         Text(
-          'Enter your email and we\'ll send you a reset link.',
+          AppLocalizations.of(context)!.forgotPasswordSubtitle,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: BeerColors.onSurfaceSecondary,
               ),
@@ -83,9 +84,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         TextFormField(
           controller: _emailController,
           keyboardType: TextInputType.emailAddress,
-          decoration: const InputDecoration(
-            prefixIcon: Icon(Icons.email_outlined),
-            labelText: 'Email',
+          decoration: InputDecoration(
+            prefixIcon: const Icon(Icons.email_outlined),
+            labelText: AppLocalizations.of(context)!.email,
           ),
         ),
         if (_error != null) ...[
@@ -109,7 +110,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     color: BeerColors.background,
                   ),
                 )
-              : const Text('Send reset link'),
+              : Text(AppLocalizations.of(context)!.sendResetLink),
         ),
       ],
     );
@@ -126,12 +127,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         ),
         const SizedBox(height: 24),
         Text(
-          'Check your email',
+          AppLocalizations.of(context)!.checkYourEmail,
           style: Theme.of(context).textTheme.headlineMedium,
         ),
         const SizedBox(height: 8),
         Text(
-          'We\'ve sent a password reset link to ${_emailController.text.trim()}.',
+          AppLocalizations.of(context)!.resetLinkSent(_emailController.text.trim()),
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: BeerColors.onSurfaceSecondary,
@@ -140,7 +141,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         const SizedBox(height: 32),
         FilledButton(
           onPressed: () => context.go('/auth/sign-in'),
-          child: const Text('Back to sign in'),
+          child: Text(AppLocalizations.of(context)!.backToSignIn),
         ),
       ],
     );

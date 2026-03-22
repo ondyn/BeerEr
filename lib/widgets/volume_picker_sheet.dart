@@ -1,3 +1,4 @@
+import 'package:beerer/l10n/app_localizations.dart';
 import 'package:beerer/theme/beer_theme.dart';
 import 'package:beerer/theme/mono_style.dart';
 import 'package:flutter/material.dart';
@@ -10,13 +11,13 @@ class VolumePickerSheet extends StatefulWidget {
     required this.predefinedVolumesMl,
     this.onConfirm,
     this.initialVolumeMl,
-    this.title = 'Log a pour for you',
+    this.title,
   });
 
   final List<double> predefinedVolumesMl;
   final Future<void> Function(double volumeMl)? onConfirm;
   final double? initialVolumeMl;
-  final String title;
+  final String? title;
 
   @override
   State<VolumePickerSheet> createState() => _VolumePickerSheetState();
@@ -77,7 +78,7 @@ class _VolumePickerSheetState extends State<VolumePickerSheet> {
           ),
           const SizedBox(height: 16),
           Text(
-            widget.title,
+            widget.title ?? AppLocalizations.of(context)!.logPourForYou,
             style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: 16),
@@ -104,7 +105,7 @@ class _VolumePickerSheetState extends State<VolumePickerSheet> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Or enter manually:',
+            AppLocalizations.of(context)!.orEnterManually,
             style: Theme.of(context).textTheme.bodySmall,
           ),
           const SizedBox(height: 8),
@@ -162,7 +163,7 @@ class _VolumePickerSheetState extends State<VolumePickerSheet> {
               Navigator.of(context).pop(_selectedVolume);
             },
             icon: const Icon(Icons.check),
-            label: const Text('Log Pour'),
+            label: Text(AppLocalizations.of(context)!.logPour),
           ),
         ],
       ),

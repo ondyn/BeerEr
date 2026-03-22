@@ -1,3 +1,4 @@
+import 'package:beerer/l10n/app_localizations.dart';
 import 'package:beerer/models/models.dart';
 import 'package:beerer/providers/providers.dart';
 import 'package:beerer/screens/keg/qr_scanner_screen.dart';
@@ -24,7 +25,7 @@ class HomeScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Beerer'),
+        title: Text(AppLocalizations.of(context)!.beerer),
         actions: [
           IconButton(
             icon: const CircleAvatar(
@@ -59,7 +60,7 @@ class HomeScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'No keg sessions yet',
+                          AppLocalizations.of(context)!.noKegSessionsYet,
                           style: Theme.of(context)
                               .textTheme
                               .titleMedium
@@ -69,7 +70,7 @@ class HomeScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Tap + to create your first keg session!',
+                          AppLocalizations.of(context)!.tapPlusToCreate,
                           style: Theme.of(context)
                               .textTheme
                               .bodySmall,
@@ -98,7 +99,7 @@ class HomeScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'No active keg sessions',
+                          AppLocalizations.of(context)!.noActiveKegSessions,
                           style: Theme.of(context)
                               .textTheme
                               .titleMedium
@@ -108,7 +109,7 @@ class HomeScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Tap + to create a new keg session',
+                          AppLocalizations.of(context)!.tapPlusToCreateNew,
                           style: Theme.of(context)
                               .textTheme
                               .bodySmall,
@@ -141,7 +142,7 @@ class HomeScreen extends ConsumerWidget {
                 ),
               ),
               error: (e, _) => Center(
-                child: Text('Error: $e'),
+                child: Text(AppLocalizations.of(context)!.error(e.toString())),
               ),
             ),
           ),
@@ -155,7 +156,7 @@ class HomeScreen extends ConsumerWidget {
             heroTag: 'join_keg',
             onPressed: () => _showJoinDialog(context),
             icon: const Icon(Icons.qr_code_scanner),
-            label: const Text('Join Keg Session'),
+            label: Text(AppLocalizations.of(context)!.joinKegSession),
             backgroundColor: BeerColors.surfaceVariant,
             foregroundColor: BeerColors.primaryAmber,
           ),
@@ -164,7 +165,7 @@ class HomeScreen extends ConsumerWidget {
             heroTag: 'new_keg',
             onPressed: () => context.push('/keg/new'),
             icon: const Icon(Icons.add),
-            label: const Text('New Keg Session'),
+            label: Text(AppLocalizations.of(context)!.newKegSession),
           ),
         ],
       ),
@@ -179,29 +180,29 @@ void _showJoinDialog(BuildContext context) {
   showDialog<void>(
     context: context,
     builder: (ctx) => AlertDialog(
-      title: const Row(
+      title: Row(
         children: [
-          Icon(Icons.sports_bar, color: BeerColors.primaryAmber),
-          SizedBox(width: 8),
-          Text('Join a Keg Session'),
+          const Icon(Icons.sports_bar, color: BeerColors.primaryAmber),
+          const SizedBox(width: 8),
+          Text(AppLocalizations.of(ctx)!.joinAKegSession),
         ],
       ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Paste the invite link or enter the session ID:',
+          Text(
+            AppLocalizations.of(ctx)!.pasteInviteLinkOrId,
           ),
           const SizedBox(height: 12),
           TextField(
             controller: controller,
             autofocus: true,
             decoration: InputDecoration(
-              hintText: 'beerer://join/... or session ID',
+              hintText: AppLocalizations.of(ctx)!.inviteLinkHint,
               suffixIcon: IconButton(
                 icon: const Icon(Icons.paste),
-                tooltip: 'Paste from clipboard',
+                tooltip: AppLocalizations.of(ctx)!.pasteFromClipboard,
                 onPressed: () async {
                   final clip = await Clipboard.getData(Clipboard.kTextPlain);
                   if (clip?.text != null) {
@@ -226,7 +227,7 @@ void _showJoinDialog(BuildContext context) {
                 }
               },
               icon: const Icon(Icons.qr_code_scanner),
-              label: const Text('Scan QR code'),
+              label: Text(AppLocalizations.of(ctx)!.scanQrCode),
             ),
           ),
         ],
@@ -234,15 +235,15 @@ void _showJoinDialog(BuildContext context) {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(ctx),
-          child: const Text('Cancel'),
+          child: Text(AppLocalizations.of(ctx)!.cancel),
         ),
         FilledButton(
           onPressed: () {
             final sessionId = _extractSessionId(controller.text.trim());
             if (sessionId == null) {
               ScaffoldMessenger.of(ctx).showSnackBar(
-                const SnackBar(
-                  content: Text('Invalid link or session ID'),
+                SnackBar(
+                  content: Text(AppLocalizations.of(ctx)!.invalidLinkOrId),
                 ),
               );
               return;
@@ -250,7 +251,7 @@ void _showJoinDialog(BuildContext context) {
             Navigator.pop(ctx);
             context.go('/join/$sessionId');
           },
-          child: const Text('Join'),
+          child: Text(AppLocalizations.of(ctx)!.join),
         ),
       ],
     ),
@@ -290,7 +291,7 @@ class _BeerErDrawer extends ConsumerWidget {
         : null;
     final displayName = appUser?.nickname.isNotEmpty == true
         ? appUser!.nickname
-        : user?.email ?? 'Guest';
+        : user?.email ?? AppLocalizations.of(context)!.guest;
 
     return Drawer(
       child: ListView(
@@ -330,7 +331,7 @@ class _BeerErDrawer extends ConsumerWidget {
           ),
           ListTile(
             leading: const Icon(Icons.home),
-            title: const Text('Home'),
+            title: Text(AppLocalizations.of(context)!.home),
             onTap: () {
               Navigator.pop(context);
               context.go('/home');
@@ -338,7 +339,7 @@ class _BeerErDrawer extends ConsumerWidget {
           ),
           ListTile(
             leading: const Icon(Icons.history),
-            title: const Text('Past Sessions'),
+            title: Text(AppLocalizations.of(context)!.pastSessions),
             onTap: () {
               Navigator.pop(context);
               context.go('/sessions/history');
@@ -346,7 +347,7 @@ class _BeerErDrawer extends ConsumerWidget {
           ),
           ListTile(
             leading: const Icon(Icons.settings),
-            title: const Text('Settings'),
+            title: Text(AppLocalizations.of(context)!.settings),
             onTap: () {
               Navigator.pop(context);
               context.go('/settings');
@@ -354,7 +355,7 @@ class _BeerErDrawer extends ConsumerWidget {
           ),
           ListTile(
             leading: const Icon(Icons.info_outline),
-            title: const Text('About'),
+            title: Text(AppLocalizations.of(context)!.about),
             onTap: () {
               Navigator.pop(context);
               context.go('/about');
@@ -363,7 +364,7 @@ class _BeerErDrawer extends ConsumerWidget {
           const Divider(),
           ListTile(
             leading: const Icon(Icons.logout),
-            title: const Text('Sign out'),
+            title: Text(AppLocalizations.of(context)!.signOut),
             onTap: () async {
               Navigator.pop(context);
               await LocalProfile.instance.clear();

@@ -1,3 +1,4 @@
+import 'package:beerer/l10n/app_localizations.dart';
 import 'package:beerer/theme/beer_theme.dart';
 import 'package:beerer/widgets/avatar_icon.dart';
 import 'package:flutter/material.dart';
@@ -24,7 +25,7 @@ class _AvatarPickerDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Choose avatar'),
+      title: Text(AppLocalizations.of(context)!.chooseAvatar),
       content: SizedBox(
         width: double.maxFinite,
         height: 360,
@@ -60,7 +61,7 @@ class _AvatarPickerDialog extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text(AppLocalizations.of(context)!.cancel),
         ),
       ],
     );

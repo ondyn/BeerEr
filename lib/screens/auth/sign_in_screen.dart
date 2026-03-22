@@ -1,3 +1,4 @@
+import 'package:beerer/l10n/app_localizations.dart';
 import 'package:beerer/theme/beer_theme.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -44,7 +45,7 @@ class _SignInScreenState extends State<SignInScreen> {
 
       if (user == null) {
         setState(() {
-          _error = 'Sign in failed. Please try again.';
+          _error = AppLocalizations.of(context)!.signInFailed;
         });
         return;
       }
@@ -59,8 +60,7 @@ class _SignInScreenState extends State<SignInScreen> {
         await FirebaseAuth.instance.signOut();
         if (mounted) {
           setState(() {
-            _error =
-                'Please verify your email address. We\'ve sent you a verification link.';
+            _error = AppLocalizations.of(context)!.verifyEmailMessage;
           });
         }
         return;
@@ -69,7 +69,7 @@ class _SignInScreenState extends State<SignInScreen> {
       if (mounted) context.go('/home');
     } on FirebaseAuthException catch (e) {
       setState(() {
-        _error = e.message ?? 'Sign in failed. Please try again.';
+        _error = e.message ?? AppLocalizations.of(context)!.signInFailed;
       });
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -91,7 +91,7 @@ class _SignInScreenState extends State<SignInScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  'Sign in to BeerEr',
+                  AppLocalizations.of(context)!.signInToBeerEr,
                   style: Theme.of(context).textTheme.headlineMedium,
                 ),
                 const SizedBox(height: 32),
@@ -100,16 +100,16 @@ class _SignInScreenState extends State<SignInScreen> {
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
                   autofillHints: const [AutofillHints.email],
-                  decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.email_outlined),
-                    labelText: 'Email',
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.email_outlined),
+                    labelText: AppLocalizations.of(context)!.email,
                   ),
                   validator: (val) {
                     if (val == null || val.trim().isEmpty) {
-                      return 'Please enter your email';
+                      return AppLocalizations.of(context)!.pleaseEnterEmail;
                     }
                     if (!val.contains('@')) {
-                      return 'Enter a valid email';
+                      return AppLocalizations.of(context)!.enterValidEmail;
                     }
                     return null;
                   },
@@ -122,7 +122,7 @@ class _SignInScreenState extends State<SignInScreen> {
                   autofillHints: const [AutofillHints.password],
                   decoration: InputDecoration(
                     prefixIcon: const Icon(Icons.lock_outlined),
-                    labelText: 'Password',
+                    labelText: AppLocalizations.of(context)!.password,
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscurePassword
@@ -138,7 +138,7 @@ class _SignInScreenState extends State<SignInScreen> {
                   ),
                   validator: (val) {
                     if (val == null || val.isEmpty) {
-                      return 'Please enter your password';
+                      return AppLocalizations.of(context)!.pleaseEnterPassword;
                     }
                     return null;
                   },
@@ -148,7 +148,7 @@ class _SignInScreenState extends State<SignInScreen> {
                   alignment: Alignment.centerRight,
                   child: TextButton(
                     onPressed: () => context.go('/auth/forgot-password'),
-                    child: const Text('Forgot password?'),
+                    child: Text(AppLocalizations.of(context)!.forgotPassword),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -173,7 +173,7 @@ class _SignInScreenState extends State<SignInScreen> {
                             color: BeerColors.background,
                           ),
                         )
-                      : const Text('Sign in'),
+                      : Text(AppLocalizations.of(context)!.signIn),
                 ),
                 const SizedBox(height: 24),
                 // TODO: Uncomment divider when social sign-in is implemented
@@ -221,10 +221,10 @@ class _SignInScreenState extends State<SignInScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text('No account? '),
+                    Text(AppLocalizations.of(context)!.noAccount),
                     TextButton(
                       onPressed: () => context.go('/auth/register'),
-                      child: const Text('Register ›'),
+                      child: Text(AppLocalizations.of(context)!.registerLink),
                     ),
                   ],
                 ),

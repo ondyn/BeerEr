@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:beerer/l10n/app_localizations.dart';
 
 /// About screen — logo, version, disclaimers.
 class AboutScreen extends StatelessWidget {
@@ -13,7 +14,7 @@ class AboutScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         leading: BackButton(onPressed: () => context.go('/home')),
-        title: const Text('About'),
+        title: Text(AppLocalizations.of(context)!.about),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -35,14 +36,12 @@ class AboutScreen extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              'Version 1.0.0',
+              AppLocalizations.of(context)!.version('1.0.0'),
               style: Theme.of(context).textTheme.bodySmall,
             ),
             const SizedBox(height: 32),
             Text(
-              'Beerer is a keg beer tracker for parties. '
-              'Track every pour, see real-time stats, '
-              'and settle costs easily.',
+              AppLocalizations.of(context)!.aboutDescription,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium,
             ),
@@ -61,12 +60,12 @@ class AboutScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Enjoy using Beerer?',
+                      AppLocalizations.of(context)!.enjoyUsingBeerer,
                       style: Theme.of(context).textTheme.titleSmall,
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Buy the developer a beer!',
+                      AppLocalizations.of(context)!.buyDeveloperBeer,
                       style: Theme.of(context)
                           .textTheme
                           .bodySmall
@@ -81,7 +80,7 @@ class AboutScreen extends StatelessWidget {
                         mode: LaunchMode.externalApplication,
                       ),
                       icon: const Icon(Icons.favorite, size: 18),
-                      label: const Text('Tip via Revolut'),
+                      label: Text(AppLocalizations.of(context)!.tipViaRevolut),
                     ),
                   ],
                 ),
@@ -107,7 +106,7 @@ class AboutScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Drink Responsibly',
+                    AppLocalizations.of(context)!.drinkResponsiblyTitle,
                     style: Theme.of(context)
                         .textTheme
                         .titleSmall
@@ -115,9 +114,7 @@ class AboutScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'BAC estimates are for informational purposes only '
-                    'and should not be used to determine fitness to '
-                    'drive. Please drink responsibly.',
+                    AppLocalizations.of(context)!.drinkResponsiblyBody,
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
@@ -149,7 +146,7 @@ class AboutScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'If you are using this app often, consider visiting:',
+                    AppLocalizations.of(context)!.addictionAwareness,
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
@@ -162,7 +159,7 @@ class AboutScreen extends StatelessWidget {
                       ),
                       mode: LaunchMode.externalApplication,
                     ),
-                    child: const Text('Addiction Center EU'),
+                    child: Text(AppLocalizations.of(context)!.addictionCenterEU),
                   ),
                 ],
               ),
@@ -184,7 +181,7 @@ class AboutScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Want to learn beer tasting?',
+                    AppLocalizations.of(context)!.beerTastingQuestion,
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
@@ -209,7 +206,7 @@ class AboutScreen extends StatelessWidget {
             // ----- Links -----
             TextButton(
               onPressed: () => context.push('/privacy'),
-              child: const Text('Privacy Policy'),
+              child: Text(AppLocalizations.of(context)!.privacyPolicy),
             ),
             TextButton(
               onPressed: () {
@@ -229,7 +226,7 @@ class AboutScreen extends StatelessWidget {
                       '\u00A9 2026 Beerer. All rights reserved.',
                 );
               },
-              child: const Text('Open-source licences'),
+              child: Text(AppLocalizations.of(context)!.openSourceLicences),
             ),
             const SizedBox(height: 24),
           ],

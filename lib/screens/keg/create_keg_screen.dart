@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:beerer/models/models.dart';
+import 'package:beerer/l10n/app_localizations.dart';
 import 'package:beerer/providers/providers.dart';
 import 'package:beerer/repositories/keg_repository.dart';
 import 'package:beerer/theme/beer_theme.dart';
@@ -355,7 +356,7 @@ class _CreateKegScreenState extends ConsumerState<CreateKegScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to create session: $e')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.failedToCreateSession(e.toString()))),
         );
       }
     } finally {
@@ -369,20 +370,20 @@ class _CreateKegScreenState extends ConsumerState<CreateKegScreen> {
       builder: (ctx) {
         final controller = TextEditingController();
         return AlertDialog(
-          title: const Text('Add pour size'),
+          title: Text(AppLocalizations.of(context)!.addPourSize),
           content: TextField(
             controller: controller,
             keyboardType:
                 const TextInputType.numberWithOptions(decimal: true),
-            decoration: const InputDecoration(
-              labelText: 'Volume (ml)',
-              hintText: 'e.g. 500',
+            decoration: InputDecoration(
+              labelText: AppLocalizations.of(context)!.volumeMl,
+              hintText: AppLocalizations.of(context)!.egPourSize,
             ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancel'),
+              child: Text(AppLocalizations.of(context)!.cancel),
             ),
             FilledButton(
               onPressed: () {
@@ -394,7 +395,7 @@ class _CreateKegScreenState extends ConsumerState<CreateKegScreen> {
                 }
                 Navigator.pop(ctx);
               },
-              child: const Text('Add'),
+              child: Text(AppLocalizations.of(context)!.add),
             ),
           ],
         );
@@ -423,7 +424,7 @@ class _CreateKegScreenState extends ConsumerState<CreateKegScreen> {
             }
           },
         ),
-        title: Text('New Keg Session  $_step/2'),
+        title: Text(AppLocalizations.of(context)!.newKegSessionStep(_step)),
       ),
       body: SafeArea(
         child: _step == 1 ? _buildStep1() : _buildStep2(prefs),
@@ -444,8 +445,8 @@ class _CreateKegScreenState extends ConsumerState<CreateKegScreen> {
               controller: _beerWebSearchController,
               decoration: InputDecoration(
                 prefixIcon: const Icon(Icons.search),
-                labelText: 'Search beer on BeerWeb…',
-                hintText: 'e.g. Kozel',
+                labelText: AppLocalizations.of(context)!.searchBeerOnBeerWeb,
+                hintText: AppLocalizations.of(context)!.egKozel,
                 suffixIcon: _beerWebSearching
                     ? const Padding(
                         padding: EdgeInsets.all(12),
@@ -495,20 +496,20 @@ class _CreateKegScreenState extends ConsumerState<CreateKegScreen> {
             const SizedBox(height: 16),
             TextFormField(
               controller: _beerNameController,
-              decoration: const InputDecoration(
-                labelText: 'Beer name',
-                hintText: 'e.g. Pilsner Urquell',
+              decoration: InputDecoration(
+                labelText: AppLocalizations.of(context)!.beerName,
+                hintText: AppLocalizations.of(context)!.egPilsnerUrquell,
               ),
               validator: (val) {
                 if (val == null || val.trim().isEmpty) {
-                  return 'Please enter a beer name';
+                  return AppLocalizations.of(context)!.pleaseEnterBeerName;
                 }
                 return null;
               },
             ),
             const SizedBox(height: 24),
             Text(
-              'Beer details (optional)',
+              AppLocalizations.of(context)!.beerDetailsOptional,
               style: Theme.of(context).textTheme.titleSmall,
             ),
             const SizedBox(height: 8),
@@ -516,57 +517,57 @@ class _CreateKegScreenState extends ConsumerState<CreateKegScreen> {
               controller: _alcoholController,
               keyboardType:
                   const TextInputType.numberWithOptions(decimal: true),
-              decoration: const InputDecoration(
-                labelText: 'Alcohol content (%)',
-                hintText: 'e.g. 5.0',
+              decoration: InputDecoration(
+                labelText: AppLocalizations.of(context)!.alcoholContentPercent,
+                hintText: AppLocalizations.of(context)!.egAlcohol,
               ),
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _breweryController,
-              decoration: const InputDecoration(
-                labelText: 'Brewery',
-                hintText: 'e.g. Pilsner Urquell Brewery',
+              decoration: InputDecoration(
+                labelText: AppLocalizations.of(context)!.brewery,
+                hintText: AppLocalizations.of(context)!.egBrewery,
               ),
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _maltController,
-              decoration: const InputDecoration(
-                labelText: 'Malt',
-                hintText: 'e.g. barley',
+              decoration: InputDecoration(
+                labelText: AppLocalizations.of(context)!.malt,
+                hintText: AppLocalizations.of(context)!.egMalt,
               ),
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _fermentationController,
-              decoration: const InputDecoration(
-                labelText: 'Fermentation',
-                hintText: 'e.g. Bottom-fermented',
+              decoration: InputDecoration(
+                labelText: AppLocalizations.of(context)!.fermentation,
+                hintText: AppLocalizations.of(context)!.egFermentation,
               ),
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _beerTypeController,
-              decoration: const InputDecoration(
-                labelText: 'Type',
-                hintText: 'e.g. Pale',
+              decoration: InputDecoration(
+                labelText: AppLocalizations.of(context)!.type,
+                hintText: AppLocalizations.of(context)!.egType,
               ),
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _beerGroupController,
-              decoration: const InputDecoration(
-                labelText: 'Group',
-                hintText: 'e.g. Full',
+              decoration: InputDecoration(
+                labelText: AppLocalizations.of(context)!.group,
+                hintText: AppLocalizations.of(context)!.egGroup,
               ),
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _beerStyleController,
-              decoration: const InputDecoration(
-                labelText: 'Beer style',
-                hintText: 'e.g. Pale Ale',
+              decoration: InputDecoration(
+                labelText: AppLocalizations.of(context)!.beerStyle,
+                hintText: AppLocalizations.of(context)!.egBeerStyle,
               ),
             ),
             const SizedBox(height: 12),
@@ -574,9 +575,9 @@ class _CreateKegScreenState extends ConsumerState<CreateKegScreen> {
               controller: _degreePlatoController,
               keyboardType:
                   const TextInputType.numberWithOptions(decimal: true),
-              decoration: const InputDecoration(
-                labelText: 'Degree Plato (°P)',
-                hintText: 'e.g. 12',
+              decoration: InputDecoration(
+                labelText: AppLocalizations.of(context)!.degreePlato,
+                hintText: AppLocalizations.of(context)!.egDegreePlato,
               ),
             ),
             const SizedBox(height: 32),
@@ -586,7 +587,7 @@ class _CreateKegScreenState extends ConsumerState<CreateKegScreen> {
                   setState(() => _step = 2);
                 }
               },
-              child: const Text('Next →'),
+              child: Text(AppLocalizations.of(context)!.next),
             ),
           ],
         ),
@@ -603,7 +604,7 @@ class _CreateKegScreenState extends ConsumerState<CreateKegScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'Keg volume (litres)',
+              AppLocalizations.of(context)!.kegVolumeLitres,
               style: Theme.of(context).textTheme.labelMedium,
             ),
             const SizedBox(height: 8),
@@ -630,14 +631,14 @@ class _CreateKegScreenState extends ConsumerState<CreateKegScreen> {
               controller: _volumeController,
               keyboardType:
                   const TextInputType.numberWithOptions(decimal: true),
-              decoration: const InputDecoration(
-                labelText: 'Or enter custom volume',
-                hintText: 'e.g. 25',
+              decoration: InputDecoration(
+                labelText: AppLocalizations.of(context)!.orEnterCustomVolume,
+                hintText: AppLocalizations.of(context)!.egVolume,
               ),
               validator: (val) {
                 if (val == null ||
                     double.tryParse(val.replaceAll(',', '.')) == null) {
-                  return 'Enter a valid number';
+                  return AppLocalizations.of(context)!.enterValidNumber;
                 }
                 return null;
               },
@@ -648,24 +649,24 @@ class _CreateKegScreenState extends ConsumerState<CreateKegScreen> {
               keyboardType:
                   const TextInputType.numberWithOptions(decimal: true),
               decoration: InputDecoration(
-                labelText: 'Keg price (${prefs.currency})',
+                labelText: AppLocalizations.of(context)!.kegPriceLabel(prefs.currency),
               ),
               validator: (val) {
                 if (val == null ||
                     double.tryParse(val.replaceAll(',', '.')) == null) {
-                  return 'Enter a valid number';
+                  return AppLocalizations.of(context)!.enterValidNumber;
                 }
                 return null;
               },
             ),
             const SizedBox(height: 24),
             Text(
-              'Predefined pour sizes',
+              AppLocalizations.of(context)!.predefinedPourSizes,
               style: Theme.of(context).textTheme.titleSmall,
             ),
             const SizedBox(height: 4),
             Text(
-              'Tap × to remove',
+              AppLocalizations.of(context)!.tapToRemove,
               style: Theme.of(context).textTheme.bodySmall,
             ),
             const SizedBox(height: 8),
@@ -685,7 +686,7 @@ class _CreateKegScreenState extends ConsumerState<CreateKegScreen> {
                     },
                   ),
                 ActionChip(
-                  label: const Text('+ Add'),
+                  label: Text(AppLocalizations.of(context)!.addChip),
                   onPressed: _addPredefinedVolume,
                 ),
               ],
@@ -696,7 +697,7 @@ class _CreateKegScreenState extends ConsumerState<CreateKegScreen> {
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () => setState(() => _step = 1),
-                    child: const Text('← Back'),
+                    child: Text(AppLocalizations.of(context)!.back),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -713,7 +714,7 @@ class _CreateKegScreenState extends ConsumerState<CreateKegScreen> {
                               color: BeerColors.background,
                             ),
                           )
-                        : const Text('Create Session'),
+                        : Text(AppLocalizations.of(context)!.createSession),
                   ),
                 ),
               ],

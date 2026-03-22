@@ -1,3 +1,4 @@
+import 'package:beerer/l10n/app_localizations.dart';
 import 'package:beerer/models/models.dart';
 import 'package:beerer/providers/providers.dart';
 import 'package:beerer/repositories/joint_account_repository.dart';
@@ -70,7 +71,7 @@ class _JointAccountSheetState extends ConsumerState<JointAccountSheet> {
           ),
           const SizedBox(height: 16),
           Text(
-            myAccount != null ? 'My Joint Account' : 'Joint Accounts',
+            myAccount != null ? AppLocalizations.of(context)!.myJointAccount : AppLocalizations.of(context)!.jointAccounts,
             style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: 16),
@@ -125,7 +126,7 @@ class _JointAccountSheetState extends ConsumerState<JointAccountSheet> {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'Members',
+                  AppLocalizations.of(context)!.members,
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
                         color: BeerColors.onSurfaceSecondary,
                       ),
@@ -148,7 +149,7 @@ class _JointAccountSheetState extends ConsumerState<JointAccountSheet> {
                               const SizedBox(width: 8),
                               Text(
                                 user.displayName +
-                                    (user.id == uid ? ' (you)' : ''),
+                                    (user.id == uid ? ' ${AppLocalizations.of(context)!.youSuffix}' : ''),
                               ),
                               const Spacer(),
                               // Creator can remove members (except self)
@@ -172,7 +173,7 @@ class _JointAccountSheetState extends ConsumerState<JointAccountSheet> {
                   loading: () => const Center(
                     child: CircularProgressIndicator(strokeWidth: 2),
                   ),
-                  error: (e, _) => Text('Error: $e'),
+                  error: (e, _) => Text(AppLocalizations.of(context)!.errorWithMessage(e.toString())),
                 ),
                 // Add member — only for creator
                 if (account.creatorId == uid) ...[
@@ -181,7 +182,7 @@ class _JointAccountSheetState extends ConsumerState<JointAccountSheet> {
                     onPressed: () =>
                         _showAddMemberPicker(context, account),
                     icon: const Icon(Icons.person_add, size: 18),
-                    label: const Text('Add member'),
+                    label: Text(AppLocalizations.of(context)!.addMember),
                   ),
                 ],
               ],
@@ -195,8 +196,8 @@ class _JointAccountSheetState extends ConsumerState<JointAccountSheet> {
             onPressed: () => _leaveOrDelete(account, uid),
             child: Text(
               account.creatorId == uid
-                  ? 'Delete account'
-                  : 'Leave account',
+                  ? AppLocalizations.of(context)!.deleteAccount
+                  : AppLocalizations.of(context)!.leaveAccount,
               style: const TextStyle(color: BeerColors.error),
             ),
           ),
@@ -211,7 +212,7 @@ class _JointAccountSheetState extends ConsumerState<JointAccountSheet> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Create a new group',
+          AppLocalizations.of(context)!.createANewGroup,
           style: Theme.of(context).textTheme.titleSmall,
         ),
         const SizedBox(height: 8),
@@ -238,9 +239,9 @@ class _JointAccountSheetState extends ConsumerState<JointAccountSheet> {
             Expanded(
               child: TextField(
                 controller: _nameController,
-                decoration: const InputDecoration(
-                  hintText: 'Group name (e.g. "Novák family")',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  hintText: AppLocalizations.of(context)!.groupNameHint,
+                  border: const OutlineInputBorder(),
                 ),
                 textCapitalization: TextCapitalization.sentences,
               ),
@@ -251,7 +252,7 @@ class _JointAccountSheetState extends ConsumerState<JointAccountSheet> {
         FilledButton.icon(
           onPressed: _isCreating ? null : () => _createAccount(uid),
           icon: const Icon(Icons.group_add),
-          label: const Text('Create Group'),
+          label: Text(AppLocalizations.of(context)!.createGroup),
         ),
       ],
     );
@@ -273,7 +274,7 @@ class _JointAccountSheetState extends ConsumerState<JointAccountSheet> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Or join an existing group',
+          AppLocalizations.of(context)!.orJoinExistingGroup,
           style: Theme.of(context).textTheme.titleSmall,
         ),
         const SizedBox(height: 8),
@@ -287,11 +288,11 @@ class _JointAccountSheetState extends ConsumerState<JointAccountSheet> {
               ),
               title: Text(account.groupName),
               subtitle: Text(
-                '${account.memberUserIds.length} member(s)',
+                AppLocalizations.of(context)!.memberCount(account.memberUserIds.length),
               ),
               trailing: TextButton(
                 onPressed: () => _joinAccount(account.id, uid),
-                child: const Text('Join'),
+                child: Text(AppLocalizations.of(context)!.join),
               ),
             ),
           ),
@@ -315,8 +316,8 @@ class _JointAccountSheetState extends ConsumerState<JointAccountSheet> {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
           ..showSnackBar(
-            const SnackBar(
-              content: Text('You are already in a group.'),
+          SnackBar(
+              content: Text(AppLocalizations.of(context)!.alreadyInGroup),
             ),
           );
         setState(() => _isCreating = false);
@@ -339,7 +340,7 @@ class _JointAccountSheetState extends ConsumerState<JointAccountSheet> {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
           ..showSnackBar(
-            SnackBar(content: Text('Failed to create group: $e')),
+            SnackBar(content: Text(AppLocalizations.of(context)!.failedToCreateGroup(e.toString()))),
           );
       }
     } finally {
@@ -358,9 +359,9 @@ class _JointAccountSheetState extends ConsumerState<JointAccountSheet> {
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(
-          const SnackBar(
+        SnackBar(
             content:
-                Text('You must leave your current group first.'),
+                Text(AppLocalizations.of(context)!.leaveCurrentGroupFirst),
           ),
         );
       return;
@@ -404,8 +405,8 @@ class _JointAccountSheetState extends ConsumerState<JointAccountSheet> {
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(
-          const SnackBar(
-            content: Text('All participants are already in a group.'),
+            SnackBar(
+            content: Text(AppLocalizations.of(context)!.allParticipantsInGroup),
           ),
         );
       return;
@@ -426,9 +427,9 @@ class _JointAccountSheetState extends ConsumerState<JointAccountSheet> {
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
               ..showSnackBar(
-                const SnackBar(
+                  SnackBar(
                   content: Text(
-                    'This user is already in another group.',
+                    AppLocalizations.of(context)!.userAlreadyInAnotherGroup,
                   ),
                 ),
               );
@@ -462,7 +463,7 @@ class _MemberPickerSheet extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            'Add member',
+            AppLocalizations.of(context)!.addMember,
             style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: 12),
@@ -490,7 +491,7 @@ class _MemberPickerSheet extends ConsumerWidget {
             loading: () => const Center(
               child: CircularProgressIndicator(strokeWidth: 2),
             ),
-            error: (e, _) => Text('Error: $e'),
+            error: (e, _) => Text(AppLocalizations.of(context)!.errorWithMessage(e.toString())),
           ),
         ],
       ),

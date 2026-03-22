@@ -1,3 +1,4 @@
+import 'package:beerer/l10n/app_localizations.dart';
 import 'package:beerer/providers/providers.dart';
 import 'package:beerer/theme/beer_theme.dart';
 import 'package:beerer/widgets/session_card.dart';
@@ -16,7 +17,7 @@ class HistoryScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         leading: BackButton(onPressed: () => context.go('/home')),
-        title: const Text('Past Sessions'),
+        title: Text(AppLocalizations.of(context)!.pastSessions),
       ),
       body: doneSessions.when(
         data: (sessions) {
@@ -32,7 +33,7 @@ class HistoryScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'No past sessions',
+                    AppLocalizations.of(context)!.noPastSessions,
                     style: Theme.of(context)
                         .textTheme
                         .titleMedium
@@ -62,7 +63,7 @@ class HistoryScreen extends ConsumerWidget {
             color: BeerColors.primaryAmber,
           ),
         ),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        error: (e, _) => Center(child: Text(AppLocalizations.of(context)!.error(e.toString()))),
       ),
     );
   }

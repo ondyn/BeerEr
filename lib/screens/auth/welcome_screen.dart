@@ -1,3 +1,4 @@
+import 'package:beerer/l10n/app_localizations.dart';
 import 'package:beerer/theme/beer_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -33,7 +34,7 @@ class WelcomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'Track every pour.\nSettle every tab.\nDrink all the kegs.',
+                AppLocalizations.of(context)!.welcomeTagline,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: BeerColors.onSurfaceSecondary,
@@ -43,13 +44,13 @@ class WelcomeScreen extends StatelessWidget {
               // Sign in button
               FilledButton(
                 onPressed: () => context.go('/auth/sign-in'),
-                child: const Text('Sign in'),
+                child: Text(AppLocalizations.of(context)!.signIn),
               ),
               const SizedBox(height: 12),
               // Register button
               OutlinedButton(
                 onPressed: () => context.go('/auth/register'),
-                child: const Text('Create account'),
+                child: Text(AppLocalizations.of(context)!.createAccount),
               ),
               const SizedBox(height: 32),
             ],

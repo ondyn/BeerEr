@@ -1,3 +1,4 @@
+import 'package:beerer/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
@@ -74,7 +75,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Scan QR code'),
+        title: Text(AppLocalizations.of(context)!.scanQrCode),
         actions: [
           IconButton(
             icon: const Icon(Icons.flash_on),
@@ -107,9 +108,9 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                   color: Colors.black54,
                   borderRadius: BorderRadius.circular(24),
                 ),
-                child: const Text(
-                  'Point at a Beerer QR code',
-                  style: TextStyle(
+                child: Text(
+                  AppLocalizations.of(context)!.pointAtBeererQrCode,
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 14,
                   ),

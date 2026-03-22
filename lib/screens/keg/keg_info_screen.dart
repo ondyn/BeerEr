@@ -1,3 +1,4 @@
+import 'package:beerer/l10n/app_localizations.dart';
 import 'package:beerer/models/models.dart';
 import 'package:beerer/providers/providers.dart';
 import 'package:beerer/theme/beer_theme.dart';
@@ -22,7 +23,7 @@ class KegInfoScreen extends ConsumerWidget {
         if (session == null) {
           return Scaffold(
             appBar: AppBar(),
-            body: const Center(child: Text('Session not found')),
+            body: Center(child: Text(AppLocalizations.of(context)!.sessionNotFound)),
           );
         }
         return _KegInfoBody(session: session);
@@ -37,7 +38,7 @@ class KegInfoScreen extends ConsumerWidget {
       ),
       error: (e, _) => Scaffold(
         appBar: AppBar(),
-        body: Center(child: Text('Error: $e')),
+        body: Center(child: Text(AppLocalizations.of(context)!.errorWithMessage(e.toString()))),
       ),
     );
   }
@@ -53,13 +54,13 @@ class _KegInfoBody extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         leading: BackButton(onPressed: () => context.pop()),
-        title: const Text('Keg Information'),
+        title: Text(AppLocalizations.of(context)!.kegInformation),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           // Beer Information Section
-          _buildSectionHeader(context, 'Beer Information'),
+          _buildSectionHeader(context, AppLocalizations.of(context)!.beerInformation),
           const SizedBox(height: 8),
           Card(
             child: Padding(
@@ -67,40 +68,40 @@ class _KegInfoBody extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildInfoRow(context, 'Name', session.beerName),
+                  _buildInfoRow(context, AppLocalizations.of(context)!.beerName, session.beerName),
                   const Divider(height: 16),
-                  _buildInfoRow(context, 'Alcohol %',
+                  _buildInfoRow(context, AppLocalizations.of(context)!.alcoholPercent,
                       '${session.alcoholPercent.toStringAsFixed(1)}%'),
                   const Divider(height: 16),
                   if (session.brewery != null)
-                    _buildInfoRow(context, 'Brewery', session.brewery!),
+                    _buildInfoRow(context, AppLocalizations.of(context)!.brewery, session.brewery!),
                   if (session.brewery != null) const Divider(height: 16),
                   if (session.malt != null)
-                    _buildInfoRow(context, 'Malt', session.malt!),
+                    _buildInfoRow(context, AppLocalizations.of(context)!.malt, session.malt!),
                   if (session.malt != null) const Divider(height: 16),
                   if (session.fermentation != null)
                     _buildInfoRow(
-                        context, 'Fermentation', session.fermentation!),
+                        context, AppLocalizations.of(context)!.fermentation, session.fermentation!),
                   if (session.fermentation != null)
                     const Divider(height: 16),
                   if (session.beerType != null)
-                    _buildInfoRow(context, 'Type', session.beerType!),
+                    _buildInfoRow(context, AppLocalizations.of(context)!.beerType, session.beerType!),
                   if (session.beerType != null) const Divider(height: 16),
                   if (session.beerGroup != null)
-                    _buildInfoRow(context, 'Group', session.beerGroup!),
+                    _buildInfoRow(context, AppLocalizations.of(context)!.beerGroup, session.beerGroup!),
                   if (session.beerGroup != null) const Divider(height: 16),
                   if (session.beerStyle != null)
-                    _buildInfoRow(context, 'Style', session.beerStyle!),
+                    _buildInfoRow(context, AppLocalizations.of(context)!.beerStyle, session.beerStyle!),
                   if (session.beerStyle != null) const Divider(height: 16),
                   if (session.degreePlato != null)
-                    _buildInfoRow(context, 'Degree Plato', session.degreePlato!),
+                    _buildInfoRow(context, AppLocalizations.of(context)!.degreePlato, session.degreePlato!),
                 ],
               ),
             ),
           ),
           const SizedBox(height: 16),
           // Keg Information Section
-          _buildSectionHeader(context, 'Keg Information'),
+          _buildSectionHeader(context, AppLocalizations.of(context)!.kegInformation),
           const SizedBox(height: 8),
           Card(
             child: Padding(
@@ -110,26 +111,26 @@ class _KegInfoBody extends StatelessWidget {
                 children: [
                   _buildInfoRow(
                     context,
-                    'Total Volume',
+                    AppLocalizations.of(context)!.totalVolume,
                     TimeFormatter.formatVolumeMl(session.volumeTotalMl),
                   ),
                   const Divider(height: 16),
                   _buildInfoRow(
                     context,
-                    'Price',
+                    AppLocalizations.of(context)!.price,
                     TimeFormatter.formatCurrency(session.kegPrice),
                   ),
                   const Divider(height: 16),
                   _buildInfoRow(
                     context,
-                    'Status',
-                    _formatStatus(session.status),
+                    AppLocalizations.of(context)!.status,
+                    _formatStatus(context, session.status),
                   ),
                   if (session.startTime != null) ...[
                     const Divider(height: 16),
                     _buildInfoRow(
                       context,
-                      'Started',
+                      AppLocalizations.of(context)!.started,
                       _formatDateTime(session.startTime!),
                     ),
                   ],
@@ -180,16 +181,17 @@ class _KegInfoBody extends StatelessWidget {
     );
   }
 
-  String _formatStatus(KegStatus status) {
+  String _formatStatus(BuildContext context, KegStatus status) {
+    final l = AppLocalizations.of(context)!;
     switch (status) {
       case KegStatus.created:
-        return 'Created';
+        return l.statusCreated;
       case KegStatus.active:
-        return 'Active';
+        return l.statusActive;
       case KegStatus.paused:
-        return 'Paused';
+        return l.statusPaused;
       case KegStatus.done:
-        return 'Done';
+        return l.statusDone;
     }
   }
 

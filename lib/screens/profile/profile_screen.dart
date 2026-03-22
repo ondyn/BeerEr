@@ -1,3 +1,4 @@
+import 'package:beerer/l10n/app_localizations.dart';
 import 'package:beerer/models/models.dart';
 import 'package:beerer/providers/providers.dart';
 import 'package:beerer/repositories/user_repository.dart';
@@ -19,8 +20,8 @@ class ProfileScreen extends ConsumerWidget {
     final firebaseUser = FirebaseAuth.instance.currentUser;
     if (firebaseUser == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Profile')),
-        body: const Center(child: Text('Not signed in')),
+        appBar: AppBar(title: Text(AppLocalizations.of(context)!.profile)),
+        body: Center(child: Text(AppLocalizations.of(context)!.notSignedIn)),
       );
     }
 
@@ -30,7 +31,7 @@ class ProfileScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         leading: BackButton(onPressed: () => context.go('/home')),
-        title: const Text('My Profile'),
+        title: Text(AppLocalizations.of(context)!.myProfile),
         actions: [
           IconButton(
             icon: const Icon(Icons.edit),
@@ -74,7 +75,7 @@ class ProfileScreen extends ConsumerWidget {
             color: BeerColors.primaryAmber,
           ),
         ),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        error: (e, _) => Center(child: Text(AppLocalizations.of(context)!.error(e.toString()))),
       ),
     );
   }
@@ -139,18 +140,18 @@ class ProfileScreen extends ConsumerWidget {
           // Stats section
           const _SectionHeader(title: 'Statistics'),
           const SizedBox(height: 8),
-          _InfoRow(label: 'Weight', value: '${user.weightKg} kg'),
-          _InfoRow(label: 'Age', value: '${user.age}'),
+          _InfoRow(label: AppLocalizations.of(context)!.weight, value: '${user.weightKg} kg'),
+          _InfoRow(label: AppLocalizations.of(context)!.age, value: '${user.age}'),
           _InfoRow(
-            label: 'Gender',
-            value: user.gender == 'male' ? 'Male' : 'Female',
+            label: AppLocalizations.of(context)!.gender,
+            value: user.gender == 'male' ? AppLocalizations.of(context)!.male : AppLocalizations.of(context)!.female,
           ),
           const SizedBox(height: 24),
           // Privacy settings
           const _SectionHeader(title: 'Privacy settings'),
           const SizedBox(height: 8),
           SwitchListTile(
-            title: const Text('Show stats to others'),
+            title: Text(AppLocalizations.of(context)!.showStatsToOthers),
             value: user.preferences['show_stats'] as bool? ?? true,
             onChanged: (val) async {
               final repo = ref.read(userRepositoryProvider);
@@ -168,10 +169,10 @@ class ProfileScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 8),
           SwitchListTile(
-            title: const Text('Show BAC estimate'),
+            title: Text(AppLocalizations.of(context)!.showBacEstimate),
             subtitle: user.weightKg <= 0
                 ? Text(
-                    'Set your weight in profile to enable BAC',
+                    AppLocalizations.of(context)!.setWeightForBac,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: BeerColors.error,
                         ),
@@ -197,7 +198,7 @@ class ProfileScreen extends ConsumerWidget {
           const _SectionHeader(title: 'Session History'),
           const SizedBox(height: 8),
           ListTile(
-            title: const Text('View history'),
+            title: Text(AppLocalizations.of(context)!.viewHistory),
             trailing: const Icon(Icons.chevron_right),
             tileColor: BeerColors.surfaceVariant,
             shape: RoundedRectangleBorder(
@@ -212,7 +213,7 @@ class ProfileScreen extends ConsumerWidget {
               // TODO: confirm + delete account
             },
             child: Text(
-              'Delete account',
+              AppLocalizations.of(context)!.deleteAccount,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: BeerColors.error,
                   ),
@@ -270,13 +271,13 @@ class ProfileScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'Edit Profile',
+              AppLocalizations.of(ctx)!.editProfile,
               style: Theme.of(ctx).textTheme.titleLarge,
             ),
             const SizedBox(height: 16),
             TextField(
               controller: nicknameCtrl,
-              decoration: const InputDecoration(labelText: 'Nickname'),
+              decoration: InputDecoration(labelText: AppLocalizations.of(ctx)!.nickname),
             ),
             const SizedBox(height: 12),
             Row(
@@ -286,7 +287,7 @@ class ProfileScreen extends ConsumerWidget {
                     controller: weightCtrl,
                     keyboardType: TextInputType.number,
                     decoration:
-                        const InputDecoration(labelText: 'Weight (kg)'),
+                        InputDecoration(labelText: AppLocalizations.of(ctx)!.weightKg),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -294,7 +295,7 @@ class ProfileScreen extends ConsumerWidget {
                   child: TextField(
                     controller: ageCtrl,
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'Age'),
+                    decoration: InputDecoration(labelText: AppLocalizations.of(ctx)!.age),
                   ),
                 ),
               ],
@@ -303,9 +304,9 @@ class ProfileScreen extends ConsumerWidget {
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton(
+                    child: OutlinedButton(
                     onPressed: () => Navigator.pop(ctx),
-                    child: const Text('Cancel'),
+                    child: Text(AppLocalizations.of(ctx)!.cancel),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -339,7 +340,7 @@ class ProfileScreen extends ConsumerWidget {
                       );
                       if (ctx.mounted) Navigator.pop(ctx);
                     },
-                    child: const Text('Save'),
+                    child: Text(AppLocalizations.of(ctx)!.save),
                   ),
                 ),
               ],

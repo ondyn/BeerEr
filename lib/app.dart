@@ -1,4 +1,5 @@
 import 'package:beerer/l10n/app_localizations.dart';
+import 'package:beerer/providers/locale_provider.dart';
 import 'package:beerer/router.dart';
 import 'package:beerer/theme/beer_theme.dart';
 import 'package:flutter/material.dart';
@@ -11,12 +12,14 @@ class BeerErApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
+    final locale = ref.watch(appLocaleProvider);
 
     return MaterialApp.router(
       title: 'Beerer',
       debugShowCheckedModeBanner: false,
       theme: buildBeerTheme(),
       routerConfig: router,
+      locale: locale,
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,

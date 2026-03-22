@@ -1,3 +1,4 @@
+import 'package:beerer/l10n/app_localizations.dart';
 import 'package:beerer/theme/beer_theme.dart';
 import 'package:flutter/material.dart';
 // import 'package:go_router/go_router.dart'; // SKIP SPLASH: unused while splash is bypassed
@@ -47,7 +48,7 @@ class _SplashScreenState extends State<SplashScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Count every drop',
+              AppLocalizations.of(context)!.splashTagline,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     color: BeerColors.onSurfaceSecondary,
                   ),

@@ -1,4 +1,5 @@
 import 'package:beerer/models/models.dart';
+import 'package:beerer/l10n/app_localizations.dart';
 import 'package:beerer/providers/providers.dart';
 import 'package:beerer/repositories/keg_repository.dart';
 import 'package:beerer/theme/beer_theme.dart';
@@ -29,8 +30,8 @@ class BillReviewScreen extends ConsumerWidget {
       data: (session) {
         if (session == null) {
           return Scaffold(
-            appBar: AppBar(title: const Text('Review Bill')),
-            body: const Center(child: Text('Session not found')),
+            appBar: AppBar(title: Text(AppLocalizations.of(context)!.reviewBill)),
+            body: Center(child: Text(AppLocalizations.of(context)!.sessionNotFound)),
           );
         }
         return _BillReviewBody(
@@ -40,7 +41,7 @@ class BillReviewScreen extends ConsumerWidget {
         );
       },
       loading: () => Scaffold(
-        appBar: AppBar(title: const Text('Review Bill')),
+        appBar: AppBar(title: Text(AppLocalizations.of(context)!.reviewBill)),
         body: const Center(
           child: CircularProgressIndicator(
             color: BeerColors.primaryAmber,
@@ -48,8 +49,8 @@ class BillReviewScreen extends ConsumerWidget {
         ),
       ),
       error: (e, _) => Scaffold(
-        appBar: AppBar(title: const Text('Review Bill')),
-        body: Center(child: Text('Error: $e')),
+        appBar: AppBar(title: Text(AppLocalizations.of(context)!.reviewBill)),
+        body: Center(child: Text(AppLocalizations.of(context)!.errorWithMessage(e.toString()))),
       ),
     );
   }
@@ -95,7 +96,7 @@ class _BillReviewBody extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Review Bill'),
+        title: Text(AppLocalizations.of(context)!.reviewBill),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
@@ -111,7 +112,7 @@ class _BillReviewBody extends ConsumerWidget {
 
           // Section heading
           Text(
-            'Participants',
+            AppLocalizations.of(context)!.participantsLabel,
             style: Theme.of(context).textTheme.titleSmall,
           ),
           const SizedBox(height: 8),
@@ -152,7 +153,7 @@ class _BillReviewBody extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Total consumed',
+                          AppLocalizations.of(context)!.totalConsumed,
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                 color: BeerColors.onSurfaceSecondary,
                               ),
@@ -176,7 +177,7 @@ class _BillReviewBody extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Text(
-                          'Keg price',
+                          AppLocalizations.of(context)!.kegPriceLabel2,
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                 color: BeerColors.onSurfaceSecondary,
                               ),
@@ -251,17 +252,17 @@ class _SummaryCard extends StatelessWidget {
             Row(
               children: [
                 _SummaryChip(
-                  label: 'Pours',
+                  label: AppLocalizations.of(context)!.pours,
                   value: '$pourCount',
                 ),
                 const SizedBox(width: 12),
                 _SummaryChip(
-                  label: 'Drinkers',
+                  label: AppLocalizations.of(context)!.drinkers,
                   value: '$participantCount',
                 ),
                 const SizedBox(width: 12),
                 _SummaryChip(
-                  label: 'Total',
+                  label: AppLocalizations.of(context)!.total,
                   value: TimeFormatter.formatVolumeMl(
                     totalPoured,
                     prefs: prefs,
@@ -347,7 +348,7 @@ class _ParticipantSection extends ConsumerWidget {
     );
 
     return _ExpandableParticipantCard(
-      title: user.displayName + (isMe ? ' (you)' : ''),
+      title: user.displayName + (isMe ? AppLocalizations.of(context)!.youSuffix : ''),
       subtitle:
           '${TimeFormatter.formatVolumeMl(volumeMl, prefs: prefs)} · '
           '${TimeFormatter.formatRatio(ratio)}',
@@ -589,7 +590,7 @@ class _ExpandableParticipantCardState
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: Text(
-                  'No pours logged',
+                  AppLocalizations.of(context)!.noPours,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: BeerColors.onSurfaceSecondary,
                       ),
@@ -610,7 +611,7 @@ class _ExpandableParticipantCardState
               child: OutlinedButton.icon(
                 onPressed: () => _addPour(context),
                 icon: const Icon(Icons.add, size: 18),
-                label: Text('Add beer for ${widget.userName}'),
+                label: Text(AppLocalizations.of(context)!.addBeerFor(widget.userName)),
               ),
             ),
           ],
@@ -629,7 +630,7 @@ class _ExpandableParticipantCardState
       isScrollControlled: true,
       builder: (_) => VolumePickerSheet(
         predefinedVolumesMl: widget.session.predefinedVolumesMl,
-        title: 'Add beer for ${widget.userName}',
+        title: AppLocalizations.of(context)!.addBeerFor(widget.userName),
       ),
     );
 
@@ -656,10 +657,10 @@ class _ExpandableParticipantCardState
           ..showSnackBar(
             SnackBar(
               content:
-                  Text('Added ${TimeFormatter.formatVolumeMl(volumeMl, prefs: widget.prefs)} for ${widget.userName}'),
+                  Text(AppLocalizations.of(context)!.addedVolumeFor(TimeFormatter.formatVolumeMl(volumeMl, prefs: widget.prefs), widget.userName)),
               duration: const Duration(seconds: 5),
               action: SnackBarAction(
-                label: 'Undo',
+                label: AppLocalizations.of(context)!.undo,
                 onPressed: () {
                   repo.undoPourForReview(created);
                 },
@@ -672,7 +673,7 @@ class _ExpandableParticipantCardState
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
           ..showSnackBar(
-            SnackBar(content: Text('Failed to add pour: $e')),
+            SnackBar(content: Text(AppLocalizations.of(context)!.failedToAddPour)),
           );
       }
     }
@@ -723,7 +724,7 @@ class _PourRow extends ConsumerWidget {
             onPressed: () => _removePour(context, ref),
             icon: const Icon(Icons.remove_circle_outline,
                 size: 20, color: BeerColors.error),
-            tooltip: 'Remove pour',
+            tooltip: AppLocalizations.of(context)!.removePourTooltip,
             visualDensity: VisualDensity.compact,
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
@@ -737,14 +738,14 @@ class _PourRow extends ConsumerWidget {
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Remove pour?'),
+        title: Text(AppLocalizations.of(context)!.removePourQuestion),
         content: Text(
-          'Remove ${TimeFormatter.formatVolumeMl(pour.volumeMl, prefs: prefs)} pour?',
+          AppLocalizations.of(context)!.removePourConfirm(TimeFormatter.formatVolumeMl(pour.volumeMl, prefs: prefs)),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           FilledButton(
             onPressed: () {
@@ -754,14 +755,15 @@ class _PourRow extends ConsumerWidget {
                 ScaffoldMessenger.of(context)
                   ..hideCurrentSnackBar()
                   ..showSnackBar(
-                    const SnackBar(content: Text('Pour removed')),
+                    SnackBar(content: Text(AppLocalizations.of(context)!.pourRemoved)),
                   );
               }
             },
-            child: const Text('Remove'),
+            child: Text(AppLocalizations.of(context)!.remove),
           ),
         ],
       ),
     );
   }
 }
+

@@ -1,3 +1,4 @@
+import 'package:beerer/l10n/app_localizations.dart';
 import 'package:beerer/providers/providers.dart';
 import 'package:beerer/repositories/user_repository.dart';
 import 'package:beerer/theme/beer_theme.dart';
@@ -30,6 +31,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   VolumeUnit? _volumeUnit;
   String? _currency;
   DecimalSeparator? _decimalSeparator;
+  String? _language;
 
   /// Persists a single key/value pair into the user's Firestore preferences
   /// map.
@@ -66,6 +68,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     _savePreference('decimal_separator', sep.key);
   }
 
+  void _setLanguage(String langCode) {
+    setState(() => _language = langCode);
+    _savePreference('language', langCode);
+  }
+
   @override
   Widget build(BuildContext context) {
     final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
@@ -75,13 +82,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: BackButton(onPressed: () => context.go('/home')),
-        title: const Text('Settings'),
+        title: Text(AppLocalizations.of(context)!.settings),
       ),
       body: userAsync.when(
         loading: () => const Center(
           child: CircularProgressIndicator(color: BeerColors.primaryAmber),
         ),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        error: (e, _) => Center(child: Text(AppLocalizations.of(context)!.error(e.toString()))),
         data: (appUser) {
           // On the first data emission, seed the local state from Firestore.
           final firestoreAllowPourForMe = appUser?.allowPourForMe ?? true;
@@ -120,17 +127,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           final effectiveCurrency = _currency ?? prefs.currency;
           final effectiveDecimalSep =
               _decimalSeparator ?? prefs.decimalSeparator;
+          final effectiveLanguage =
+              _language ?? (appUser?.preferences['language'] as String? ?? 'en');
 
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
               // Notifications
-              const _SectionHeader(title: 'Notifications'),
+              _SectionHeader(title: AppLocalizations.of(context)!.notifications),
               const SizedBox(height: 8),
               SwitchListTile(
-                title: const Text('Allow others to pour for me'),
-                subtitle: const Text(
-                  'Other participants can log a pour on your behalf',
+                title: Text(AppLocalizations.of(context)!.allowPourForMe),
+                subtitle: Text(
+                  AppLocalizations.of(context)!.allowPourForMeSubtitle,
                 ),
                 value: effectiveAllowPourForMe,
                 onChanged: _saveAllowPourForMe,
@@ -141,9 +150,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
               const SizedBox(height: 4),
               SwitchListTile(
-                title: const Text('Notify when poured for me'),
-                subtitle: const Text(
-                  'Get notified when someone pours beer on your behalf',
+                title: Text(AppLocalizations.of(context)!.notifyPourForMe),
+                subtitle: Text(
+                  AppLocalizations.of(context)!.notifyPourForMeSubtitle,
                 ),
                 value: effectiveNotifyPourForMe,
                 onChanged: (val) {
@@ -157,7 +166,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
               const SizedBox(height: 4),
               SwitchListTile(
-                title: const Text('Keg nearly empty'),
+                title: Text(AppLocalizations.of(context)!.kegNearlyEmpty),
                 value: effectiveNotifyKegNearlyEmpty,
                 onChanged: (val) {
                   setState(() => _notifyKegNearlyEmpty = val);
@@ -170,7 +179,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
               const SizedBox(height: 4),
               SwitchListTile(
-                title: const Text('Keg done'),
+                title: Text(AppLocalizations.of(context)!.kegDone),
                 value: effectiveNotifyKegDone,
                 onChanged: (val) {
                   setState(() => _notifyKegDone = val);
@@ -183,9 +192,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
               const SizedBox(height: 4),
               SwitchListTile(
-                title: const Text('Ready to drive'),
-                subtitle: const Text(
-                  'Get notified when your estimated BAC reaches 0',
+                title: Text(AppLocalizations.of(context)!.readyToDrive),
+                subtitle: Text(
+                  AppLocalizations.of(context)!.readyToDriveSubtitle,
                 ),
                 value: effectiveNotifyBacZero,
                 onChanged: (val) {
@@ -199,9 +208,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
               const SizedBox(height: 4),
               SwitchListTile(
-                title: const Text('Slowdown reminder'),
-                subtitle: const Text(
-                  'Get nudged when your drinking pace drops',
+                title: Text(AppLocalizations.of(context)!.slowdownReminder),
+                subtitle: Text(
+                  AppLocalizations.of(context)!.slowdownReminderSubtitle,
                 ),
                 value: effectiveNotifySlowdown,
                 onChanged: (val) {
@@ -215,10 +224,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
               const SizedBox(height: 24),
               // Display
-              const _SectionHeader(title: 'Display'),
+              _SectionHeader(title: AppLocalizations.of(context)!.display),
               const SizedBox(height: 8),
               ListTile(
-                title: const Text('Volume units'),
+                title: Text(AppLocalizations.of(context)!.volumeUnits),
                 trailing: DropdownButton<VolumeUnit>(
                   value: effectiveVolumeUnit,
                   items: VolumeUnit.values
@@ -238,7 +247,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
               const SizedBox(height: 4),
               ListTile(
-                title: const Text('Currency symbol'),
+                title: Text(AppLocalizations.of(context)!.currencySymbol),
                 trailing: DropdownButton<String>(
                   value: effectiveCurrency,
                   items: ['€', '\$', '£', 'Kč']
@@ -258,7 +267,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
               const SizedBox(height: 4),
               ListTile(
-                title: const Text('Decimal separator'),
+                title: Text(AppLocalizations.of(context)!.decimalSeparator),
                 trailing: DropdownButton<DecimalSeparator>(
                   value: effectiveDecimalSep,
                   items: DecimalSeparator.values
@@ -266,8 +275,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             value: s,
                             child: Text(
                               s == DecimalSeparator.dot
-                                  ? 'Dot (1.5)'
-                                  : 'Comma (1,5)',
+                                  ? AppLocalizations.of(context)!.dotSeparator
+                                  : AppLocalizations.of(context)!.commaSeparator,
                             ),
                           ))
                       .toList(),
@@ -280,13 +289,41 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
+              const SizedBox(height: 4),
+              ListTile(
+                title: Text(AppLocalizations.of(context)!.language),
+                trailing: DropdownButton<String>(
+                  value: effectiveLanguage,
+                  items: const [
+                    DropdownMenuItem(
+                      value: 'en',
+                      child: Text('English'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'cs',
+                      child: Text('Čeština'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'de',
+                      child: Text('Deutsch'),
+                    ),
+                  ],
+                  onChanged: (val) {
+                    if (val != null) _setLanguage(val);
+                  },
+                ),
+                tileColor: BeerColors.surfaceVariant,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
               const SizedBox(height: 24),
               // Account
-              const _SectionHeader(title: 'Account'),
+              _SectionHeader(title: AppLocalizations.of(context)!.account),
               const SizedBox(height: 8),
               ListTile(
                 leading: const Icon(Icons.lock_outlined),
-                title: const Text('Change password'),
+                title: Text(AppLocalizations.of(context)!.changePassword),
                 trailing: const Icon(Icons.chevron_right),
                 tileColor: BeerColors.surfaceVariant,
                 shape: RoundedRectangleBorder(
@@ -299,7 +336,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               const SizedBox(height: 4),
               ListTile(
                 leading: const Icon(Icons.logout),
-                title: const Text('Sign out'),
+                title: Text(AppLocalizations.of(context)!.signOut),
                 tileColor: BeerColors.surfaceVariant,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -316,9 +353,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   Icons.delete_forever,
                   color: BeerColors.error,
                 ),
-                title: const Text(
-                  'Delete account',
-                  style: TextStyle(color: BeerColors.error),
+                title: Text(
+                  AppLocalizations.of(context)!.deleteAccount,
+                  style: const TextStyle(color: BeerColors.error),
                 ),
                 tileColor: BeerColors.surfaceVariant,
                 shape: RoundedRectangleBorder(

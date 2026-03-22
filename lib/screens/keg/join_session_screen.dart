@@ -1,3 +1,4 @@
+import 'package:beerer/l10n/app_localizations.dart';
 import 'package:beerer/models/models.dart';
 import 'package:beerer/providers/providers.dart';
 import 'package:beerer/repositories/keg_repository.dart';
@@ -79,7 +80,7 @@ class _JoinSessionScreenState extends ConsumerState<JoinSessionScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to join: $e')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.failedToJoin)),
         );
       }
     } finally {
@@ -99,7 +100,7 @@ class _JoinSessionScreenState extends ConsumerState<JoinSessionScreen> {
       body: sessionAsync.when(
         data: (session) {
           if (session == null) {
-            return const Center(child: Text('Session not found'));
+            return Center(child: Text(AppLocalizations.of(context)!.sessionNotFound));
           }
           return _buildContent(context, session);
         },
@@ -108,7 +109,7 @@ class _JoinSessionScreenState extends ConsumerState<JoinSessionScreen> {
             color: BeerColors.primaryAmber,
           ),
         ),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        error: (e, _) => Center(child: Text(AppLocalizations.of(context)!.errorWithMessage(e.toString()))),
       ),
     );
   }
@@ -124,7 +125,7 @@ class _JoinSessionScreenState extends ConsumerState<JoinSessionScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            "You're invited to a party!",
+            AppLocalizations.of(context)!.youreInvitedToParty,
             style: Theme.of(context).textTheme.headlineMedium,
           ),
           const SizedBox(height: 24),
@@ -169,12 +170,12 @@ class _JoinSessionScreenState extends ConsumerState<JoinSessionScreen> {
           const SizedBox(height: 24),
           // Visibility
           Text(
-            'Visibility settings',
+            AppLocalizations.of(context)!.visibilitySettings,
             style: Theme.of(context).textTheme.titleSmall,
           ),
           const SizedBox(height: 8),
           SwitchListTile(
-            title: const Text('Show my stats'),
+            title: Text(AppLocalizations.of(context)!.showMyStats),
             secondary: const Icon(Icons.lock_open),
             value: _showStats,
             onChanged: (val) => setState(() => _showStats = val),
@@ -185,7 +186,7 @@ class _JoinSessionScreenState extends ConsumerState<JoinSessionScreen> {
           ),
           const SizedBox(height: 8),
           SwitchListTile(
-            title: const Text('Show BAC estimate'),
+            title: Text(AppLocalizations.of(context)!.showBacEstimateJoin),
             secondary: const Icon(Icons.lock_open),
             value: _showBac,
             onChanged: (val) => setState(() => _showBac = val),
@@ -198,12 +199,12 @@ class _JoinSessionScreenState extends ConsumerState<JoinSessionScreen> {
           if (manualUsers.isNotEmpty) ...[
             const SizedBox(height: 24),
             Text(
-              'Are you one of these guests?',
+              AppLocalizations.of(context)!.areYouOneOfGuests,
               style: Theme.of(context).textTheme.titleSmall,
             ),
             const SizedBox(height: 4),
             Text(
-              'Select yourself to take over their pours, or skip.',
+              AppLocalizations.of(context)!.selectYourselfToMerge,
               style: Theme.of(context).textTheme.bodySmall,
             ),
             const SizedBox(height: 8),
@@ -245,8 +246,8 @@ class _JoinSessionScreenState extends ConsumerState<JoinSessionScreen> {
                     ),
                   )
                 : Text(_mergeWithManualUserId != null
-                    ? 'Join & Merge'
-                    : 'Join Session'),
+                    ? AppLocalizations.of(context)!.joinAndMerge
+                    : AppLocalizations.of(context)!.joinSession),
           ),
         ],
       ),

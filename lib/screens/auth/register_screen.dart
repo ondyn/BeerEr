@@ -1,3 +1,4 @@
+import 'package:beerer/l10n/app_localizations.dart';
 import 'package:beerer/models/models.dart';
 import 'package:beerer/repositories/user_repository.dart';
 import 'package:beerer/theme/beer_theme.dart';
@@ -107,9 +108,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         // Sign out so the user cannot use the app until email is verified.
         await FirebaseAuth.instance.signOut();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text(
-              'Account created. Check your email to verify before signing in.',
+              AppLocalizations.of(context)!.accountCreatedVerify,
             ),
           ),
         );
@@ -121,17 +122,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       setState(() {
         if (e.code == 'internal-error' ||
             (e.message ?? '').contains('CONFIGURATION_NOT_FOUND')) {
-          _error =
-              'Email sign-in is not configured. '
-              'Please contact the app admin.';
+          _error = AppLocalizations.of(context)!.emailSignInNotConfigured;
         } else {
-          _error = e.message ?? 'Registration failed. Please try again.';
+          _error = e.message ?? AppLocalizations.of(context)!.registrationFailed;
         }
       });
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _error = 'Registration failed. Please try again.';
+        _error = AppLocalizations.of(context)!.registrationFailed;
       });
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -153,7 +152,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  'Create account',
+                  AppLocalizations.of(context)!.createAccount,
                   style: Theme.of(context).textTheme.headlineMedium,
                 ),
                 const SizedBox(height: 24),
@@ -162,15 +161,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
                   autofillHints: const [AutofillHints.email],
-                  decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.email_outlined),
-                    labelText: 'Email',
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.email_outlined),
+                    labelText: AppLocalizations.of(context)!.email,
                   ),
                   validator: (val) {
                     if (val == null || val.trim().isEmpty) {
-                      return 'Please enter your email';
+                      return AppLocalizations.of(context)!.pleaseEnterEmail;
                     }
-                    if (!val.contains('@')) return 'Enter a valid email';
+                    if (!val.contains('@')) return AppLocalizations.of(context)!.enterValidEmail;
                     return null;
                   },
                 ),
@@ -180,13 +179,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   controller: _passwordController,
                   obscureText: true,
                   autofillHints: const [AutofillHints.newPassword],
-                  decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.lock_outlined),
-                    labelText: 'Password',
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.lock_outlined),
+                    labelText: AppLocalizations.of(context)!.password,
                   ),
                   validator: (val) {
                     if (val == null || val.length < 6) {
-                      return 'Password must be at least 6 characters';
+                      return AppLocalizations.of(context)!.passwordMinLength;
                     }
                     return null;
                   },
@@ -196,13 +195,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 TextFormField(
                   controller: _confirmPwdController,
                   obscureText: true,
-                  decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.lock_outlined),
-                    labelText: 'Confirm password',
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.lock_outlined),
+                    labelText: AppLocalizations.of(context)!.confirmPassword,
                   ),
                   validator: (val) {
                     if (val != _passwordController.text) {
-                      return 'Passwords do not match';
+                      return AppLocalizations.of(context)!.passwordsDoNotMatch;
                     }
                     return null;
                   },
@@ -215,7 +214,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Text(
-                        'Profile details',
+                        AppLocalizations.of(context)!.profileDetails,
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                     ),
@@ -226,13 +225,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 // Nickname
                 TextFormField(
                   controller: _nicknameController,
-                  decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.sports_bar),
-                    labelText: 'Nickname',
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.sports_bar),
+                    labelText: AppLocalizations.of(context)!.nickname,
                   ),
                   validator: (val) {
                     if (val == null || val.trim().isEmpty) {
-                      return 'Please choose a nickname';
+                      return AppLocalizations.of(context)!.pleaseChooseNickname;
                     }
                     return null;
                   },
@@ -248,9 +247,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             const TextInputType.numberWithOptions(
                               decimal: true,
                             ),
-                        decoration: const InputDecoration(
-                          prefixIcon: Icon(Icons.monitor_weight_outlined),
-                          labelText: 'Weight (kg)',
+                        decoration: InputDecoration(
+                          prefixIcon: const Icon(Icons.monitor_weight_outlined),
+                          labelText: AppLocalizations.of(context)!.weightKg,
                         ),
                       ),
                     ),
@@ -259,9 +258,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       child: TextFormField(
                         controller: _ageController,
                         keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          prefixIcon: Icon(Icons.cake_outlined),
-                          labelText: 'Age',
+                        decoration: InputDecoration(
+                          prefixIcon: const Icon(Icons.cake_outlined),
+                          labelText: AppLocalizations.of(context)!.age,
                         ),
                       ),
                     ),
@@ -270,21 +269,21 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 const SizedBox(height: 16),
                 // Gender
                 Text(
-                  'Gender:',
+                  AppLocalizations.of(context)!.genderLabel,
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 8),
                 SegmentedButton<String>(
-                  segments: const [
+                  segments: [
                     ButtonSegment(
                       value: 'male',
-                      label: Text('Male'),
-                      icon: Icon(Icons.male),
+                      label: Text(AppLocalizations.of(context)!.male),
+                      icon: const Icon(Icons.male),
                     ),
                     ButtonSegment(
                       value: 'female',
-                      label: Text('Female'),
-                      icon: Icon(Icons.female),
+                      label: Text(AppLocalizations.of(context)!.female),
+                      icon: const Icon(Icons.female),
                     ),
                   ],
                   selected: {_gender},
@@ -295,7 +294,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 const SizedBox(height: 12),
                 // Privacy note
                 Text(
-                  'ℹ Weight & age are used only for BAC estimation on your device.',
+                  AppLocalizations.of(context)!.bacPrivacyNote,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: BeerColors.onSurfaceSecondary,
                       ),
@@ -322,16 +321,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             color: BeerColors.background,
                           ),
                         )
-                      : const Text('Create account'),
+                      : Text(AppLocalizations.of(context)!.createAccount),
                 ),
                 const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text('Already have one? '),
+                    Text(AppLocalizations.of(context)!.alreadyHaveOne),
                     TextButton(
                       onPressed: () => context.go('/auth/sign-in'),
-                      child: const Text('Sign in ›'),
+                      child: Text(AppLocalizations.of(context)!.signInLink),
                     ),
                   ],
                 ),

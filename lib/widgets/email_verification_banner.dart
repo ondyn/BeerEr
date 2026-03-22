@@ -1,3 +1,4 @@
+import 'package:beerer/l10n/app_localizations.dart';
 import 'package:beerer/theme/beer_theme.dart';
 import 'package:flutter/material.dart';
 
@@ -26,7 +27,7 @@ class EmailVerificationBanner extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'Check your inbox to verify your email.',
+              AppLocalizations.of(context)!.checkInboxToVerify,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: BeerColors.background,
                     fontWeight: FontWeight.w500,
@@ -36,7 +37,7 @@ class EmailVerificationBanner extends StatelessWidget {
           TextButton(
             onPressed: onResend,
             child: Text(
-              'Resend',
+              AppLocalizations.of(context)!.resend,
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
                     color: BeerColors.background,
                     fontWeight: FontWeight.w700,

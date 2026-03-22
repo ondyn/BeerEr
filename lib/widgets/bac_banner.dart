@@ -1,3 +1,4 @@
+import 'package:beerer/l10n/app_localizations.dart';
 import 'package:beerer/theme/beer_theme.dart';
 import 'package:beerer/utils/bac_calculator.dart';
 import 'package:beerer/utils/time_formatter.dart';
@@ -37,7 +38,7 @@ class BacBanner extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                'Est. BAC: ${bacValue.toStringAsFixed(3)} ‰',
+                AppLocalizations.of(context)!.estBacValue(bacValue.toStringAsFixed(3)),
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
@@ -55,7 +56,7 @@ class BacBanner extends StatelessWidget {
                 ),
                 const SizedBox(width: 6),
                 Text(
-                  'Ready to drive in ~${TimeFormatter.formatDuration(timeToZero)}',
+                  AppLocalizations.of(context)!.readyToDriveIn(TimeFormatter.formatDuration(timeToZero)),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: BeerColors.onSurfaceSecondary,
                       ),
@@ -65,7 +66,7 @@ class BacBanner extends StatelessWidget {
           ],
           const SizedBox(height: 4),
           Text(
-            'Please drink responsibly.',
+            AppLocalizations.of(context)!.drinkResponsibly,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: BeerColors.onSurfaceSecondary,
                   fontStyle: FontStyle.italic,

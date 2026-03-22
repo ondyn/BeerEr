@@ -336,7 +336,7 @@
 - Widget for home screen showing active session stats.
 - Dark/light theme toggle.
 
-**Action:** Document chosen features in a future TODO.
+**Action:** Document chosen features in a future_TODO.md file.
 
 ---
 

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:beerer/l10n/app_localizations.dart';
 import 'package:beerer/models/models.dart';
 import 'package:beerer/theme/beer_theme.dart';
 import 'package:beerer/utils/time_formatter.dart';
@@ -109,13 +110,13 @@ class _SessionCardState extends State<SessionCard> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${TimeFormatter.formatPercent(fillPercent * 100)} left',
+                  AppLocalizations.of(context)!.percentLeft(TimeFormatter.formatPercent(fillPercent * 100)),
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],
               const SizedBox(height: 4),
               Text(
-                '${widget.participantCount} people · ${TimeFormatter.formatDuration(elapsed)}',
+                AppLocalizations.of(context)!.peopleDuration(widget.participantCount, TimeFormatter.formatDuration(elapsed)),
                 style: Theme.of(context).textTheme.bodySmall,
               ),
             ],
@@ -133,11 +134,12 @@ class _StatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final (label, color) = switch (status) {
-      KegStatus.created => ('Ready', BeerColors.primaryAmber),
-      KegStatus.active => ('Active', BeerColors.success),
-      KegStatus.paused => ('Paused', BeerColors.warning),
-      KegStatus.done => ('Done', BeerColors.onSurfaceSecondary),
+      KegStatus.created => (l.statusReady, BeerColors.primaryAmber),
+      KegStatus.active => (l.statusActive, BeerColors.success),
+      KegStatus.paused => (l.statusPaused, BeerColors.warning),
+      KegStatus.done => (l.statusDone, BeerColors.onSurfaceSecondary),
     };
 
     return Container(

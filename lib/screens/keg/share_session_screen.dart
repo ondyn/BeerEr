@@ -1,3 +1,4 @@
+import 'package:beerer/l10n/app_localizations.dart';
 import 'package:beerer/theme/beer_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -22,7 +23,7 @@ class ShareSessionScreen extends StatelessWidget {
         leading: BackButton(
           onPressed: () => context.pop(),
         ),
-        title: const Text('Share Keg Session'),
+        title: Text(AppLocalizations.of(context)!.shareKegSession),
       ),
       body: Padding(
         padding: const EdgeInsets.all(24),
@@ -30,7 +31,7 @@ class ShareSessionScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'Invite friends to join',
+              AppLocalizations.of(context)!.inviteFriendsToJoin,
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 24),
@@ -64,19 +65,19 @@ class ShareSessionScreen extends StatelessWidget {
               onPressed: () {
                 Clipboard.setData(ClipboardData(text: _deepLink));
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Link copied!')),
+                    SnackBar(content: Text(AppLocalizations.of(context)!.linkCopied)),
                 );
               },
               icon: const Icon(Icons.copy),
-              label: const Text('Copy link'),
+              label: Text(AppLocalizations.of(context)!.copyLink),
             ),
             const SizedBox(height: 16),
             ElevatedButton.icon(
               onPressed: () => SharePlus.instance.share(
-                ShareParams(text: 'Join my keg party! $_deepLink'),
+                ShareParams(text: AppLocalizations.of(context)!.joinMyKegParty(_deepLink)),
               ),
               icon: const Icon(Icons.share),
-              label: const Text('Share link'),
+              label: Text(AppLocalizations.of(context)!.shareLink),
             ),
           ],
         ),
