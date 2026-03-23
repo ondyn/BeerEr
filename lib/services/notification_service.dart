@@ -1,9 +1,10 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart'
+    show TargetPlatform, defaultTargetPlatform, kIsWeb;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 /// Top-level handler for background FCM data-only messages.
@@ -69,6 +70,9 @@ class NotificationService {
   // --------------------------------------------------------------------------
 
   Future<void> init() async {
+    // Push & local notifications are not supported on web.
+    if (kIsWeb) return;
+
     // 1. Request permissions (iOS & Android 13+).
     await _fcm.requestPermission(
       alert: true,
@@ -96,7 +100,8 @@ class NotificationService {
     );
 
     // 4. Create the Android notification channel.
-    if (Platform.isAndroid) {
+    if (!kIsWeb &&
+        defaultTargetPlatform == TargetPlatform.android) {
       await _local
           .resolvePlatformSpecificImplementation<
               AndroidFlutterLocalNotificationsPlugin>()
