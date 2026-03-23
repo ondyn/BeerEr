@@ -214,47 +214,47 @@ class ParticipantDetailScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             _StatRow(
-              icon: '🍺',
+              icon: Icons.sports_bar_outlined,
               label: AppLocalizations.of(context)!.beerCount,
               value: prefs.formatDecimal(beerCount, 1),
             ),
             _StatRow(
-              icon: '📊',
+              icon: Icons.local_drink,
               label: AppLocalizations.of(context)!.volume,
               value: TimeFormatter.formatVolumeMl(totalMl, prefs: prefs),
             ),
             _StatRow(
-              icon: '🧪',
+              icon: Icons.science,
               label: AppLocalizations.of(context)!.pureAlcohol,
               value: '${prefs.formatDecimal(pureAlcMl, 1)} ml',
             ),
             _StatRow(
-              icon: '📈',
+              icon: Icons.bar_chart,
               label: AppLocalizations.of(context)!.shareOfKeg,
               value: TimeFormatter.formatRatio(ratio),
             ),
             _StatRow(
-              icon: '⏱',
+              icon: Icons.timer,
               label: AppLocalizations.of(context)!.avgRateLabel,
               value: avgRate > 0
                   ? '${TimeFormatter.formatVolumeMl(avgRate, prefs: prefs)}/h'
                   : '—',
             ),
             _StatRow(
-              icon: '💰',
+              icon: Icons.euro,
               label: AppLocalizations.of(context)!.cost,
               value: TimeFormatter.formatCurrency(cost, prefs: prefs),
             ),
             if (bacValue != null) ...[
               const Divider(height: 16),
               _StatRow(
-                icon: '🩸',
+                icon: Icons.science,
                 label: AppLocalizations.of(context)!.estBac,
                 value: '${prefs.formatDecimal(bacValue, 2)} ‰',
               ),
               if (timeToZero != null && bacValue > 0)
                 _StatRow(
-                  icon: '🚗',
+                  icon: Icons.directions_car,
                   label: AppLocalizations.of(context)!.estTimeToDrive,
                   value: '~${TimeFormatter.formatDuration(timeToZero)}',
                 ),
@@ -273,7 +273,7 @@ class _StatRow extends StatelessWidget {
     required this.value,
   });
 
-  final String icon;
+  final IconData icon;
   final String label;
   final String value;
 
@@ -283,7 +283,7 @@ class _StatRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 3),
       child: Row(
         children: [
-          Text(icon, style: const TextStyle(fontSize: 14)),
+          Icon(icon, size: 20, color: BeerColors.primaryAmber),
           const SizedBox(width: 8),
           Expanded(
             child: Text(label,

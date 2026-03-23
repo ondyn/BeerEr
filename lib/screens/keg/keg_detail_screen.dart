@@ -785,8 +785,6 @@ class _ActiveBodyState extends ConsumerState<_ActiveBody> {
       elapsed,
     );
     final myConsumedMl = StatsCalculator.userPouredMl(pours, uid);
-    final currentBeerDur =
-        StatsCalculator.timeSinceLastPour(userPours);
     final timeSinceLast =
         StatsCalculator.timeSinceLastPour(userPours);
     final prefs = ref.watch(formatPreferencesProvider);
@@ -951,14 +949,6 @@ class _ActiveBodyState extends ConsumerState<_ActiveBody> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                if (currentBeerDur != null)
-                  StatTile(
-                    icon: Icons.sports_bar,
-                    label: AppLocalizations.of(context)!.currentBeer,
-                    value: TimeFormatter.formatTimer(
-                      currentBeerDur,
-                    ),
-                  ),
                 if (timeSinceLast != null)
                   StatTile(
                     icon: Icons.timer,
@@ -1405,9 +1395,11 @@ class _ParticipantRow extends StatelessWidget {
     final userPours =
         pours.where((p) => p.userId == user.id && !p.undone).toList();
     final beerCountVal = StatsCalculator.beerCount(pours, user.id);
+    final totalMl = StatsCalculator.userPouredMl(pours, user.id);
     final lastPourTime = StatsCalculator.timeSinceLastPour(userPours);
     final currentUid = FirebaseAuth.instance.currentUser?.uid;
     final isMe = user.id == currentUid;
+    final prefs = ref.watch(formatPreferencesProvider);
     final userCost = StatsCalculator.userCost(
       pours,
       user.id,
@@ -1432,6 +1424,11 @@ class _ParticipantRow extends StatelessWidget {
       );
     }
 
+    final smallStyle = Theme.of(context).textTheme.bodySmall;
+    final iconColor = BeerColors.onSurfaceSecondary;
+    const iconSize = 13.0;
+    const gap = SizedBox(width: 4);
+
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: InkWell(
@@ -1447,92 +1444,113 @@ class _ParticipantRow extends StatelessWidget {
                 avatarIcon: user.avatarIcon,
                 radius: 18,
                 isHighlighted: isMe,
-            ),
-            const SizedBox(width: 12),
-            // Name + stats
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Flexible(
-                        child: Text(
-                          user.displayName + (isMe ? AppLocalizations.of(context)!.youSuffix : ''),
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyMedium
-                              ?.copyWith(fontWeight: FontWeight.w600),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      if (groupName != null) ...[
-                        const SizedBox(width: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: BeerColors.primaryAmber
-                                .withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
+              ),
+              const SizedBox(width: 12),
+              // Name + stats
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Flexible(
                           child: Text(
-                            groupName!,
+                            user.displayName + (isMe ? AppLocalizations.of(context)!.youSuffix : ''),
                             style: Theme.of(context)
                                 .textTheme
-                                .labelSmall
-                                ?.copyWith(
-                                  color: BeerColors.primaryAmber,
-                                ),
+                                .bodyMedium
+                                ?.copyWith(fontWeight: FontWeight.w600),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                      ],
-                    ],
-                  ),
-                  const SizedBox(height: 2),
-                  Row(
-                    children: [
-                      Text(
-                        '🍺 ${TimeFormatter.formatBeerCount(beerCountVal)}',
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        '💰 ${TimeFormatter.formatCurrency(userCost)}',
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                      if (lastPourTime != null) ...[
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 6),
+                        Icon(Icons.sports_bar_outlined, size: iconSize, color: iconColor),
+                        const SizedBox(width: 2),
                         Text(
-                          '⏱ ${TimeFormatter.formatDuration(lastPourTime)} ${AppLocalizations.of(context)!.ago}',
-                          style: Theme.of(context).textTheme.bodySmall,
+                          '${prefs.formatDecimal(beerCountVal, 1)} · ${TimeFormatter.formatVolumeMl(totalMl, prefs: prefs)}',
+                          style: smallStyle?.copyWith(color: BeerColors.onSurfaceSecondary),
                         ),
+                        if (groupName != null) ...[
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: BeerColors.primaryAmber
+                                  .withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              groupName!,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelSmall
+                                  ?.copyWith(
+                                    color: BeerColors.primaryAmber,
+                                  ),
+                            ),
+                          ),
+                        ],
                       ],
-                      if (bac != null) ...[
-                        const SizedBox(width: 12),
-                        Text(
-                          '🧪 ${TimeFormatter.formatBac(bac)}',
-                          style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                    const SizedBox(height: 2),
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 2,
+                      children: [
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.euro, size: iconSize, color: iconColor),
+                            gap,
+                            Text(
+                              TimeFormatter.formatCurrency(userCost, prefs: prefs, decimalPlaces: 0),
+                              style: smallStyle,
+                            ),
+                          ],
                         ),
+                        if (lastPourTime != null)
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.timer, size: iconSize, color: iconColor),
+                              gap,
+                              Text(
+                                '${TimeFormatter.formatDuration(lastPourTime)} ${AppLocalizations.of(context)!.ago}',
+                                style: smallStyle,
+                              ),
+                            ],
+                          ),
+                        if (bac != null)
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.science, size: iconSize, color: iconColor),
+                              gap,
+                              Text(
+                                TimeFormatter.formatBac(bac, fractionDigits: 1, prefs: prefs),
+                                style: smallStyle,
+                              ),
+                            ],
+                          ),
                       ],
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            // Pour-for button (not shown for self)
-            if (!isMe)
-              IconButton(
-                icon: const Icon(
-                  Icons.sports_bar,
-                  color: BeerColors.primaryAmber,
+                    ),
+                  ],
                 ),
-                tooltip: AppLocalizations.of(context)!.pourForNickname(user.displayName),
-                onPressed: onPourFor,
               ),
-          ],
+              // Pour-for button (not shown for self)
+              if (!isMe)
+                IconButton(
+                  icon: const Icon(
+                    Icons.sports_bar,
+                    color: BeerColors.primaryAmber,
+                  ),
+                  tooltip: AppLocalizations.of(context)!.pourForNickname(user.displayName),
+                  onPressed: onPourFor,
+                ),
+            ],
           ),
         ),
       ),

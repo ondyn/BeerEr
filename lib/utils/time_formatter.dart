@@ -96,13 +96,15 @@ class TimeFormatter {
   ///
   /// When [prefs] is provided, the user's chosen currency symbol and
   /// decimal separator are applied.
+  /// Use [decimalPlaces] to control the number of fraction digits (default 2).
   static String formatCurrency(
     double amount, {
     String? symbol,
     FormatPreferences? prefs,
+    int decimalPlaces = 2,
   }) {
     final p = prefs ?? const FormatPreferences();
     final sym = symbol ?? p.currency;
-    return '${p.formatDecimal(amount, 2)} $sym';
+    return '${p.formatDecimal(amount, decimalPlaces)} $sym';
   }
 }
