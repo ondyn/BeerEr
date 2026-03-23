@@ -275,6 +275,21 @@ class ParticipantDetailScreen extends StatelessWidget {
                   ),
             ),
             const SizedBox(height: 8),
+            _StatRow(
+              icon: Icons.sports_bar_outlined,
+              label: AppLocalizations.of(context)!.beerCount,
+              value: prefs.formatDecimal(beerCount, 1),
+            ),
+            _StatRow(
+              icon: Icons.local_drink,
+              label: AppLocalizations.of(context)!.volume,
+              value: TimeFormatter.formatVolumeMl(totalMl, prefs: prefs),
+            ),
+            _StatRow(
+              icon: Icons.bar_chart,
+              label: AppLocalizations.of(context)!.shareOfKeg,
+              value: TimeFormatter.formatRatio(ratio),
+            ),
             if (timeSinceLast != null)
               _StatRow(
                 icon: Icons.timer,
@@ -289,24 +304,14 @@ class ParticipantDetailScreen extends StatelessWidget {
                   : '—',
             ),
             _StatRow(
-              icon: Icons.local_drink,
-              label: AppLocalizations.of(context)!.volume,
-              value: TimeFormatter.formatVolumeMl(totalMl, prefs: prefs),
-            ),
-            _StatRow(
-              icon: Icons.science,
-              label: AppLocalizations.of(context)!.pureAlcohol,
-              value: '${prefs.formatDecimal(pureAlcMl, 1)} ml',
-            ),
-            _StatRow(
               icon: Icons.attach_money,
               label: AppLocalizations.of(context)!.cost,
               value: TimeFormatter.formatCurrency(cost, prefs: prefs),
             ),
             _StatRow(
-              icon: Icons.sports_bar_outlined,
-              label: AppLocalizations.of(context)!.beerCount,
-              value: prefs.formatDecimal(beerCount, 1),
+              icon: Icons.science,
+              label: AppLocalizations.of(context)!.pureAlcohol,
+              value: '${prefs.formatDecimal(pureAlcMl, 1)} ml',
             ),
             if (bacValue != null) ...[
               const Divider(height: 16),
@@ -322,11 +327,6 @@ class ParticipantDetailScreen extends StatelessWidget {
                   value: '~${TimeFormatter.formatDuration(timeToZero)}',
                 ),
             ],
-            _StatRow(
-              icon: Icons.bar_chart,
-              label: AppLocalizations.of(context)!.shareOfKeg,
-              value: TimeFormatter.formatRatio(ratio),
-            ),
           ],
         ),
       ),
