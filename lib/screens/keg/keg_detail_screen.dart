@@ -67,7 +67,7 @@ class KegDetailScreen extends ConsumerWidget {
   }
 }
 
-class _KegDetailBody extends ConsumerWidget {
+class _KegDetailBody extends ConsumerStatefulWidget {
   const _KegDetailBody({
     required this.session,
     required this.poursAsync,
@@ -79,7 +79,30 @@ class _KegDetailBody extends ConsumerWidget {
   final AsyncValue<List<String>> participantIdsAsync;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_KegDetailBody> createState() => _KegDetailBodyState();
+}
+
+class _KegDetailBodyState extends ConsumerState<_KegDetailBody> {
+  /// Timer that auto-dismisses the pour snackbar.
+  ///
+  /// SnackBar's built-in duration timer gets disrupted when the widget tree
+  /// is rebuilt by provider changes + a periodic body ticker. We manage the
+  /// dismiss timeout ourselves to guarantee the snackbar disappears.
+  Timer? _snackBarTimer;
+
+  KegSession get session => widget.session;
+  AsyncValue<List<Pour>> get poursAsync => widget.poursAsync;
+  AsyncValue<List<String>> get participantIdsAsync =>
+      widget.participantIdsAsync;
+
+  @override
+  void dispose() {
+    _snackBarTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final currentUser = FirebaseAuth.instance.currentUser;
     final isCreator = currentUser?.uid == session.creatorId;
 
@@ -98,7 +121,7 @@ class _KegDetailBody extends ConsumerWidget {
         actions: [
           PopupMenuButton<String>(
             onSelected: (value) =>
-                _handleAction(context, ref, value),
+                _handleAction(context, value),
             itemBuilder: (ctx) {
               final l10n = AppLocalizations.of(ctx)!;
               return [
@@ -142,22 +165,22 @@ class _KegDetailBody extends ConsumerWidget {
         ],
       ),
       body: switch (session.status) {
-        KegStatus.created => _buildCreatedBody(context, ref),
+        KegStatus.created => _buildCreatedBody(context),
         KegStatus.active => _ActiveBody(
           session: session,
           poursAsync: poursAsync,
           participantIdsAsync: participantIdsAsync,
-          onShowPourSheet: () => _showPourSheet(context, ref),
+          onShowPourSheet: () => _showPourSheet(context),
           onShowPourForSheet: (String userId, String nickname) =>
-              _showPourForSheet(context, ref, userId, nickname),
+              _showPourForSheet(context, userId, nickname),
         ),
-        KegStatus.paused => _buildPausedBody(context, ref),
-        KegStatus.done => _buildDoneBody(context, ref),
+        KegStatus.paused => _buildPausedBody(context),
+        KegStatus.done => _buildDoneBody(context),
       },
     );
   }
 
-  void _handleAction(BuildContext context, WidgetRef ref, String action) {
+  void _handleAction(BuildContext context, String action) {
     final repo = ref.read(kegRepositoryProvider);
     switch (action) {
       case 'info':
@@ -234,7 +257,7 @@ class _KegDetailBody extends ConsumerWidget {
     );
   }
 
-  Widget _buildCreatedBody(BuildContext context, WidgetRef ref) {
+  Widget _buildCreatedBody(BuildContext context) {
     final isCreator =
         FirebaseAuth.instance.currentUser?.uid == session.creatorId;
 
@@ -304,7 +327,7 @@ class _KegDetailBody extends ConsumerWidget {
     );
   }
 
-  Widget _buildPausedBody(BuildContext context, WidgetRef ref) {
+  Widget _buildPausedBody(BuildContext context) {
     final isCreator =
         FirebaseAuth.instance.currentUser?.uid == session.creatorId;
 
@@ -356,7 +379,7 @@ class _KegDetailBody extends ConsumerWidget {
     );
   }
 
-  Widget _buildDoneBody(BuildContext context, WidgetRef ref) {
+  Widget _buildDoneBody(BuildContext context) {
     final pours = poursAsync.value ?? [];
     final currentUser = FirebaseAuth.instance.currentUser;
     final uid = currentUser?.uid ?? '';
@@ -590,7 +613,7 @@ class _KegDetailBody extends ConsumerWidget {
     );
   }
 
-  void _showPourSheet(BuildContext context, WidgetRef ref) async {
+  void _showPourSheet(BuildContext context) async {
     final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
 
     final volumeMl = await showModalBottomSheet<double>(
@@ -615,7 +638,7 @@ class _KegDetailBody extends ConsumerWidget {
     try {
       final created = await ref.read(kegRepositoryProvider).addPour(pour);
       if (context.mounted) {
-        _showPourSnackBar(context, ref, AppLocalizations.of(context)!.pourLogged, created);
+        _showPourSnackBar(context, AppLocalizations.of(context)!.pourLogged, created);
       }
     } catch (e) {
       if (context.mounted) {
@@ -630,7 +653,6 @@ class _KegDetailBody extends ConsumerWidget {
 
   void _showPourForSheet(
     BuildContext context,
-    WidgetRef ref,
     String targetUserId,
     String targetNickname,
   ) async {
@@ -661,7 +683,6 @@ class _KegDetailBody extends ConsumerWidget {
       if (context.mounted) {
         _showPourSnackBar(
           context,
-          ref,
           AppLocalizations.of(context)!.pouredForNickname(targetNickname),
           created,
         );
@@ -678,27 +699,42 @@ class _KegDetailBody extends ConsumerWidget {
   }
 
   /// Unified snackbar for pour confirmation with undo support.
+  ///
+  /// Uses a manual [Timer] to dismiss the snackbar instead of relying on
+  /// [SnackBar.duration]. The built-in duration timer gets disrupted when
+  /// the widget tree is rebuilt by Riverpod provider changes combined with
+  /// the periodic 1-second refresh timer in [_ActiveBody], causing the
+  /// snackbar to stay visible indefinitely. A manual timer is immune to
+  /// widget rebuilds.
   void _showPourSnackBar(
     BuildContext context,
-    WidgetRef ref,
     String message,
     Pour createdPour,
   ) {
-    ScaffoldMessenger.of(context)
+    _snackBarTimer?.cancel();
+    final messenger = ScaffoldMessenger.of(context);
+    messenger
       ..hideCurrentSnackBar()
       ..showSnackBar(
         SnackBar(
           content: Text(message),
           behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 5),
+          // Use a very long duration so the built-in timer never fires;
+          // our manual timer below takes care of dismissal.
+          duration: const Duration(days: 1),
           action: SnackBarAction(
             label: AppLocalizations.of(context)!.undo,
             onPressed: () {
+              _snackBarTimer?.cancel();
               ref.read(kegRepositoryProvider).undoPour(createdPour);
             },
           ),
         ),
       );
+
+    _snackBarTimer = Timer(const Duration(seconds: 5), () {
+      messenger.hideCurrentSnackBar();
+    });
   }
 }
 
