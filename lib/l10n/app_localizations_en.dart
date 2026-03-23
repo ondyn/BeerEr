@@ -342,4 +342,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override String get ago => 'ago';
   @override String get total => 'Total';
   @override String errorWithMessage(String error) => 'Error: $error';
+
+  // ---- Refactored UI ----
+  @override String get pourBeer => 'Pour Beer';
+  @override String get addPerson => 'Add Person';
+  @override String get removeFromSession => 'Remove from session';
+  @override String removeFromSessionConfirm(String nickname) => 'Remove "$nickname" and all their pours from this session?';
+  @override String get guestDetail => 'Guest detail';
 }

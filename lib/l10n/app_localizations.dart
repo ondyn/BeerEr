@@ -413,6 +413,13 @@ abstract class AppLocalizations {
   String get english;
   String get czech;
   String get german;
+
+  // ---- Refactored UI ----
+  String get pourBeer;
+  String get addPerson;
+  String get removeFromSession;
+  String removeFromSessionConfirm(String nickname);
+  String get guestDetail;
 }
 
 class _AppLocalizationsDelegate

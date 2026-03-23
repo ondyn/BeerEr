@@ -577,5 +577,19 @@
   "czech": "Čeština",
   "@czech": { "description": "Czech language name" },
   "german": "Deutsch",
-  "@german": { "description": "German language name" }
+  "@german": { "description": "German language name" },
+
+  "pourBeer": "Pour Beer",
+  "@pourBeer": { "description": "Button to pour beer for any participant" },
+  "addPerson": "Add Person",
+  "@addPerson": { "description": "Unified button to add guest or create/join account" },
+  "removeFromSession": "Remove from session",
+  "@removeFromSession": { "description": "Button to remove a guest from the session" },
+  "removeFromSessionConfirm": "Remove \"{nickname}\" and all their pours from this session?",
+  "@removeFromSessionConfirm": {
+    "description": "Confirm removal of guest",
+    "placeholders": { "nickname": { "type": "String" } }
+  },
+  "guestDetail": "Guest detail",
+  "@guestDetail": { "description": "Title for guest detail screen" }
 }

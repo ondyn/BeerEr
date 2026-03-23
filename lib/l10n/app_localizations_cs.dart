@@ -342,4 +342,11 @@ class AppLocalizationsCs extends AppLocalizations {
   @override String get ago => 'zpět';
   @override String get total => 'Celkem';
   @override String errorWithMessage(String error) => 'Chyba: $error';
+
+  // ---- Refactored UI ----
+  @override String get pourBeer => 'Nalít pivo';
+  @override String get addPerson => 'Přidat osobu';
+  @override String get removeFromSession => 'Odebrat ze session';
+  @override String removeFromSessionConfirm(String nickname) => 'Odebrat "$nickname" a všechna jeho piva z této session?';
+  @override String get guestDetail => 'Detail hosta';
 }

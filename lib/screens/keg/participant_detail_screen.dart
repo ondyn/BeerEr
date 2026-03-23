@@ -13,42 +13,59 @@ import 'package:flutter/material.dart';
 
 /// Detail view for a single participant in a keg session.
 ///
-/// Shows "My stats"-equivalent data plus two charts:
+/// Works for both registered [AppUser] and [ManualUser] (guest) participants.
+/// Shows stats plus two charts:
 ///   1. Cumulative beer volume over time
-///   2. Estimated BAC over time
+///   2. Estimated BAC over time (only for registered users with weight)
+///
+/// When [onRemoveGuest] is provided the screen shows a "Remove from session"
+/// button (used when the keg creator views a guest's detail).
 class ParticipantDetailScreen extends StatelessWidget {
   const ParticipantDetailScreen({
     super.key,
-    required this.user,
     required this.session,
     required this.pours,
     required this.isMe,
     required this.prefs,
-  });
+    this.user,
+    this.guest,
+    this.onRemoveGuest,
+  }) : assert(user != null || guest != null);
 
-  final AppUser user;
+  final AppUser? user;
+  final ManualUser? guest;
   final KegSession session;
   final List<Pour> pours;
   final bool isMe;
   final FormatPreferences prefs;
 
+  /// Called when the keg creator taps "Remove from session" for a guest.
+  final VoidCallback? onRemoveGuest;
+
+  String get _participantId => user?.id ?? guest!.id;
+  String get _displayName => user?.displayName ?? guest!.nickname;
+  bool get _isGuest => guest != null && user == null;
+  int? get _avatarIcon => user?.avatarIcon;
+  double get _weightKg => user?.weightKg ?? 0;
+  String get _gender => user?.gender ?? 'male';
+
   @override
   Widget build(BuildContext context) {
     final userPours = pours
-        .where((p) => p.userId == user.id && !p.undone)
+        .where((p) => p.userId == _participantId && !p.undone)
         .toList()
       ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
 
-    final totalMl = StatsCalculator.userPouredMl(pours, user.id);
-    final beerCount = StatsCalculator.beerCount(pours, user.id);
-    final pureAlcMl =
-        StatsCalculator.userPureAlcoholMl(pours, user.id, session.alcoholPercent);
+    final totalMl = StatsCalculator.userPouredMl(pours, _participantId);
+    final beerCount = StatsCalculator.beerCount(pours, _participantId);
+    final pureAlcMl = StatsCalculator.userPureAlcoholMl(
+        pours, _participantId, session.alcoholPercent);
     final cost = StatsCalculator.userCostByConsumption(
       pours,
-      user.id,
+      _participantId,
       session.kegPrice,
     );
-    final ratio = StatsCalculator.userConsumptionRatio(pours, user.id);
+    final ratio = StatsCalculator.userConsumptionRatio(pours, _participantId);
 
     final sessionStart = session.startTime ?? userPours.firstOrNull?.timestamp;
     final sessionDuration = sessionStart != null
@@ -56,17 +73,18 @@ class ParticipantDetailScreen extends StatelessWidget {
         : Duration.zero;
     final avgRate =
         StatsCalculator.averageRateMlPerHour(userPours, sessionDuration);
+    final timeSinceLast = StatsCalculator.timeSinceLastPour(userPours);
 
     // BAC (only if weight is set)
     double? bacValue;
     Duration? timeToZero;
-    if (user.weightKg > 0 && userPours.isNotEmpty && sessionStart != null) {
+    if (_weightKg > 0 && userPours.isNotEmpty && sessionStart != null) {
       final elapsed = DateTime.now().difference(sessionStart).inMinutes;
       bacValue = BacCalculator.estimateFromPours(
         pours: userPours,
         abv: session.alcoholPercent,
-        weightKg: user.weightKg,
-        gender: user.gender,
+        weightKg: _weightKg,
+        gender: _gender,
         elapsedMinutes: elapsed,
       );
       timeToZero = BacCalculator.timeToZero(bacValue ?? 0);
@@ -74,7 +92,7 @@ class ParticipantDetailScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(user.displayName),
+        title: Text(_displayName),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
@@ -86,6 +104,7 @@ class ParticipantDetailScreen extends StatelessWidget {
           // Stats card
           _buildStatsCard(
             context,
+            timeSinceLast: timeSinceLast,
             totalMl: totalMl,
             beerCount: beerCount,
             pureAlcMl: pureAlcMl,
@@ -120,7 +139,7 @@ class ParticipantDetailScreen extends StatelessWidget {
 
           // BAC chart
           if (userPours.isNotEmpty &&
-              user.weightKg > 0 &&
+              _weightKg > 0 &&
               sessionStart != null) ...[
             Text(
               AppLocalizations.of(context)!.estimatedBacOverTime,
@@ -136,8 +155,8 @@ class ParticipantDetailScreen extends StatelessWidget {
                 pours: userPours,
                 sessionStart: sessionStart,
                 alcoholPercent: session.alcoholPercent,
-                weightKg: user.weightKg,
-                gender: user.gender,
+                weightKg: _weightKg,
+                gender: _gender,
               ),
             ),
             const SizedBox(height: 8),
@@ -147,6 +166,22 @@ class ParticipantDetailScreen extends StatelessWidget {
                     color: BeerColors.warning,
                     fontStyle: FontStyle.italic,
                   ),
+            ),
+          ],
+
+          // Remove guest button (only for guests, shown to keg creator)
+          if (_isGuest && onRemoveGuest != null) ...[
+            const SizedBox(height: 24),
+            OutlinedButton.icon(
+              onPressed: () => onRemoveGuest!(),
+              icon: const Icon(Icons.person_remove, color: BeerColors.error),
+              label: Text(
+                AppLocalizations.of(context)!.removeFromSession,
+                style: const TextStyle(color: BeerColors.error),
+              ),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: BeerColors.error),
+              ),
             ),
           ],
           const SizedBox(height: 24),
@@ -159,8 +194,8 @@ class ParticipantDetailScreen extends StatelessWidget {
     return Row(
       children: [
         AvatarCircle(
-          displayName: user.displayName,
-          avatarIcon: user.avatarIcon,
+          displayName: _displayName,
+          avatarIcon: _avatarIcon,
           radius: 32,
           isHighlighted: isMe,
         ),
@@ -169,14 +204,40 @@ class ParticipantDetailScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                user.displayName + (isMe ? AppLocalizations.of(context)!.youSuffix : ''),
-                style: Theme.of(context).textTheme.titleLarge,
+              Row(
+                children: [
+                  Flexible(
+                    child: Text(
+                      _displayName + (isMe ? AppLocalizations.of(context)!.youSuffix : ''),
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                  ),
+                  if (_isGuest) ...[
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        AppLocalizations.of(context)!.guestLower,
+                        style: Theme.of(context)
+                            .textTheme
+                            .labelSmall
+                            ?.copyWith(color: Colors.grey),
+                      ),
+                    ),
+                  ],
+                ],
               ),
-              if (user.weightKg > 0)
+              if (_weightKg > 0)
                 Text(
-                  '${user.weightKg.toStringAsFixed(0)} kg · '
-                  '${user.gender == 'male' ? AppLocalizations.of(context)!.male : AppLocalizations.of(context)!.female}',
+                  '${_weightKg.toStringAsFixed(0)} kg · '
+                  '${_gender == 'male' ? AppLocalizations.of(context)!.male : AppLocalizations.of(context)!.female}',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: BeerColors.onSurfaceSecondary,
                       ),
@@ -190,6 +251,7 @@ class ParticipantDetailScreen extends StatelessWidget {
 
   Widget _buildStatsCard(
     BuildContext context, {
+    required Duration? timeSinceLast,
     required double totalMl,
     required double beerCount,
     required double pureAlcMl,
@@ -213,10 +275,18 @@ class ParticipantDetailScreen extends StatelessWidget {
                   ),
             ),
             const SizedBox(height: 8),
+            if (timeSinceLast != null)
+              _StatRow(
+                icon: Icons.timer,
+                label: AppLocalizations.of(context)!.sinceLast,
+                value: TimeFormatter.formatTimer(timeSinceLast),
+              ),
             _StatRow(
-              icon: Icons.sports_bar_outlined,
-              label: AppLocalizations.of(context)!.beerCount,
-              value: prefs.formatDecimal(beerCount, 1),
+              icon: Icons.speed,
+              label: AppLocalizations.of(context)!.avgRateLabel,
+              value: avgRate > 0
+                  ? '${TimeFormatter.formatVolumeMl(avgRate, prefs: prefs)}/h'
+                  : '—',
             ),
             _StatRow(
               icon: Icons.local_drink,
@@ -229,21 +299,14 @@ class ParticipantDetailScreen extends StatelessWidget {
               value: '${prefs.formatDecimal(pureAlcMl, 1)} ml',
             ),
             _StatRow(
-              icon: Icons.bar_chart,
-              label: AppLocalizations.of(context)!.shareOfKeg,
-              value: TimeFormatter.formatRatio(ratio),
-            ),
-            _StatRow(
-              icon: Icons.timer,
-              label: AppLocalizations.of(context)!.avgRateLabel,
-              value: avgRate > 0
-                  ? '${TimeFormatter.formatVolumeMl(avgRate, prefs: prefs)}/h'
-                  : '—',
-            ),
-            _StatRow(
-              icon: Icons.euro,
+              icon: Icons.attach_money,
               label: AppLocalizations.of(context)!.cost,
               value: TimeFormatter.formatCurrency(cost, prefs: prefs),
+            ),
+            _StatRow(
+              icon: Icons.sports_bar_outlined,
+              label: AppLocalizations.of(context)!.beerCount,
+              value: prefs.formatDecimal(beerCount, 1),
             ),
             if (bacValue != null) ...[
               const Divider(height: 16),
@@ -259,6 +322,11 @@ class ParticipantDetailScreen extends StatelessWidget {
                   value: '~${TimeFormatter.formatDuration(timeToZero)}',
                 ),
             ],
+            _StatRow(
+              icon: Icons.bar_chart,
+              label: AppLocalizations.of(context)!.shareOfKeg,
+              value: TimeFormatter.formatRatio(ratio),
+            ),
           ],
         ),
       ),
