@@ -920,16 +920,25 @@ class _ActiveBodyState extends ConsumerState<_ActiveBody> {
                           ),
                           const SizedBox(height: 8),
                           // Alcohol volume drunk / remaining
-                          Text(
-                            '🧪 ${prefs.formatDecimal(alcoholDrunkMl, 0)} ml / '
-                            '${prefs.formatDecimal(alcoholRemainingMl, 0)} ml alc.',
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall
-                                ?.copyWith(
-                                  color:
-                                      BeerColors.onSurfaceSecondary,
-                                ),
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.science,
+                                size: 13,
+                                color: BeerColors.onSurfaceSecondary,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${prefs.formatDecimal(alcoholDrunkMl, 0)} ml / '
+                                '${prefs.formatDecimal(alcoholRemainingMl, 0)} ml alc.',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(
+                                      color: BeerColors.onSurfaceSecondary,
+                                    ),
+                              ),
+                            ],
                           ),
                           if (predictedEmpty != null) ...[
                             const SizedBox(height: 4),
@@ -1394,6 +1403,7 @@ class _AccountsSection extends ConsumerWidget {
     final accounts = accountsAsync.asData?.value ?? [];
     final currentUid = FirebaseAuth.instance.currentUser?.uid;
     final isCreator = currentUid == session.creatorId;
+    final prefs = ref.watch(formatPreferencesProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1411,6 +1421,7 @@ class _AccountsSection extends ConsumerWidget {
               account: account,
               session: session,
               pours: pours,
+              prefs: prefs,
             ),
         // Solo participants (not in any group)
         Builder(
@@ -1430,6 +1441,7 @@ class _AccountsSection extends ConsumerWidget {
                     userId: uid,
                     session: session,
                     pours: pours,
+                    prefs: prefs,
                     ref: ref,
                   ),
               ],
@@ -1509,40 +1521,39 @@ class _AccountCard extends StatelessWidget {
     required this.account,
     required this.session,
     required this.pours,
+    required this.prefs,
   });
 
   final JointAccount account;
   final KegSession session;
   final List<Pour> pours;
+  final FormatPreferences prefs;
 
   @override
   Widget build(BuildContext context) {
-    final totalVolumeMl = StatsCalculator.groupPouredMl(
-      pours,
-      account.memberUserIds,
-    );
     final totalCost = StatsCalculator.groupCost(
       pours,
       account.memberUserIds,
       session.kegPrice,
       session.volumeTotalMl,
     );
-    // Total beer count for the group
     final groupBeerCount = account.memberUserIds.fold(
       0.0,
-      (double sum, String uid) =>
-          sum + StatsCalculator.beerCount(pours, uid),
+      (double sum, String uid) => sum + StatsCalculator.beerCount(pours, uid),
     );
+    final smallStyle = Theme.of(context).textTheme.bodySmall;
+    const iconColor = BeerColors.onSurfaceSecondary;
+    const iconSize = 14.0;
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 8),
+      margin: const EdgeInsets.only(bottom: 6),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
         child: Row(
           children: [
             GroupAvatarCircle(
               avatarIcon: account.avatarIcon,
-              radius: 18,
+              radius: 20,
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -1554,14 +1565,28 @@ class _AccountCard extends StatelessWidget {
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    '${AppLocalizations.of(context)!.membersCount(account.memberUserIds.length)} · '
-                    '🍺 ${TimeFormatter.formatBeerCount(groupBeerCount)} · '
-                    '${TimeFormatter.formatVolumeMl(totalVolumeMl)} · '
-                    '${TimeFormatter.formatCurrency(totalCost)}',
-                    style: Theme.of(context).textTheme.bodySmall,
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      const Icon(Icons.people_outline,
+                          size: iconSize, color: iconColor),
+                      const SizedBox(width: 3),
+                      Text('${account.memberUserIds.length}', style: smallStyle),
+                      const SizedBox(width: 12),
+                      const Icon(Icons.sports_bar_outlined,
+                          size: iconSize, color: iconColor),
+                      const SizedBox(width: 3),
+                      Text(prefs.formatDecimal(groupBeerCount, 1),
+                          style: smallStyle),
+                      const SizedBox(width: 12),
+                      Text(
+                        TimeFormatter.formatCurrency(totalCost,
+                            prefs: prefs, decimalPlaces: 0),
+                        style: smallStyle,
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -1579,36 +1604,45 @@ class _SoloAccountCard extends StatelessWidget {
     required this.userId,
     required this.session,
     required this.pours,
+    required this.prefs,
     required this.ref,
   });
 
   final String userId;
   final KegSession session;
   final List<Pour> pours;
+  final FormatPreferences prefs;
   final WidgetRef ref;
 
   @override
   Widget build(BuildContext context) {
     final userAsync = ref.watch(watchCurrentUserProvider(userId));
-    final volumeMl = StatsCalculator.userPouredMl(pours, userId);
     final cost = StatsCalculator.userCost(
       pours,
       userId,
       session.kegPrice,
       session.volumeTotalMl,
     );
-
-    final displayName = userAsync.asData?.value?.displayName ?? userId;
+    final beerCount = StatsCalculator.beerCount(pours, userId);
+    final user = userAsync.asData?.value;
+    final displayName = user?.displayName ?? userId;
+    final currentUid = FirebaseAuth.instance.currentUser?.uid;
+    final isMe = userId == currentUid;
+    const iconColor = BeerColors.onSurfaceSecondary;
+    const iconSize = 14.0;
+    final smallStyle = Theme.of(context).textTheme.bodySmall;
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 8),
+      margin: const EdgeInsets.only(bottom: 6),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
         child: Row(
           children: [
-            const Icon(
-              Icons.person,
-              color: BeerColors.onSurfaceSecondary,
+            AvatarCircle(
+              displayName: displayName,
+              avatarIcon: user?.avatarIcon,
+              radius: 20,
+              isHighlighted: isMe,
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -1616,16 +1650,27 @@ class _SoloAccountCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '$displayName (${AppLocalizations.of(context)!.solo})',
+                    displayName + (isMe ? AppLocalizations.of(context)!.youSuffix : ''),
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    '${TimeFormatter.formatVolumeMl(volumeMl)} · '
-                    '${TimeFormatter.formatCurrency(cost)}',
-                    style: Theme.of(context).textTheme.bodySmall,
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      const Icon(Icons.sports_bar_outlined,
+                          size: iconSize, color: iconColor),
+                      const SizedBox(width: 3),
+                      Text(prefs.formatDecimal(beerCount, 1),
+                          style: smallStyle),
+                      const SizedBox(width: 12),
+                      Text(
+                        TimeFormatter.formatCurrency(cost,
+                            prefs: prefs, decimalPlaces: 0),
+                        style: smallStyle,
+                      ),
+                    ],
                   ),
                 ],
               ),
