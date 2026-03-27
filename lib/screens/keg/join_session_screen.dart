@@ -76,7 +76,7 @@ class _JoinSessionScreenState extends ConsumerState<JoinSessionScreen> {
         );
       }
 
-      if (mounted) context.go('/keg/${widget.sessionId}');
+      if (mounted) context.pushReplacement('/keg/${widget.sessionId}');
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -95,7 +95,15 @@ class _JoinSessionScreenState extends ConsumerState<JoinSessionScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        leading: BackButton(onPressed: () => context.go('/home')),
+        leading: BackButton(
+          onPressed: () {
+            if (Navigator.of(context).canPop()) {
+              context.pop();
+            } else {
+              context.go('/home');
+            }
+          },
+        ),
       ),
       body: sessionAsync.when(
         data: (session) {

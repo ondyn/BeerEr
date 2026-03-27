@@ -33,8 +33,9 @@ SCREENSHOT_BASE="${PROJECT_DIR}/screenshots"
 # Parallel arrays (compatible with Bash 3 on macOS)
 EMULATOR_ORDER=("pixel_8A" "Tablet7" "Tablet10")
 EMULATOR_CATEGORY=("phone"   "tablet7" "tablet10")
-EMULATOR_ORDER=("Tablet10")
-EMULATOR_CATEGORY=("tablet10")
+# Uncomment to test with a single device:
+# EMULATOR_ORDER=("Tablet10")
+# EMULATOR_CATEGORY=("tablet10")
 
 # Lookup: AVD name → category
 get_category() {
@@ -162,6 +163,7 @@ shutdown_emulator() {
 run_drive_for_device() {
   local avd_name="$1"
   local category="$2"
+  local orientation="${3:-portrait}"  # "portrait" or "landscape"
   local we_started_it=false
   local serial
 
@@ -178,8 +180,26 @@ run_drive_for_device() {
     ok "Emulator $avd_name already running ($serial)"
   fi
 
-  local outdir="${SCREENSHOT_BASE}/${category}"
+  local outdir
+  if [ "$orientation" = "landscape" ]; then
+    outdir="${SCREENSHOT_BASE}/${category}_landscape"
+  else
+    outdir="${SCREENSHOT_BASE}/${category}"
+  fi
   mkdir -p "$outdir"
+
+  # Set orientation
+  if [ "$orientation" = "landscape" ]; then
+    log "Rotating $avd_name to landscape…"
+    "$ADB" -s "$serial" shell settings put system accelerometer_rotation 0 2>/dev/null || true
+    "$ADB" -s "$serial" shell settings put system user_rotation 1 2>/dev/null || true
+    sleep 3
+  else
+    log "Ensuring $avd_name is in portrait…"
+    "$ADB" -s "$serial" shell settings put system accelerometer_rotation 0 2>/dev/null || true
+    "$ADB" -s "$serial" shell settings put system user_rotation 0 2>/dev/null || true
+    sleep 2
+  fi
 
   # Delete old screenshots and logs before capturing new ones.
   log "Cleaning old screenshots in $outdir/"
@@ -227,13 +247,20 @@ run_drive_for_device() {
   fi
 
   if [ "$drive_ok" = false ]; then
-    warn "Flutter drive had issues on $avd_name. Check ${outdir}/flutter_drive.log"
+    warn "Flutter drive had issues on $avd_name ($orientation). Check ${outdir}/flutter_drive.log"
   else
-    ok "Flutter drive complete for $avd_name → $outdir/"
+    ok "Flutter drive complete for $avd_name ($orientation) → $outdir/"
   fi
 
-  # Shutdown if we started it
-  if [ "$we_started_it" = true ]; then
+  # Restore portrait orientation after landscape run
+  if [ "$orientation" = "landscape" ]; then
+    log "Restoring $avd_name to portrait…"
+    "$ADB" -s "$serial" shell settings put system user_rotation 0 2>/dev/null || true
+    sleep 2
+  fi
+
+  # Shutdown if we started it (only after the last orientation pass)
+  if [ "$we_started_it" = true ] && [ "$orientation" != "portrait" ]; then
     shutdown_emulator "$serial" "$avd_name"
   fi
 }
@@ -286,15 +313,20 @@ fi
 
 case "$MODE" in
   --drive|--flutter-drive)
-    log "Mode: Flutter Drive (sequential — one emulator at a time)"
+    log "Mode: Flutter Drive (sequential — one emulator at a time, portrait + landscape)"
     echo ""
     for avd in "${EMULATOR_ORDER[@]}"; do
       category="$(get_category "$avd")"
       echo ""
       log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-      log "  📱 $avd → $category"
+      log "  📱 $avd → $category (portrait)"
       log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-      run_drive_for_device "$avd" "$category" || true
+      run_drive_for_device "$avd" "$category" "portrait" || true
+      echo ""
+      log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+      log "  🔄 $avd → ${category}_landscape (landscape)"
+      log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+      run_drive_for_device "$avd" "$category" "landscape" || true
       echo ""
     done
     ;;
@@ -341,11 +373,13 @@ echo ""
 log "Output directories:"
 for avd in "${EMULATOR_ORDER[@]}"; do
   category="$(get_category "$avd")"
-  local_dir="${SCREENSHOT_BASE}/${category}"
-  if [ -d "$local_dir" ]; then
-    count=$(find "$local_dir" -name "*.png" | wc -l | tr -d ' ')
-    echo "   ${category}/  →  ${count} screenshots"
-  fi
+  for suffix in "" "_landscape"; do
+    local_dir="${SCREENSHOT_BASE}/${category}${suffix}"
+    if [ -d "$local_dir" ]; then
+      count=$(find "$local_dir" -name "*.png" | wc -l | tr -d ' ')
+      echo "   ${category}${suffix}/  →  ${count} screenshots"
+    fi
+  done
 done
 echo ""
 log "Google Play Store requirements check:"

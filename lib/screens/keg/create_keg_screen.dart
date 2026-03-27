@@ -352,7 +352,7 @@ class _CreateKegScreenState extends ConsumerState<CreateKegScreen> {
       // Also add creator as participant
       await repo.addParticipant(created.id, user.uid);
 
-      if (mounted) context.go('/keg/${created.id}');
+      if (mounted) context.pushReplacement('/keg/${created.id}');
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -413,21 +413,31 @@ class _CreateKegScreenState extends ConsumerState<CreateKegScreen> {
       _priceController.text = prefs.formatDecimal(100, 2);
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        leading: BackButton(
-          onPressed: () {
-            if (Navigator.of(context).canPop()) {
-              context.pop();
-            } else {
-              context.go('/home');
-            }
-          },
+    return PopScope(
+      canPop: _step == 1,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && _step == 2) {
+          setState(() => _step = 1);
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          leading: BackButton(
+            onPressed: () {
+              if (_step == 2) {
+                setState(() => _step = 1);
+              } else if (Navigator.of(context).canPop()) {
+                context.pop();
+              } else {
+                context.go('/home');
+              }
+            },
+          ),
+          title: Text(AppLocalizations.of(context)!.newKegSessionStep(_step)),
         ),
-        title: Text(AppLocalizations.of(context)!.newKegSessionStep(_step)),
-      ),
-      body: SafeArea(
-        child: _step == 1 ? _buildStep1() : _buildStep2(prefs),
+        body: SafeArea(
+          child: _step == 1 ? _buildStep1() : _buildStep2(prefs),
+        ),
       ),
     );
   }

@@ -37,7 +37,7 @@ class HomeScreen extends ConsumerWidget {
                 color: BeerColors.primaryAmber,
               ),
             ),
-            onPressed: () => context.go('/profile'),
+            onPressed: () => context.push('/profile'),
           ),
         ],
       ),
@@ -120,7 +120,12 @@ class HomeScreen extends ConsumerWidget {
                 }
 
                 return ListView(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.only(
+                    left: 16,
+                    right: 16,
+                    top: 16,
+                    bottom: 100,
+                  ),
                   children: [
                     for (final session in active)
                       Padding(
@@ -149,26 +154,46 @@ class HomeScreen extends ConsumerWidget {
         ],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          FloatingActionButton.extended(
-            heroTag: 'join_keg',
-            onPressed: () => _showJoinDialog(context),
-            icon: const Icon(Icons.qr_code_scanner),
-            label: Text(AppLocalizations.of(context)!.joinKegSession),
-            // backgroundColor: BeerColors.surfaceVariant,
-            // foregroundColor: BeerColors.primaryAmber,
-          ),
-          const SizedBox(width: 12),
-          FloatingActionButton.extended(
-            heroTag: 'new_keg',
-            onPressed: () => context.push('/keg/new'),
-            icon: const Icon(Icons.add),
-            label: Text(AppLocalizations.of(context)!.newKegSession),
-          ),
-        ],
+      floatingActionButton: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: BeerColors.background,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              blurRadius: 8,
+              offset: const Offset(0, -2),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.only(
+          left: 16,
+          right: 16,
+          top: 12,
+          bottom: 24,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Flexible(
+              child: FloatingActionButton.extended(
+                heroTag: 'join_keg',
+                onPressed: () => _showJoinDialog(context),
+                icon: const Icon(Icons.qr_code_scanner),
+                label: Text(AppLocalizations.of(context)!.joinKegSession),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Flexible(
+              child: FloatingActionButton.extended(
+                heroTag: 'new_keg',
+                onPressed: () => context.push('/keg/new'),
+                icon: const Icon(Icons.add),
+                label: Text(AppLocalizations.of(context)!.newKegSession),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -225,7 +250,7 @@ void _showJoinDialog(BuildContext context) {
                   );
                   if (sessionId != null && ctx.mounted) {
                     Navigator.pop(ctx);
-                    context.go('/join/$sessionId');
+                    context.push('/join/$sessionId');
                   }
                 },
                 icon: const Icon(Icons.qr_code_scanner),
@@ -252,7 +277,7 @@ void _showJoinDialog(BuildContext context) {
               return;
             }
             Navigator.pop(ctx);
-            context.go('/join/$sessionId');
+            context.push('/join/$sessionId');
           },
           child: Text(AppLocalizations.of(ctx)!.join),
         ),
@@ -307,7 +332,7 @@ class _BeerErDrawer extends ConsumerWidget {
             child: GestureDetector(
               onTap: () {
                 Navigator.pop(context);
-                context.go('/profile');
+                context.push('/profile');
               },
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -345,7 +370,7 @@ class _BeerErDrawer extends ConsumerWidget {
             title: Text(AppLocalizations.of(context)!.pastSessions),
             onTap: () {
               Navigator.pop(context);
-              context.go('/sessions/history');
+              context.push('/sessions/history');
             },
           ),
           ListTile(
@@ -353,7 +378,7 @@ class _BeerErDrawer extends ConsumerWidget {
             title: Text(AppLocalizations.of(context)!.settings),
             onTap: () {
               Navigator.pop(context);
-              context.go('/settings');
+              context.push('/settings');
             },
           ),
           ListTile(
@@ -361,7 +386,7 @@ class _BeerErDrawer extends ConsumerWidget {
             title: Text(AppLocalizations.of(context)!.about),
             onTap: () {
               Navigator.pop(context);
-              context.go('/about');
+              context.push('/about');
             },
           ),
           const Divider(),

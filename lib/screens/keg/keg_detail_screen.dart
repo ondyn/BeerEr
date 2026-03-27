@@ -797,8 +797,10 @@ class _ActiveBodyState extends ConsumerState<_ActiveBody> {
   }
 
   /// Schedule or cancel the BAC-zero local notification.
-  void _syncBacZeroNotification(double bac, bool enabled) {
-    if (!enabled || bac <= 0) {
+  ///
+  /// Skips scheduling if the user has not consumed any beer (no pours).
+  void _syncBacZeroNotification(double bac, bool enabled, {required bool hasPours}) {
+    if (!enabled || bac <= 0 || !hasPours) {
       if (_lastScheduledMinutes != null) {
         NotificationService.instance.cancelBacZeroNotification();
         _lastScheduledMinutes = null;
@@ -872,7 +874,11 @@ class _ActiveBodyState extends ConsumerState<_ActiveBody> {
     // Schedule / cancel BAC-zero notification.
     final notifyBacZero =
         appUser?.preferences['notify_bac_zero'] as bool? ?? true;
-    _syncBacZeroNotification(myBac ?? 0, notifyBacZero);
+    _syncBacZeroNotification(
+      myBac ?? 0,
+      notifyBacZero,
+      hasPours: userPours.where((p) => !p.undone).isNotEmpty,
+    );
 
     return ListView(
       key: const PageStorageKey('active_body_list'),
@@ -1038,6 +1044,7 @@ class _ParticipantsSection extends ConsumerWidget {
         const SizedBox(height: 8),
         usersAsync.when(
           skipLoadingOnReload: true,
+          skipLoadingOnRefresh: true,
           data: (users) {
             final prefs = ref.watch(formatPreferencesProvider);
             final currentUid = FirebaseAuth.instance.currentUser?.uid;
@@ -1075,6 +1082,7 @@ class _ParticipantsSection extends ConsumerWidget {
                 // Registered users
                 for (final user in sortedUsers)
                   _UnifiedParticipantRow(
+                    key: ValueKey('participant_${user.id}'),
                     displayName: user.displayName +
                         (user.id == currentUid
                             ? AppLocalizations.of(context)!.youSuffix
@@ -1130,6 +1138,7 @@ class _ParticipantsSection extends ConsumerWidget {
                 // Manual (guest) users
                 for (final guest in sortedGuests)
                   _UnifiedParticipantRow(
+                    key: ValueKey('guest_${guest.id}'),
                     displayName: guest.nickname,
                     isMe: false,
                     isGuest: true,
@@ -1164,9 +1173,7 @@ class _ParticipantsSection extends ConsumerWidget {
               ],
             );
           },
-          loading: () => const Center(
-            child: CircularProgressIndicator(strokeWidth: 2),
-          ),
+          loading: () => const SizedBox.shrink(),
           error: (e, _) => Text(AppLocalizations.of(context)!.errorWithMessage(e.toString())),
         ),
       ],
@@ -1210,6 +1217,7 @@ class _ParticipantsSection extends ConsumerWidget {
 /// and a prominent pour button.
 class _UnifiedParticipantRow extends StatelessWidget {
   const _UnifiedParticipantRow({
+    super.key,
     required this.displayName,
     required this.isMe,
     required this.isGuest,
