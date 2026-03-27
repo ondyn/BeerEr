@@ -1,18 +1,21 @@
 import 'package:beerer/l10n/app_localizations.dart';
+import 'package:beerer/models/models.dart';
+import 'package:beerer/repositories/user_repository.dart';
 import 'package:beerer/theme/beer_theme.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 /// Sign-in screen with email/password and social providers.
-class SignInScreen extends StatefulWidget {
+class SignInScreen extends ConsumerStatefulWidget {
   const SignInScreen({super.key});
 
   @override
-  State<SignInScreen> createState() => _SignInScreenState();
+  ConsumerState<SignInScreen> createState() => _SignInScreenState();
 }
 
-class _SignInScreenState extends State<SignInScreen> {
+class _SignInScreenState extends ConsumerState<SignInScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -70,6 +73,24 @@ class _SignInScreenState extends State<SignInScreen> {
           });
         }
         return;
+      }
+
+      // Ensure a Firestore profile exists (may have been wiped or never
+      // created — e.g. the DB was cleared while Auth users were kept).
+      final userRepo = ref.read(userRepositoryProvider);
+      final existingProfile = await userRepo.getUser(user.uid);
+      if (existingProfile == null) {
+        final fallbackNickname =
+            user.displayName?.trim().isNotEmpty == true
+                ? user.displayName!.trim()
+                : (user.email != null && user.email!.isNotEmpty
+                    ? user.email!.split('@').first
+                    : 'Beerer user');
+        await userRepo.createOrUpdateUser(AppUser(
+          id: user.uid,
+          nickname: fallbackNickname,
+          email: user.email ?? '',
+        ));
       }
 
       if (mounted) context.go('/home');

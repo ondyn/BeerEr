@@ -33,6 +33,8 @@ SCREENSHOT_BASE="${PROJECT_DIR}/screenshots"
 # Parallel arrays (compatible with Bash 3 on macOS)
 EMULATOR_ORDER=("pixel_8A" "Tablet7" "Tablet10")
 EMULATOR_CATEGORY=("phone"   "tablet7" "tablet10")
+EMULATOR_ORDER=("Tablet10")
+EMULATOR_CATEGORY=("tablet10")
 
 # Lookup: AVD name → category
 get_category() {

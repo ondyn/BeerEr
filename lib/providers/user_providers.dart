@@ -7,10 +7,33 @@ part 'user_providers.g.dart';
 
 /// Watches the current user profile.
 /// If the stored doc has no email yet, back-fills it from Firebase Auth.
+/// If no Firestore profile exists at all, auto-creates a minimal one so
+/// the user's nickname is never a truncated UID hash.
 @riverpod
 Stream<AppUser?> watchCurrentUser(Ref ref, String userId) {
   final repo = ref.watch(userRepositoryProvider);
+  bool autoCreating = false;
   return repo.watchUser(userId).map((user) {
+    if (user == null && !autoCreating) {
+      // No profile in Firestore — create one from Firebase Auth data.
+      autoCreating = true;
+      final fbUser = FirebaseAuth.instance.currentUser;
+      if (fbUser != null && fbUser.uid == userId) {
+        final fallbackNickname =
+            fbUser.displayName?.trim().isNotEmpty == true
+                ? fbUser.displayName!.trim()
+                : (fbUser.email != null && fbUser.email!.isNotEmpty
+                    ? fbUser.email!.split('@').first
+                    : 'Beerer user');
+        // Fire and forget — the snapshot stream will emit the new doc.
+        repo.createOrUpdateUser(AppUser(
+          id: fbUser.uid,
+          nickname: fallbackNickname,
+          email: fbUser.email ?? '',
+        ));
+      }
+      return null;
+    }
     if (user != null && user.email.isEmpty) {
       final fbEmail =
           FirebaseAuth.instance.currentUser?.email ?? '';
