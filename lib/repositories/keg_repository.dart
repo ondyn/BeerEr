@@ -109,9 +109,10 @@ class KegRepository {
       if (keg.status != KegStatus.active) {
         throw StateError('Cannot pour while keg is ${keg.status.name}.');
       }
-      if (keg.volumeRemainingMl < pour.volumeMl) {
-        throw StateError('Not enough beer left in the keg.');
-      }
+
+      // Allow pouring even if keg counter is at 0 — there may be more
+      // beer than originally declared. Billing is based on actual pours,
+      // not the keg level, so a negative remaining volume is acceptable.
 
       final pourRef = _pours.doc();
       final data = pour.toJson()..remove('id');
@@ -228,9 +229,46 @@ class KegRepository {
     return guest;
   }
 
-  /// Removes a manual user document.
+  /// Removes a manual user and rolls back their pours atomically.
+  ///
+  /// 1. Soft-deletes all active pours by the guest (`undone: true`).
+  /// 2. Restores the keg's `volume_remaining_ml` by the total of those pours.
+  /// 3. Deletes the manual user document.
+  ///
+  /// Uses a batched write for atomicity.
   Future<void> removeManualUser(String sessionId, String manualUserId) async {
-    await _manualUsers(sessionId).doc(manualUserId).delete();
+    // Fetch all active pours for this guest.
+    final poursSnap = await _pours
+        .where('session_id', isEqualTo: sessionId)
+        .where('user_id', isEqualTo: manualUserId)
+        .where('undone', isEqualTo: false)
+        .get();
+
+    // Calculate total volume to restore.
+    double totalVolumeMl = 0;
+    for (final doc in poursSnap.docs) {
+      final volumeMl = (doc.data()['volume_ml'] as num?)?.toDouble() ?? 0;
+      totalVolumeMl += volumeMl;
+    }
+
+    final batch = _db.batch();
+
+    // Soft-delete each pour.
+    for (final doc in poursSnap.docs) {
+      batch.update(doc.reference, {'undone': true});
+    }
+
+    // Restore keg volume.
+    if (totalVolumeMl > 0) {
+      batch.update(_sessions.doc(sessionId), {
+        'volume_remaining_ml': FieldValue.increment(totalVolumeMl),
+      });
+    }
+
+    // Delete the manual user document.
+    batch.delete(_manualUsers(sessionId).doc(manualUserId));
+
+    await batch.commit();
   }
 
   /// Watches all manual users for a session.

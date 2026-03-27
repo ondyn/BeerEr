@@ -39,7 +39,7 @@ void main() {
         email: 'creator@beerer.app',
       ));
 
-      final session = KegSession(
+      const session = KegSession(
         id: '',
         creatorId: creatorId,
         beerName: 'Party Pilsner',
@@ -153,7 +153,7 @@ void main() {
     testWidgets('manual user creation and merge with real user',
         (tester) async {
       // Create session
-      final session = KegSession(
+      const session = KegSession(
         id: '',
         creatorId: creatorId,
         beerName: 'Merge Test',

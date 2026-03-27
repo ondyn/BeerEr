@@ -1,9 +1,9 @@
+import 'package:beerer/l10n/app_localizations.dart';
 import 'package:beerer/theme/beer_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:beerer/l10n/app_localizations.dart';
 
 /// About screen — logo, version, disclaimers.
 class AboutScreen extends StatelessWidget {

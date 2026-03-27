@@ -1,7 +1,9 @@
 import 'package:beerer/l10n/app_localizations.dart';
+import 'package:beerer/models/models.dart';
 import 'package:beerer/providers/providers.dart';
 import 'package:beerer/theme/beer_theme.dart';
 import 'package:beerer/widgets/session_card.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -13,6 +15,7 @@ class HistoryScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final doneSessions = ref.watch(watchDoneSessionsProvider);
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
 
     return Scaffold(
       appBar: AppBar(
@@ -51,8 +54,9 @@ class HistoryScreen extends ConsumerWidget {
             itemCount: sessions.length,
             itemBuilder: (_, i) => Padding(
               padding: const EdgeInsets.only(bottom: 12),
-              child: SessionCard(
+              child: _HistorySessionCard(
                 session: sessions[i],
+                isOwner: sessions[i].creatorId == currentUserId,
                 onTap: () => context.push('/keg/${sessions[i].id}'),
               ),
             ),
@@ -65,6 +69,34 @@ class HistoryScreen extends ConsumerWidget {
         ),
         error: (e, _) => Center(child: Text(AppLocalizations.of(context)!.error(e.toString()))),
       ),
+    );
+  }
+}
+
+/// Wraps [SessionCard] and watches the participant count from Firestore.
+class _HistorySessionCard extends ConsumerWidget {
+  const _HistorySessionCard({
+    required this.session,
+    required this.isOwner,
+    this.onTap,
+  });
+
+  final KegSession session;
+  final bool isOwner;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final participantIdsAsync =
+        ref.watch(watchParticipantIdsProvider(session.id));
+    final participantCount =
+        participantIdsAsync.asData?.value.length ?? 0;
+
+    return SessionCard(
+      session: session,
+      participantCount: participantCount,
+      isOwner: isOwner,
+      onTap: onTap,
     );
   }
 }

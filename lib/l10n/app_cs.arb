@@ -1,6 +1,6 @@
 {
   "@@locale": "cs",
-  "appTitle": "BeerEr",
+  "appTitle": "Beerer",
   "tapKeg": "Načepovat",
   "untapKeg": "Odepnout sud",
   "kegDone": "Sud je prázdný",
@@ -58,7 +58,7 @@
 
   "signIn": "Přihlásit se",
   "createAccount": "Vytvořit účet",
-  "signInToBeerEr": "Přihlásit se do BeerEr",
+  "signInToBeerEr": "Přihlásit se do Beerer",
   "email": "E-mail",
   "password": "Heslo",
   "confirmPassword": "Potvrzení hesla",
@@ -236,6 +236,8 @@
   "userAlreadyInAnotherGroup": "Tento uživatel je již v jiné skupině.",
 
   "guest": "Host",
+
+  "guestNameTaken": "Tento název je již obsazen jiným účastníkem. Zvolte prosím jiné jméno.",
 
   "english": "English",
   "czech": "Čeština",

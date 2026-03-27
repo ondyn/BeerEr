@@ -2,7 +2,7 @@
 
   "@@locale": "en",  "@@locale": "en",
 
-  "appTitle": "BeerEr",  "appTitle": "BeerEr",
+  "appTitle": "Beerer",  "appTitle": "Beerer",
 
   "@appTitle": { "description": "The application title" },  "@appTitle": {
 
@@ -183,7 +183,7 @@
   "@signIn": { "description": "Sign in button label" },
   "createAccount": "Create account",
   "@createAccount": { "description": "Create account button" },
-  "signInToBeerEr": "Sign in to BeerEr",
+  "signInToBeerEr": "Sign in to Beerer",
   "@signInToBeerEr": { "description": "Sign in screen title" },
   "email": "Email",
   "@email": { "description": "Email field label" },
@@ -571,6 +571,9 @@
 
   "guest": "Guest",
   "@guest": { "description": "Default display name for unauthenticated user" },
+
+  "guestNameTaken": "This name is already taken by another participant. Please choose a different name.",
+  "@guestNameTaken": { "description": "Error when guest name conflicts with an existing participant" },
 
   "english": "English",
   "@english": { "description": "English language name" },

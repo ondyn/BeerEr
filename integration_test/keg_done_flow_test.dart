@@ -45,7 +45,7 @@ void main() {
         ));
       }
 
-      final session = KegSession(
+      const session = KegSession(
         id: '',
         creatorId: alice,
         beerName: 'Final Bill IPA',
@@ -196,7 +196,7 @@ void main() {
         ));
       }
 
-      final session = KegSession(
+      const session = KegSession(
         id: '',
         creatorId: alice,
         beerName: 'Group Bill Ale',
@@ -284,7 +284,7 @@ void main() {
     });
 
     testWidgets('bill review — add pour after keg is done', (tester) async {
-      final session = KegSession(
+      const session = KegSession(
         id: '',
         creatorId: alice,
         beerName: 'Review Test',

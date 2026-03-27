@@ -1,5 +1,5 @@
 name: beerer
-description: "BeerEr — keg beer tracker for parties."
+description: "Beerer — keg beer tracker for parties."
 publish_to: 'none'
 
 version: 1.0.0+1
@@ -44,15 +44,15 @@ dependencies:
   cached_network_image: ^3.4.1
   flutter_svg: ^2.0.10+1
   logger: ^2.5.0
-  google_fonts: ^6.2.1
+  google_fonts: ^8.0.2
   timeago: ^3.7.0
   cloud_functions: ^6.0.7
-  app_links: ^6.4.0
+  app_links: ^7.0.0
   http: ^1.6.0
-  flutter_local_notifications: ^19.0.0
+  flutter_local_notifications: ^21.0.0
   shared_preferences: ^2.3.4
-  mobile_scanner: ^6.0.2
-  fl_chart: ^0.70.2
+  mobile_scanner: ^7.2.0
+  fl_chart: ^1.2.0
 
 dev_dependencies:
   flutter_test:

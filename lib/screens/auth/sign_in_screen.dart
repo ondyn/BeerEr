@@ -41,7 +41,7 @@ class _SignInScreenState extends State<SignInScreen> {
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
-      final user = credential.user;
+      var user = credential.user;
 
       if (user == null) {
         setState(() {
@@ -50,10 +50,16 @@ class _SignInScreenState extends State<SignInScreen> {
         return;
       }
 
-      if (!user.emailVerified) {
+      // Reload the user profile so emailVerified reflects the latest
+      // server-side state (the cached token may be stale if the user
+      // just confirmed their email in a browser).
+      await user.reload();
+      user = FirebaseAuth.instance.currentUser;
+
+      if (user == null || !user.emailVerified) {
         // Block access until email is verified.
         try {
-          await user.sendEmailVerification();
+          await user?.sendEmailVerification();
         } catch (_) {
           // Ignore resend failures here.
         }

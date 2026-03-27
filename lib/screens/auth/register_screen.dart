@@ -78,10 +78,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       // Send verification email.
       try {
         await user.sendEmailVerification();
-        debugPrint('[BeerEr] Verification email sent to ${user.email}');
+        debugPrint('[Beerer] Verification email sent to ${user.email}');
       } catch (e) {
         // Log the error but don't block account creation.
-        debugPrint('[BeerEr] sendEmailVerification failed: $e');
+        debugPrint('[Beerer] sendEmailVerification failed: $e');
       }
 
       // Create user profile in Firestore
@@ -107,6 +107,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       if (mounted) {
         // Sign out so the user cannot use the app until email is verified.
         await FirebaseAuth.instance.signOut();
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -114,6 +115,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             ),
           ),
         );
+        if (!mounted) return;
         context.go('/auth/sign-in');
         return; // Widget will be disposed — skip finally setState.
       }
@@ -146,9 +148,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
-          child: Form(
-            key: _formKey,
-            child: Column(
+          child: AutofillGroup(
+            child: Form(
+              key: _formKey,
+              child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
@@ -160,7 +163,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
-                  autofillHints: const [AutofillHints.email],
+                  autofillHints: const [AutofillHints.username, AutofillHints.email],
                   decoration: InputDecoration(
                     prefixIcon: const Icon(Icons.email_outlined),
                     labelText: AppLocalizations.of(context)!.email,
@@ -183,6 +186,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     prefixIcon: const Icon(Icons.lock_outlined),
                     labelText: AppLocalizations.of(context)!.password,
                   ),
+                  onChanged: (_) => setState(() {}),
                   validator: (val) {
                     if (val == null || val.length < 6) {
                       return AppLocalizations.of(context)!.passwordMinLength;
@@ -190,11 +194,34 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     return null;
                   },
                 ),
+                // Live password length hint
+                if (_passwordController.text.isNotEmpty &&
+                    _passwordController.text.length < 6)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4, left: 12),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.info_outline,
+                          size: 14,
+                          color: BeerColors.warning,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          AppLocalizations.of(context)!.passwordMinLength,
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: BeerColors.warning,
+                              ),
+                        ),
+                      ],
+                    ),
+                  ),
                 const SizedBox(height: 12),
                 // Confirm password
                 TextFormField(
                   controller: _confirmPwdController,
                   obscureText: true,
+                  autofillHints: const [AutofillHints.newPassword],
                   decoration: InputDecoration(
                     prefixIcon: const Icon(Icons.lock_outlined),
                     labelText: AppLocalizations.of(context)!.confirmPassword,
@@ -336,6 +363,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 ),
               ],
             ),
+          ),
           ),
         ),
       ),

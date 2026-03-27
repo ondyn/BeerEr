@@ -1,6 +1,6 @@
 {
   "@@locale": "de",
-  "appTitle": "BeerEr",
+  "appTitle": "Beerer",
   "tapKeg": "Fass anzapfen",
   "untapKeg": "Fass abschließen",
   "kegDone": "Fass leer",
@@ -58,7 +58,7 @@
 
   "signIn": "Anmelden",
   "createAccount": "Konto erstellen",
-  "signInToBeerEr": "Bei BeerEr anmelden",
+  "signInToBeerEr": "Bei Beerer anmelden",
   "email": "E-Mail",
   "password": "Passwort",
   "confirmPassword": "Passwort bestätigen",
@@ -236,6 +236,8 @@
   "userAlreadyInAnotherGroup": "Dieser Benutzer ist bereits in einer anderen Gruppe.",
 
   "guest": "Gast",
+
+  "guestNameTaken": "Dieser Name wird bereits von einem anderen Teilnehmer verwendet. Bitte wählen Sie einen anderen Namen.",
 
   "english": "English",
   "czech": "Čeština",

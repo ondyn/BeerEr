@@ -40,7 +40,7 @@ class _SplashScreenState extends State<SplashScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              'BeerEr',
+              'Beerer',
               style: Theme.of(context).textTheme.displaySmall?.copyWith(
                     color: BeerColors.primaryAmber,
                     fontWeight: FontWeight.w700,

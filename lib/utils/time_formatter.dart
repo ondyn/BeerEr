@@ -5,10 +5,15 @@ class TimeFormatter {
   const TimeFormatter._();
 
   /// Formats a [Duration] as "Xh Ym" or "Ym Zs".
+  ///
+  /// Negative durations (e.g. caused by minor clock skew on pour
+  /// timestamps) are treated as zero rather than showing a leading "-".
   static String formatDuration(Duration duration) {
-    final hours = duration.inHours;
-    final minutes = duration.inMinutes.remainder(60);
-    final seconds = duration.inSeconds.remainder(60);
+    // Guard against negative durations caused by clock skew.
+    final d = duration.isNegative ? Duration.zero : duration;
+    final hours = d.inHours;
+    final minutes = d.inMinutes.remainder(60);
+    final seconds = d.inSeconds.remainder(60);
 
     if (hours > 0) {
       return '${hours}h ${minutes.toString().padLeft(2, '0')}m';
@@ -20,10 +25,13 @@ class TimeFormatter {
   }
 
   /// Formats a duration as "HH:MM:SS" for live counters.
+  ///
+  /// Negative durations are treated as zero (guard against clock skew).
   static String formatTimer(Duration duration) {
-    final hours = duration.inHours;
-    final minutes = duration.inMinutes.remainder(60);
-    final seconds = duration.inSeconds.remainder(60);
+    final d = duration.isNegative ? Duration.zero : duration;
+    final hours = d.inHours;
+    final minutes = d.inMinutes.remainder(60);
+    final seconds = d.inSeconds.remainder(60);
 
     if (hours > 0) {
       return '${hours.toString().padLeft(2, '0')}:'

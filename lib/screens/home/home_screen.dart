@@ -148,19 +148,20 @@ class HomeScreen extends ConsumerWidget {
           ),
         ],
       ),
-      floatingActionButton: Column(
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           FloatingActionButton.extended(
             heroTag: 'join_keg',
             onPressed: () => _showJoinDialog(context),
             icon: const Icon(Icons.qr_code_scanner),
             label: Text(AppLocalizations.of(context)!.joinKegSession),
-            backgroundColor: BeerColors.surfaceVariant,
-            foregroundColor: BeerColors.primaryAmber,
+            // backgroundColor: BeerColors.surfaceVariant,
+            // foregroundColor: BeerColors.primaryAmber,
           ),
-          const SizedBox(height: 12),
+          const SizedBox(width: 12),
           FloatingActionButton.extended(
             heroTag: 'new_keg',
             onPressed: () => context.push('/keg/new'),
@@ -187,50 +188,52 @@ void _showJoinDialog(BuildContext context) {
           Text(AppLocalizations.of(ctx)!.joinAKegSession),
         ],
       ),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            AppLocalizations.of(ctx)!.pasteInviteLinkOrId,
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: controller,
-            autofocus: true,
-            decoration: InputDecoration(
-              hintText: AppLocalizations.of(ctx)!.inviteLinkHint,
-              suffixIcon: IconButton(
-                icon: const Icon(Icons.paste),
-                tooltip: AppLocalizations.of(ctx)!.pasteFromClipboard,
-                onPressed: () async {
-                  final clip = await Clipboard.getData(Clipboard.kTextPlain);
-                  if (clip?.text != null) {
-                    controller.text = clip!.text!;
-                  }
-                },
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              AppLocalizations.of(ctx)!.pasteInviteLinkOrId,
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: controller,
+              autofocus: true,
+              decoration: InputDecoration(
+                hintText: AppLocalizations.of(ctx)!.inviteLinkHint,
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.paste),
+                  tooltip: AppLocalizations.of(ctx)!.pasteFromClipboard,
+                  onPressed: () async {
+                    final clip = await Clipboard.getData(Clipboard.kTextPlain);
+                    if (clip?.text != null) {
+                      controller.text = clip!.text!;
+                    }
+                  },
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 12),
-          Center(
-            child: OutlinedButton.icon(
-              onPressed: () async {
-                final sessionId = await Navigator.of(ctx).push<String>(
-                  MaterialPageRoute(
-                    builder: (_) => const QrScannerScreen(),
-                  ),
-                );
-                if (sessionId != null && ctx.mounted) {
-                  Navigator.pop(ctx);
-                  context.go('/join/$sessionId');
-                }
-              },
-              icon: const Icon(Icons.qr_code_scanner),
-              label: Text(AppLocalizations.of(ctx)!.scanQrCode),
+            const SizedBox(height: 12),
+            Center(
+              child: OutlinedButton.icon(
+                onPressed: () async {
+                  final sessionId = await Navigator.of(ctx).push<String>(
+                    MaterialPageRoute(
+                      builder: (_) => const QrScannerScreen(),
+                    ),
+                  );
+                  if (sessionId != null && ctx.mounted) {
+                    Navigator.pop(ctx);
+                    context.go('/join/$sessionId');
+                  }
+                },
+                icon: const Icon(Icons.qr_code_scanner),
+                label: Text(AppLocalizations.of(ctx)!.scanQrCode),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
       actions: [
         TextButton(

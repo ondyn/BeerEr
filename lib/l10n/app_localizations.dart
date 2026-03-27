@@ -420,6 +420,7 @@ abstract class AppLocalizations {
   String get removeFromSession;
   String removeFromSessionConfirm(String nickname);
   String get guestDetail;
+  String get guestNameTaken;
 }
 
 class _AppLocalizationsDelegate

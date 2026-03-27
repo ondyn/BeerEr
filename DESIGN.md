@@ -1,8 +1,8 @@
-# BeerEr — Design Document
+# Beerer — Design Document
 
 ## 1. Product Overview
 
-**BeerEr** is a cross-platform mobile app (iOS & Android) for tracking beer consumption from a keg at a party. It calculates per-user statistics, estimates keg depletion, and helps settle costs among groups.
+**Beerer** is a cross-platform mobile app (iOS & Android) for tracking beer consumption from a keg at a party. It calculates per-user statistics, estimates keg depletion, and helps settle costs among groups.
 
 ---
 
@@ -112,7 +112,7 @@
 ┌─────────────────────────────┐
 │                             │
 │                             │
-│        🍺  BeerEr           │  ← centred logo + wordmark (amber on dark)
+│        🍺  Beerer           │  ← centred logo + wordmark (amber on dark)
 │   "Count every drop"        │  ← tagline in warm grey
 │                             │
 │      ████████░░░  loading   │  ← amber shimmer progress bar
@@ -137,7 +137,7 @@
 │   [illustrated keg + crowd] │  ← full-bleed hero illustration
 │                             │
 │  ┌───────────────────────┐  │
-│  │  🍺  BeerEr           │  │
+│  │  🍺  Beerer           │  │
 │  │  Track every pour.    │  │
 │  │  Settle every tab.    │  │
 │  └───────────────────────┘  │
@@ -164,7 +164,7 @@
 ┌─────────────────────────────┐
 │  ←                          │
 │                             │
-│   Sign in to BeerEr         │  ← display heading
+│   Sign in to Beerer         │  ← display heading
 │                             │
 │  ┌─────────────────────┐    │
 │  │  📧  Email          │    │  ← text field
@@ -271,7 +271,7 @@ Single field (email) + "Send reset link" button. Confirmation message replaces f
 **Layout:**
 ```
 ┌─────────────────────────────┐
-│  BeerEr          👤  [≡]   │  ← top app bar; avatar → Profile; hamburger → Drawer
+│  Beerer          👤  [≡]   │  ← top app bar; avatar → Profile; hamburger → Drawer
 ├─────────────────────────────┤
 │                             │
 │  ┌─── ACTIVE SESSION ────┐  │  ← highlighted card (amber border)
@@ -907,13 +907,81 @@ Deep link `/join/:sessionId` → Auth check → Join Session → Keg Session Det
 |-----------|-------------|
 | `KegFillBar` | Animated vertical bar shaped like a keg silhouette, amber-to-foam gradient |
 | `StatTile` | Label + Roboto Mono value, optional trend arrow, used in stats cards |
-| `ParticipantChip` | Avatar + nickname chip with optional live-activity green dot |
-| `PourButton` | Full-width amber CTA with haptic + particle animation on tap |
-| `VolumePickerSheet` | Bottom sheet with predefined chips + manual stepper input |
+| `AvatarCircle` | Circular avatar with initials or icon, optional highlight ring (current user) |
+| `GroupAvatarCircle` | Circular avatar for joint account groups |
+| `PourButton` | Full-width amber CTA with haptic feedback on tap |
+| `VolumePickerSheet` | Bottom sheet with predefined chips + manual numeric input |
 | `SessionCard` | Summary card used in Home and History lists |
-| `UserDetailCard` | Bottom-sheet card showing per-user stats and a quick-pour shortcut |
-| `JoinLinkSheet` | QR code + deep link + share-intent buttons |
-| `SnackbarPour` | Amber snackbar with "Undo" action (5 s timeout) |
+| `JointAccountSheet` | Bottom sheet for creating/joining joint accounts per session |
+| `SnackbarPour` | Amber floating snackbar with "Undo" action (5 s manual timer) |
 | `BacBanner` | BAC estimate strip with "Drink Responsibly" note; hidden if opted out |
+| `_UnifiedParticipantRow` | Ranked row used in the participants list for both registered users and guests |
 
+---
 
+## 10. Current Implementation Status (March 2026)
+
+### ✅ Implemented & Shipped
+
+| Feature | Notes |
+|---------|-------|
+| Email/password auth with email verification | Sign-in blocked until email verified; resend available |
+| Social auth (Google) | Configured in Firebase console |
+| Keg session lifecycle | Created → Active → Paused → Done |
+| Firestore transactions for pour volume | All writes to `volume_remaining_ml` use `runTransaction` |
+| Offline persistence | Firebase native offline queue |
+| Predefined + free-text pour volumes | Last used volume remembered per user |
+| Undo pour | Soft-delete with 5 s grace period snackbar; manual timer (immune to rebuild) |
+| Guest (manual user) participants | Creator can add guests without accounts; guests appear in Participants & Accounts/Bills |
+| Unique guest names | Duplicate name validation against registered users and existing guests |
+| Joint accounts / bills | Create/join groups per session; per-group cost breakdown |
+| BAC estimation (Widmark formula) | Device-only; never stored in Firestore; opt-in display |
+| Per-session statistics | Time drinking, since-last-pour, avg rate, keg %, predicted empty, cost |
+| Participant detail screen | Cumulative volume chart + BAC over time chart (fl_chart) |
+| Bill review screen | Creator can adjust per-participant amounts before export |
+| Deep links (`beerer://join/:id`) | QR code + share via intent |
+| QR code scanner | Joins session on scan |
+| Session history | All past sessions accessible |
+| Push notifications (FCM) | Pour-for-me, BAC-zero, slowdown reminder, keg nearly empty |
+| Local notifications | flutter_local_notifications for BAC-zero scheduling |
+| BeerWeb / Untappd beer search | Via Cloud Function (key hidden server-side) |
+| Settle Up export | Disabled in UI (code kept); Cloud Function available |
+| i18n | English, Czech, German |
+| Profile edit | Nickname, weight, age, gender, avatar icon |
+| Privacy settings | Show stats to others, show BAC estimate (per session) |
+| Settings | Notification toggles, volume unit, currency, decimal separator, language |
+| Admin panel | Internal — admin screen for data management |
+| Negative duration guard | `formatDuration`/`formatTimer` clamp to zero for clock-skewed timestamps |
+
+### 🚧 Planned / Future
+
+| Feature | Notes |
+|---------|-------|
+| Session templates | Re-use settings from a previous session |
+| Multiple kegs per session | Different beers at the same party |
+| Keg session chat / reactions | Real-time emoji reactions on pours |
+| Leaderboard | Most beers, fastest drinker, etc. |
+| Beer rating | Rate the beer after the session |
+| Photo gallery per session | Session memories |
+| Export session summary as PDF/image | Shareable recap |
+| Apple Watch / Wear OS companion | Quick pour logging from wrist |
+| Home screen widget | Active session stats at a glance |
+| Dark / light theme toggle | Currently always dark ("beer" theme) |
+| Merge guest with real account | Reassign manual-user pours when real user joins |
+
+---
+
+## 11. Privacy & Data Summary
+
+| Data | Stored | Where | Sharing |
+|------|--------|-------|---------|
+| Email | Yes | Firebase Auth + Firestore users | Never shared |
+| Nickname | Yes | Firestore users | Visible to session participants |
+| Weight / Age / Gender | Yes | Firestore users (opt-in) | Never shared; used for on-device BAC only |
+| BAC value | **No** | Device-only computation | Never stored |
+| Pour volumes + timestamps | Yes | Firestore pours | Visible to session participants |
+| FCM device token | Yes | Firestore users | Used only for push notifications |
+| Untappd API key | Never in client | Firebase Function env config | — |
+| Settle Up credentials | Never in client | Firebase Function env config | — |
+
+See `web/privacy.html` for the full public privacy policy.

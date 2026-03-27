@@ -1,7 +1,8 @@
+import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:beerer/models/models.dart';
 import 'package:beerer/l10n/app_localizations.dart';
+import 'package:beerer/models/models.dart';
 import 'package:beerer/theme/beer_theme.dart';
 import 'package:beerer/utils/bac_calculator.dart';
 import 'package:beerer/utils/format_preferences.dart';
@@ -20,7 +21,7 @@ import 'package:flutter/material.dart';
 ///
 /// When [onRemoveGuest] is provided the screen shows a "Remove from session"
 /// button (used when the keg creator views a guest's detail).
-class ParticipantDetailScreen extends StatelessWidget {
+class ParticipantDetailScreen extends StatefulWidget {
   const ParticipantDetailScreen({
     super.key,
     required this.session,
@@ -42,12 +43,39 @@ class ParticipantDetailScreen extends StatelessWidget {
   /// Called when the keg creator taps "Remove from session" for a guest.
   final VoidCallback? onRemoveGuest;
 
-  String get _participantId => user?.id ?? guest!.id;
-  String get _displayName => user?.displayName ?? guest!.nickname;
-  bool get _isGuest => guest != null && user == null;
-  int? get _avatarIcon => user?.avatarIcon;
-  double get _weightKg => user?.weightKg ?? 0;
-  String get _gender => user?.gender ?? 'male';
+  @override
+  State<ParticipantDetailScreen> createState() =>
+      _ParticipantDetailScreenState();
+}
+
+class _ParticipantDetailScreenState extends State<ParticipantDetailScreen> {
+  Timer? _ticker;
+
+  KegSession get session => widget.session;
+  List<Pour> get pours => widget.pours;
+  bool get isMe => widget.isMe;
+  FormatPreferences get prefs => widget.prefs;
+
+  String get _participantId => widget.user?.id ?? widget.guest!.id;
+  String get _displayName => widget.user?.displayName ?? widget.guest!.nickname;
+  bool get _isGuest => widget.guest != null && widget.user == null;
+  int? get _avatarIcon => widget.user?.avatarIcon;
+  double get _weightKg => widget.user?.weightKg ?? 0;
+  String get _gender => widget.user?.gender ?? 'male';
+
+  @override
+  void initState() {
+    super.initState();
+    _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _ticker?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -170,10 +198,10 @@ class ParticipantDetailScreen extends StatelessWidget {
           ],
 
           // Remove guest button (only for guests, shown to keg creator)
-          if (_isGuest && onRemoveGuest != null) ...[
+          if (_isGuest && widget.onRemoveGuest != null) ...[
             const SizedBox(height: 24),
             OutlinedButton.icon(
-              onPressed: () => onRemoveGuest!(),
+              onPressed: () => widget.onRemoveGuest!(),
               icon: const Icon(Icons.person_remove, color: BeerColors.error),
               label: Text(
                 AppLocalizations.of(context)!.removeFromSession,
@@ -428,7 +456,7 @@ class _VolumeChart extends StatelessWidget {
               reservedSize: 28,
               interval: _interval(maxX, 5),
               getTitlesWidget: (value, meta) => Text(
-                _formatMinutes(value.toInt()),
+                _formatRelativeMinutes(value.toInt(), maxX),
                 style: const TextStyle(fontSize: 10),
               ),
             ),
@@ -545,7 +573,7 @@ class _BacChart extends StatelessWidget {
               reservedSize: 28,
               interval: _interval(maxX, 5),
               getTitlesWidget: (value, meta) => Text(
-                _formatMinutes(value.toInt()),
+                _formatRelativeMinutes(value.toInt(), maxX),
                 style: const TextStyle(fontSize: 10),
               ),
             ),
@@ -588,19 +616,19 @@ class _BacChart extends StatelessWidget {
 
   /// Computes BAC at a given minute offset from [sessionStart].
   ///
-  /// Only pours that occurred before the given minute are counted.
+  /// Uses the per-pour Widmark approach: each pour's alcohol is
+  /// metabolised independently from the time it was consumed, so
+  /// long pauses are handled correctly.
   double _bacAtMinute(int minute) {
     final cutoff = sessionStart.add(Duration(minutes: minute));
-    final totalAlcGrams = BacCalculator.totalAlcoholGramsFromPours(
-      pours,
+    final poursBeforeCutoff =
+        pours.where((p) => !p.undone && !p.timestamp.isAfter(cutoff)).toList();
+    return BacCalculator.calculateFromPours(
+      pours: poursBeforeCutoff,
       abv: alcoholPercent,
-      cutoffTime: cutoff,
-    );
-    return BacCalculator.calculate(
-      totalAlcoholGrams: totalAlcGrams,
       weightKg: weightKg,
       gender: gender,
-      elapsedMinutes: minute,
+      currentTime: cutoff,
     );
   }
 }
@@ -629,9 +657,16 @@ double _interval(double range, int desiredTicks) {
   return math.max(1, (nice * magnitude).ceilToDouble());
 }
 
-String _formatMinutes(int totalMinutes) {
-  if (totalMinutes < 60) return '${totalMinutes}m';
-  final h = totalMinutes ~/ 60;
-  final m = totalMinutes % 60;
+/// Formats an X-axis value (minutes since session start) relative to "now".
+///
+/// [minuteValue] is the data point, [maxMinutes] is the current total
+/// elapsed minutes (i.e. "now"). The right edge shows "now", and earlier
+/// values show negative offsets like "-15m", "-1h", etc.
+String _formatRelativeMinutes(int minuteValue, double maxMinutes) {
+  final diff = minuteValue - maxMinutes.round();
+  if (diff.abs() <= 1) return 'now';
+  if (diff.abs() < 60) return '${diff}m';
+  final h = diff ~/ 60;
+  final m = diff.abs() % 60;
   return m == 0 ? '${h}h' : '${h}h${m}m';
 }

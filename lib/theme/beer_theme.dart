@@ -16,7 +16,7 @@ abstract final class BeerColors {
   static const Color scrim = Color(0x99000000);
 }
 
-/// Creates the full BeerEr [ThemeData].
+/// Creates the full Beerer [ThemeData].
 ThemeData buildBeerTheme() {
   final nunito = GoogleFonts.nunitoTextTheme();
   final inter = GoogleFonts.interTextTheme();

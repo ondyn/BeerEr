@@ -19,7 +19,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
   const androidChannel = AndroidNotificationChannel(
     'beerer_default',
-    'BeerEr Notifications',
+    'Beerer Notifications',
     description: 'Notifications about pours, keg status, and BAC.',
     importance: Importance.high,
   );
@@ -28,10 +28,10 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   final body = message.data['body'] as String? ?? '';
 
   await plugin.show(
-    message.hashCode,
-    title,
-    body,
-    NotificationDetails(
+    id: message.hashCode,
+    title: title,
+    body: body,
+    notificationDetails: NotificationDetails(
       android: AndroidNotificationDetails(
         androidChannel.id,
         androidChannel.name,
@@ -91,7 +91,7 @@ class NotificationService {
       requestSoundPermission: false,
     );
     await _local.initialize(
-      const InitializationSettings(
+      settings: const InitializationSettings(
         android: androidInit,
         iOS: darwinInit,
         macOS: darwinInit,
@@ -186,16 +186,16 @@ class NotificationService {
     // Always cancel the old timer and platform notification first.
     _bacZeroTimer?.cancel();
     _bacZeroTimer = null;
-    await _local.cancel(_bacZeroNotificationId);
+    await _local.cancel(id: _bacZeroNotificationId);
 
     if (timeToZero == null || timeToZero.inSeconds <= 0) return;
 
     _bacZeroTimer = Timer(timeToZero, () async {
       await _local.show(
-        _bacZeroNotificationId,
-        '🚗 Ready to drive!',
-        'Your estimated BAC has reached 0. Drive safely!',
-        NotificationDetails(
+        id: _bacZeroNotificationId,
+        title: '🚗 Ready to drive!',
+        body: 'Your estimated BAC has reached 0. Drive safely!',
+        notificationDetails: NotificationDetails(
           android: AndroidNotificationDetails(
             _androidChannel.id,
             _androidChannel.name,
@@ -215,7 +215,7 @@ class NotificationService {
   Future<void> cancelBacZeroNotification() async {
     _bacZeroTimer?.cancel();
     _bacZeroTimer = null;
-    await _local.cancel(_bacZeroNotificationId);
+    await _local.cancel(id: _bacZeroNotificationId);
   }
 
   // --------------------------------------------------------------------------
@@ -238,10 +238,10 @@ class NotificationService {
     _slowdownShown = true;
 
     await _local.show(
-      _slowdownNotificationId,
-      '🍺 Feeling thirsty?',
-      "Looks like you've slowed down - ready for another round?",
-      NotificationDetails(
+      id: _slowdownNotificationId,
+      title: '🍺 Feeling thirsty?',
+      body: "Looks like you've slowed down - ready for another round?",
+      notificationDetails: NotificationDetails(
         android: AndroidNotificationDetails(
           _androidChannel.id,
           _androidChannel.name,
@@ -258,7 +258,7 @@ class NotificationService {
   /// Cancels the slowdown notification and resets the shown flag so the
   /// notification can fire again on the next slowdown detection.
   Future<void> cancelSlowdownNotification() async {
-    await _local.cancel(_slowdownNotificationId);
+    await _local.cancel(id: _slowdownNotificationId);
     _slowdownShown = false;
   }
 }

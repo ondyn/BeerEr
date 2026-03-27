@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:beerer/l10n/app_localizations.dart';
 import 'package:beerer/models/models.dart';
 import 'package:beerer/providers/providers.dart';
 import 'package:beerer/repositories/keg_repository.dart';
@@ -15,7 +16,6 @@ import 'package:beerer/widgets/avatar_icon.dart';
 import 'package:beerer/widgets/keg_fill_bar.dart';
 import 'package:beerer/widgets/stat_tile.dart';
 import 'package:beerer/widgets/volume_picker_sheet.dart';
-import 'package:beerer/l10n/app_localizations.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -37,6 +37,7 @@ class KegDetailScreen extends ConsumerWidget {
         ref.watch(watchParticipantIdsProvider(sessionId));
 
     return sessionAsync.when(
+      skipLoadingOnReload: true,
       data: (session) {
         if (session == null) {
           return Scaffold(
@@ -259,6 +260,7 @@ class _KegDetailBodyState extends ConsumerState<_KegDetailBody> {
   Widget _buildCreatedBody(BuildContext context) {
     final isCreator =
         FirebaseAuth.instance.currentUser?.uid == session.creatorId;
+    final prefs = ref.watch(formatPreferencesProvider);
 
     return Center(
       child: Padding(
@@ -288,9 +290,9 @@ class _KegDetailBodyState extends ConsumerState<_KegDetailBody> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      '${TimeFormatter.formatVolumeMl(session.volumeTotalMl)}'
+                      '${TimeFormatter.formatVolumeMl(session.volumeTotalMl, prefs: prefs)}'
                       '  ·  ${session.alcoholPercent}%'
-                      '  ·  ${TimeFormatter.formatCurrency(session.kegPrice)}',
+                      '  ·  ${TimeFormatter.formatCurrency(session.kegPrice, prefs: prefs)}',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: BeerColors.onSurfaceSecondary,
                           ),
@@ -320,6 +322,22 @@ class _KegDetailBodyState extends ConsumerState<_KegDetailBody> {
                   ),
                 ),
               ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: () =>
+                    context.push('/keg/${session.id}/share'),
+                icon: const Icon(Icons.qr_code),
+                label: Text(AppLocalizations.of(context)!.shareJoinLink),
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  textStyle: Theme.of(context).textTheme.titleMedium,
+                  backgroundColor: BeerColors.surfaceVariant,
+                  foregroundColor: BeerColors.primaryAmber,
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -860,105 +878,92 @@ class _ActiveBodyState extends ConsumerState<_ActiveBody> {
       key: const PageStorageKey('active_body_list'),
       padding: const EdgeInsets.all(16),
       children: [
-        // Keg level detail card (no "My Stats" — stats are in participant detail)
+        // Keg level detail card — tap to open keg info
         Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                // Header row: KEG LEVEL + 0.5l price
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        AppLocalizations.of(context)!.kegLevel,
-                        style:
-                            Theme.of(context).textTheme.labelMedium,
-                      ),
-                    ),
-                    if (beerPrice != null)
-                      Text(
-                        '${StatsCalculator.referenceBeerLabel(prefs.volumeUnit)}: '
-                        '${TimeFormatter.formatCurrency(beerPrice, prefs: prefs)}',
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodySmall
-                            ?.copyWith(
-                              color: BeerColors.onSurfaceSecondary,
-                            ),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    KegFillBar(
-                      fillPercent: fillPercent,
-                      height: 150,
-                      width: 60,
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment:
-                            CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            TimeFormatter.formatVolumeMl(
-                              session.volumeRemainingMl,
-                              prefs: prefs,
-                            ),
-                            style: Theme.of(context)
-                                .textTheme
-                                .headlineSmall,
-                          ),
-                          Text(
-                            AppLocalizations.of(context)!.remaining,
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall,
-                          ),
-                          const SizedBox(height: 8),
-                          // Alcohol volume drunk / remaining
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.science,
-                                size: 13,
-                                color: BeerColors.onSurfaceSecondary,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                '${prefs.formatDecimal(alcoholDrunkMl, 0)} ml / '
-                                '${prefs.formatDecimal(alcoholRemainingMl, 0)} ml alc.',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
-                                    ?.copyWith(
-                                      color: BeerColors.onSurfaceSecondary,
-                                    ),
-                              ),
-                            ],
-                          ),
-                          if (predictedEmpty != null) ...[
-                            const SizedBox(height: 4),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: () => context.push('/keg/${session.id}/info'),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  // Compact keg fill indicator
+                  KegFillBar(
+                    fillPercent: fillPercent,
+                    height: 80,
+                    width: 40,
+                  ),
+                  const SizedBox(width: 14),
+                  // Main stats column
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Volume remaining + label
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.baseline,
+                          textBaseline: TextBaseline.alphabetic,
+                          children: [
                             Text(
-                              '~${TimeFormatter.formatDuration(predictedEmpty)} ${AppLocalizations.of(context)!.untilEmpty}',
+                              TimeFormatter.formatVolumeMl(
+                                session.volumeRemainingMl,
+                                prefs: prefs,
+                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleLarge
+                                  ?.copyWith(fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              AppLocalizations.of(context)!.remaining,
                               style: Theme.of(context)
                                   .textTheme
                                   .bodySmall
                                   ?.copyWith(
-                                    color:
-                                        BeerColors.onSurfaceSecondary,
+                                    color: BeerColors.onSurfaceSecondary,
                                   ),
                             ),
                           ],
-                        ],
-                      ),
+                        ),
+                        const SizedBox(height: 6),
+                        // Inline stats row
+                        Wrap(
+                          spacing: 12,
+                          runSpacing: 4,
+                          children: [
+                            _MiniStat(
+                              icon: Icons.science,
+                              text:
+                                  '${prefs.formatDecimal(alcoholDrunkMl, 0)}/${prefs.formatDecimal(alcoholRemainingMl, 0)} ml alc.',
+                            ),
+                            if (predictedEmpty != null)
+                              _MiniStat(
+                                icon: Icons.timer_outlined,
+                                text:
+                                    '~${TimeFormatter.formatDuration(predictedEmpty)} ${AppLocalizations.of(context)!.untilEmpty}',
+                              ),
+                            if (beerPrice != null)
+                              _MiniStat(
+                                icon: Icons.attach_money,
+                                text:
+                                    '${StatsCalculator.referenceBeerLabel(prefs.volumeUnit)}: '
+                                    '${TimeFormatter.formatCurrency(beerPrice, prefs: prefs)}',
+                              ),
+                          ],
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ],
+                  ),
+                  // Chevron hint
+                  const Icon(
+                    Icons.chevron_right,
+                    color: BeerColors.onSurfaceSecondary,
+                    size: 20,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -1401,9 +1406,22 @@ class _AccountsSection extends ConsumerWidget {
     final accountsAsync =
         ref.watch(watchSessionAccountsProvider(session.id));
     final accounts = accountsAsync.asData?.value ?? [];
+    final manualUsersAsync =
+        ref.watch(watchManualUsersProvider(session.id));
+    final manualUsers = manualUsersAsync.asData?.value ?? [];
     final currentUid = FirebaseAuth.instance.currentUser?.uid;
     final isCreator = currentUid == session.creatorId;
     final prefs = ref.watch(formatPreferencesProvider);
+
+    // Collect IDs that are already in a joint account group.
+    final groupedIds = <String>{};
+    for (final a in accounts) {
+      groupedIds.addAll(a.memberUserIds);
+    }
+
+    // Solo registered participants (not in any group).
+    final soloIds =
+        participantIds.where((id) => !groupedIds.contains(id)).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1415,6 +1433,7 @@ class _AccountsSection extends ConsumerWidget {
               ),
         ),
         const SizedBox(height: 8),
+        // Joint account groups
         if (accounts.isNotEmpty)
           for (final account in accounts)
             _AccountCard(
@@ -1423,31 +1442,24 @@ class _AccountsSection extends ConsumerWidget {
               pours: pours,
               prefs: prefs,
             ),
-        // Solo participants (not in any group)
-        Builder(
-          builder: (_) {
-            final groupedIds = <String>{};
-            for (final a in accounts) {
-              groupedIds.addAll(a.memberUserIds);
-            }
-            final soloIds = participantIds
-                .where((id) => !groupedIds.contains(id))
-                .toList();
-            if (soloIds.isEmpty) return const SizedBox.shrink();
-            return Column(
-              children: [
-                for (final uid in soloIds)
-                  _SoloAccountCard(
-                    userId: uid,
-                    session: session,
-                    pours: pours,
-                    prefs: prefs,
-                    ref: ref,
-                  ),
-              ],
-            );
-          },
-        ),
+        // Solo registered participants (not in any group)
+        if (soloIds.isNotEmpty)
+          for (final uid in soloIds)
+            _SoloAccountCard(
+              userId: uid,
+              session: session,
+              pours: pours,
+              prefs: prefs,
+              ref: ref,
+            ),
+        // Guests (manual users) — always shown as solo entries
+        for (final guest in manualUsers)
+          _GuestAccountCard(
+            guest: guest,
+            session: session,
+            pours: pours,
+            prefs: prefs,
+          ),
         const SizedBox(height: 8),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -1482,34 +1494,165 @@ class _AccountsSection extends ConsumerWidget {
 
   void _showAddGuestDialog(BuildContext context, WidgetRef ref) {
     final controller = TextEditingController();
+    String? errorText;
+
     showDialog<void>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.addGuest),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          textCapitalization: TextCapitalization.words,
-          decoration: InputDecoration(
-            hintText: AppLocalizations.of(context)!.nickname,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: Text(AppLocalizations.of(context)!.addGuest),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            textCapitalization: TextCapitalization.words,
+            decoration: InputDecoration(
+              hintText: AppLocalizations.of(context)!.nickname,
+              errorText: errorText,
+            ),
           ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(AppLocalizations.of(context)!.cancel),
+            ),
+            FilledButton(
+              onPressed: () async {
+                final name = controller.text.trim();
+                if (name.isEmpty) return;
+
+                // Validate: no duplicate name among registered users or guests.
+                final existingGuestsAsync =
+                    ref.read(watchManualUsersProvider(session.id));
+                final existingGuests =
+                    existingGuestsAsync.asData?.value ?? [];
+                final existingUsersAsync =
+                    ref.read(watchUsersProvider(participantIds));
+                final existingUsers =
+                    existingUsersAsync.asData?.value ?? [];
+
+                final lowerName = name.toLowerCase();
+                final isDuplicate =
+                    existingGuests.any((g) =>
+                        g.nickname.toLowerCase() == lowerName) ||
+                    existingUsers.any((u) =>
+                        u.displayName.toLowerCase() == lowerName);
+
+                if (isDuplicate) {
+                  setDialogState(
+                    () => errorText =
+                        AppLocalizations.of(context)!.guestNameTaken,
+                  );
+                  return;
+                }
+
+                Navigator.pop(ctx);
+                final repo = ref.read(kegRepositoryProvider);
+                await repo.addManualUser(session.id, name);
+              },
+              child: Text(AppLocalizations.of(context)!.add),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(AppLocalizations.of(context)!.cancel),
-          ),
-          FilledButton(
-            onPressed: () async {
-              final name = controller.text.trim();
-              if (name.isEmpty) return;
-              Navigator.pop(ctx);
-              final repo = ref.read(kegRepositoryProvider);
-              await repo.addManualUser(session.id, name);
-            },
-            child: Text(AppLocalizations.of(context)!.add),
-          ),
-        ],
+      ),
+    );
+  }
+}
+
+/// Card for a guest (manual user) in the Accounts/Bills section.
+class _GuestAccountCard extends StatelessWidget {
+  const _GuestAccountCard({
+    required this.guest,
+    required this.session,
+    required this.pours,
+    required this.prefs,
+  });
+
+  final ManualUser guest;
+  final KegSession session;
+  final List<Pour> pours;
+  final FormatPreferences prefs;
+
+  @override
+  Widget build(BuildContext context) {
+    final cost = StatsCalculator.userCost(
+      pours,
+      guest.id,
+      session.kegPrice,
+      session.volumeTotalMl,
+    );
+    final beerCount = StatsCalculator.beerCount(pours, guest.id);
+    const iconColor = BeerColors.onSurfaceSecondary;
+    const iconSize = 14.0;
+    final smallStyle = Theme.of(context).textTheme.bodySmall;
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 6),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+        child: Row(
+          children: [
+            AvatarCircle(
+              displayName: guest.nickname,
+              radius: 20,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          guest.nickname,
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          AppLocalizations.of(context)!.guestLower,
+                          style: Theme.of(context)
+                              .textTheme
+                              .labelSmall
+                              ?.copyWith(color: Colors.grey),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      const Icon(Icons.sports_bar_outlined,
+                          size: iconSize, color: iconColor),
+                      const SizedBox(width: 3),
+                      Text(prefs.formatDecimal(beerCount, 1),
+                          style: smallStyle),
+                      const SizedBox(width: 12),
+                      Text(
+                        TimeFormatter.formatCurrency(cost,
+                            prefs: prefs, decimalPlaces: 0),
+                        style: smallStyle,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1899,6 +2042,34 @@ class _DoneMemberRow extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Compact icon + text stat used in the keg level card.
+class _MiniStat extends StatelessWidget {
+  const _MiniStat({required this.icon, required this.text});
+
+  final IconData icon;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 13, color: BeerColors.onSurfaceSecondary),
+        const SizedBox(width: 3),
+        Flexible(
+          child: Text(
+            text,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: BeerColors.onSurfaceSecondary,
+                ),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
     );
   }
 }

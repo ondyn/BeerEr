@@ -116,9 +116,9 @@ These are server-rendered pages — not JSON/XML APIs — but contain structured
 
 ---
 
-## 🔑 Usage in BeerEr
+## 🔑 Usage in Beerer
 
-The only clean public API endpoint suitable for use in BeerEr is:
+The only clean public API endpoint suitable for use in Beerer is:
 
 ```
 GET https://beerweb.cz/api/Search?term={query}

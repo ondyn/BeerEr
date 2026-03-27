@@ -27,7 +27,7 @@ class WelcomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'BeerEr',
+                'Beerer',
                 style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                       color: BeerColors.primaryAmber,
                     ),

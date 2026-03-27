@@ -38,6 +38,12 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <!-- Disable Impeller so integration-test screenshots work.
+             convertFlutterSurfaceToImage() hangs permanently with Impeller
+             on emulators; Skia finishes it immediately. -->
+        <meta-data
+            android:name="io.flutter.embedding.android.EnableImpeller"
+            android:value="false" />
         <!-- Default FCM notification icon (monochrome for status bar) -->
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"

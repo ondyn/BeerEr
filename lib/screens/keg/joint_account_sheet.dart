@@ -418,18 +418,20 @@ class _JointAccountSheetState extends ConsumerState<JointAccountSheet> {
         eligibleIds: eligibleIds,
         onSelect: (userId) async {
           final repo = ref.read(jointAccountRepositoryProvider);
+          final messenger = ScaffoldMessenger.of(context);
+          final l10n = AppLocalizations.of(context)!;
           // Verify the user isn't already in another group.
           final existing = await repo.getAccountForUser(
             widget.sessionId,
             userId,
           );
-          if (existing != null && mounted) {
-            ScaffoldMessenger.of(context)
+          if (existing != null) {
+            messenger
               ..hideCurrentSnackBar()
               ..showSnackBar(
                   SnackBar(
                   content: Text(
-                    AppLocalizations.of(context)!.userAlreadyInAnotherGroup,
+                    l10n.userAlreadyInAnotherGroup,
                   ),
                 ),
               );

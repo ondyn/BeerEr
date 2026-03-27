@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:beerer/models/models.dart';
 import 'package:beerer/l10n/app_localizations.dart';
+import 'package:beerer/models/models.dart';
 import 'package:beerer/providers/providers.dart';
 import 'package:beerer/repositories/keg_repository.dart';
 import 'package:beerer/theme/beer_theme.dart';

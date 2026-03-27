@@ -8,7 +8,7 @@ import 'app_localizations.dart';
 class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
-  @override String get appTitle => 'BeerEr';
+  @override String get appTitle => 'Beerer';
   @override String get tapKeg => 'Tap Keg';
   @override String get untapKeg => 'Untap Keg';
   @override String get kegDone => 'Keg Done';
@@ -66,7 +66,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override String get signIn => 'Sign in';
   @override String get createAccount => 'Create account';
-  @override String get signInToBeerEr => 'Sign in to BeerEr';
+  @override String get signInToBeerEr => 'Sign in to Beerer';
   @override String get email => 'Email';
   @override String get password => 'Password';
   @override String get confirmPassword => 'Confirm password';
@@ -349,4 +349,5 @@ class AppLocalizationsEn extends AppLocalizations {
   @override String get removeFromSession => 'Remove from session';
   @override String removeFromSessionConfirm(String nickname) => 'Remove "$nickname" and all their pours from this session?';
   @override String get guestDetail => 'Guest detail';
+  @override String get guestNameTaken => 'This name is already taken by another participant. Please choose a different name.';
 }

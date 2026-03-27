@@ -349,4 +349,5 @@ class AppLocalizationsCs extends AppLocalizations {
   @override String get removeFromSession => 'Odebrat ze session';
   @override String removeFromSessionConfirm(String nickname) => 'Odebrat "$nickname" a všechna jeho piva z této session?';
   @override String get guestDetail => 'Detail hosta';
+  @override String get guestNameTaken => 'Tento název je již obsazen jiným účastníkem. Zvolte prosím jiné jméno.';
 }

@@ -22,7 +22,7 @@ function ask(rl, question) {
 async function promptUser() {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
 
-  console.log('\n🍺  BeerEr — Create Test Firebase User\n');
+  console.log('\n🍺  Beerer — Create Test Firebase User\n');
 
   const email = (await ask(rl, '  Email        : ')).trim();
   const password = (await ask(rl, '  Password     : ')).trim();

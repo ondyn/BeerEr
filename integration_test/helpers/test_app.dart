@@ -79,11 +79,11 @@ TestApp createTestApp({
     routes: [
       GoRoute(
         path: '/home',
-        builder: (_, __) => const _HomeScreen(),
+        builder: (_, _) => const _HomeScreen(),
       ),
       GoRoute(
         path: '/keg/new',
-        builder: (_, __) => const _Placeholder('Create Keg'),
+        builder: (_, _) => const _Placeholder('Create Keg'),
       ),
       // The actual routes are complex — for integration tests we mostly
       // interact with the app through the real screens via the container.

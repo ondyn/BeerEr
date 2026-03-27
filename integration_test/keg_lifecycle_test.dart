@@ -28,7 +28,7 @@ void main() {
       // ---------------------------------------------------------------
       // 1. Create a keg session (status: created)
       // ---------------------------------------------------------------
-      final newSession = KegSession(
+      const newSession = KegSession(
         id: '',
         creatorId: testUserId,
         beerName: 'Test Lager',
@@ -130,7 +130,7 @@ void main() {
 
     testWidgets('cannot pour on paused keg', (tester) async {
       // Create and tap
-      final session = KegSession(
+      const session = KegSession(
         id: '',
         creatorId: testUserId,
         beerName: 'Paused Beer',
@@ -164,7 +164,7 @@ void main() {
     });
 
     testWidgets('cannot pour on done keg', (tester) async {
-      final session = KegSession(
+      const session = KegSession(
         id: '',
         creatorId: testUserId,
         beerName: 'Done Beer',
@@ -195,7 +195,7 @@ void main() {
     });
 
     testWidgets('cannot pour more than remaining volume', (tester) async {
-      final session = KegSession(
+      const session = KegSession(
         id: '',
         creatorId: testUserId,
         beerName: 'Small Keg',
@@ -226,7 +226,7 @@ void main() {
 
     testWidgets('keg status transitions: created → active → paused → active → done',
         (tester) async {
-      final session = KegSession(
+      const session = KegSession(
         id: '',
         creatorId: testUserId,
         beerName: 'Lifecycle Beer',

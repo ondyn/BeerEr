@@ -9,9 +9,49 @@ class BacCalculator {
 
   /// Returns estimated BAC in ‰ (per mille, g/L) for the given parameters.
   ///
-  /// Uses the Widmark formula:
-  ///   BAC (g/dL) = A / (r × W_kg × 10)
-  ///   BAC (‰)    = BAC (g/dL) × 10
+  /// Uses the Widmark formula with per-pour metabolism: each pour's
+  /// alcohol is metabolised independently from the time it was consumed.
+  /// This correctly handles long pauses where earlier alcohol is fully
+  /// metabolised before new drinking begins.
+  ///
+  /// [pours] — the list of active (non-undone) pours.
+  /// [abv] — alcohol by volume as a percentage (e.g. 5.0 for 5%).
+  /// [weightKg] — body weight in kilograms.
+  /// [gender] — 'male' or 'female' (affects Widmark r factor).
+  /// [currentTime] — the time at which BAC is computed (defaults to now).
+  static double calculateFromPours({
+    required List<Pour> pours,
+    required double abv,
+    required double weightKg,
+    required String gender,
+    DateTime? currentTime,
+  }) {
+    if (weightKg <= 0) return 0;
+    final now = currentTime ?? DateTime.now();
+    final activePours = pours.where((p) => !p.undone).toList();
+    if (activePours.isEmpty) return 0;
+
+    final r = gender == 'female' ? 0.55 : 0.68;
+
+    double totalBac = 0;
+    for (final pour in activePours) {
+      final alcGrams = pureAlcoholGrams(volumeMl: pour.volumeMl, abv: abv);
+      final minutesSincePour = now.difference(pour.timestamp).inMinutes;
+      if (minutesSincePour < 0) continue;
+
+      final rawBac = alcGrams / (r * weightKg);
+      final metabolised = 0.15 * (minutesSincePour / 60);
+      totalBac += max(0, rawBac - metabolised);
+    }
+
+    return max(0, totalBac);
+  }
+
+  /// Returns estimated BAC in ‰ (per mille, g/L) for the given parameters.
+  ///
+  /// Uses the classic Widmark formula with a single elapsed time.
+  /// NOTE: This method does not handle long pauses well — use
+  /// [calculateFromPours] for more accurate results.
   ///
   /// [totalAlcoholGrams] — total grams of pure alcohol consumed.
   /// [weightKg] — body weight in kilograms.
@@ -84,25 +124,27 @@ class BacCalculator {
   ///
   /// Returns `null` when [weightKg] is ≤ 0 or [pours] has no active
   /// pours. Only active (non-undone) pours are counted.
+  ///
+  /// Uses the per-pour Widmark approach so that long pauses between
+  /// drinking sessions are handled correctly (BAC reaches 0, then new
+  /// pours contribute fresh BAC).
   static double? estimateFromPours({
     required List<Pour> pours,
     required double abv,
     required double weightKg,
     required String gender,
     required int elapsedMinutes,
+    DateTime? currentTime,
   }) {
     if (weightKg <= 0) return null;
     final activePours = pours.where((p) => !p.undone).toList();
     if (activePours.isEmpty) return null;
-    final totalAlcGrams = totalAlcoholGramsFromPours(
-      activePours,
+    return calculateFromPours(
+      pours: activePours,
       abv: abv,
-    );
-    return calculate(
-      totalAlcoholGrams: totalAlcGrams,
       weightKg: weightKg,
       gender: gender,
-      elapsedMinutes: elapsedMinutes,
+      currentTime: currentTime,
     );
   }
 }

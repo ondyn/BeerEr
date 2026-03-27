@@ -44,13 +44,14 @@ class KegInfoScreen extends ConsumerWidget {
   }
 }
 
-class _KegInfoBody extends StatelessWidget {
+class _KegInfoBody extends ConsumerWidget {
   const _KegInfoBody({required this.session});
 
   final KegSession session;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final prefs = ref.watch(formatPreferencesProvider);
     return Scaffold(
       appBar: AppBar(
         leading: BackButton(onPressed: () => context.pop()),
@@ -112,13 +113,13 @@ class _KegInfoBody extends StatelessWidget {
                   _buildInfoRow(
                     context,
                     AppLocalizations.of(context)!.totalVolume,
-                    TimeFormatter.formatVolumeMl(session.volumeTotalMl),
+                    TimeFormatter.formatVolumeMl(session.volumeTotalMl, prefs: prefs),
                   ),
                   const Divider(height: 16),
                   _buildInfoRow(
                     context,
                     AppLocalizations.of(context)!.price,
-                    TimeFormatter.formatCurrency(session.kegPrice),
+                    TimeFormatter.formatCurrency(session.kegPrice, prefs: prefs),
                   ),
                   const Divider(height: 16),
                   _buildInfoRow(

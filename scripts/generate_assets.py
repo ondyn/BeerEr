@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-generate_assets.py — BeerEr Flutter asset generator
+generate_assets.py — Beerer Flutter asset generator
 =====================================================
 Generates all required logo/icon/favicon assets from a single high-resolution
 source image (1024×1024 recommended, SVG or PNG).

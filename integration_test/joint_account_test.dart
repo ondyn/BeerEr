@@ -43,7 +43,7 @@ void main() {
         ));
       }
 
-      final session = KegSession(
+      const session = KegSession(
         id: '',
         creatorId: user1,
         beerName: 'Group Test Beer',
@@ -121,7 +121,7 @@ void main() {
     });
 
     testWidgets('rename group', (tester) async {
-      final session = KegSession(
+      const session = KegSession(
         id: '',
         creatorId: user1,
         beerName: 'Rename Test',
@@ -154,7 +154,7 @@ void main() {
     });
 
     testWidgets('delete group', (tester) async {
-      final session = KegSession(
+      const session = KegSession(
         id: '',
         creatorId: user1,
         beerName: 'Delete Test',
@@ -189,7 +189,7 @@ void main() {
 
     testWidgets('group cost aggregation', (tester) async {
       // Create session with pours from multiple users in the same group
-      final session = KegSession(
+      const session = KegSession(
         id: '',
         creatorId: user1,
         beerName: 'Group Cost Beer',
