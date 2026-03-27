@@ -1,6 +1,7 @@
 import 'package:beerer/models/models.dart';
 import 'package:beerer/utils/firestore_helpers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart' show listEquals;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'keg_repository.g.dart';
@@ -187,13 +188,18 @@ class KegRepository {
   }
 
   /// Watches the list of participant IDs.
+  ///
+  /// Uses [distinct] with deep list equality so that downstream providers
+  /// (e.g. `watchUsersProvider(ids)`) keep the same list reference when
+  /// participant_ids haven't changed — even if the session document was
+  /// updated for unrelated fields like `volume_remaining_ml`.
   Stream<List<String>> watchParticipantIds(String sessionId) {
     return _sessions.doc(sessionId).snapshots().map((snap) {
       if (!snap.exists) return <String>[];
       final data = snap.data()!;
       final ids = data['participant_ids'] as List<dynamic>?;
       return ids?.cast<String>() ?? <String>[];
-    });
+    }).distinct(listEquals);
   }
 
   Stream<List<Pour>> watchPours(String sessionId) {

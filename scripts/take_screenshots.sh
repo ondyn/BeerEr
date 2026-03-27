@@ -31,8 +31,8 @@ SCREENSHOT_BASE="${PROJECT_DIR}/screenshots"
 
 # ─── Emulator definitions ───────────────────────────────────────────────
 # Parallel arrays (compatible with Bash 3 on macOS)
-EMULATOR_ORDER=("pixel_8A" "Tablet7" "Tablet10")
-EMULATOR_CATEGORY=("phone"   "tablet7" "tablet10")
+EMULATOR_ORDER=("pixel_8A" "Tablet10")
+EMULATOR_CATEGORY=("phone" "tablet10")
 # Uncomment to test with a single device:
 # EMULATOR_ORDER=("Tablet10")
 # EMULATOR_CATEGORY=("tablet10")

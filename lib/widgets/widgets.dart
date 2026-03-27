@@ -1,6 +1,8 @@
 /// Widgets barrel export
 library;
 
+export 'animated_reorderable_column.dart';
+export 'animated_rolling_text.dart';
 export 'bac_banner.dart';
 export 'email_verification_banner.dart';
 export 'keg_fill_bar.dart';

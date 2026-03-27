@@ -12,11 +12,14 @@ import 'package:beerer/utils/bac_calculator.dart';
 import 'package:beerer/utils/format_preferences.dart';
 import 'package:beerer/utils/stats_calculator.dart';
 import 'package:beerer/utils/time_formatter.dart';
+import 'package:beerer/widgets/animated_reorderable_column.dart';
+import 'package:beerer/widgets/animated_rolling_text.dart';
 import 'package:beerer/widgets/avatar_icon.dart';
 import 'package:beerer/widgets/keg_fill_bar.dart';
 import 'package:beerer/widgets/stat_tile.dart';
 import 'package:beerer/widgets/volume_picker_sheet.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -995,7 +998,11 @@ class _ActiveBodyState extends ConsumerState<_ActiveBody> {
 }
 
 /// Participants list with per-user stats and pour-for action.
-class _ParticipantsSection extends ConsumerWidget {
+///
+/// Must be a [ConsumerStatefulWidget] (not ConsumerWidget) so that the
+/// [AnimatedReorderableColumn] and [AnimatedRollingText] child States
+/// survive the 1-second timer rebuilds from [_ActiveBodyState].
+class _ParticipantsSection extends ConsumerStatefulWidget {
   const _ParticipantsSection({
     required this.participantIdsAsync,
     required this.session,
@@ -1011,17 +1018,44 @@ class _ParticipantsSection extends ConsumerWidget {
   final VoidCallback onPourSelf;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final ids = participantIdsAsync.value ?? [];
+  ConsumerState<_ParticipantsSection> createState() =>
+      _ParticipantsSectionState();
+}
+
+class _ParticipantsSectionState extends ConsumerState<_ParticipantsSection> {
+  /// Cached participant IDs list.
+  ///
+  /// Riverpod family providers use identity-based equality for `List`
+  /// parameters. If we pass a new `List<String>` with the same content,
+  /// Riverpod creates a **new** provider instance, which starts in the
+  /// `loading` state and causes the [AnimatedReorderableColumn] State to
+  /// be destroyed and recreated (visible as a flicker).
+  ///
+  /// We cache the list and only swap it when the content actually changes,
+  /// so that `ref.watch(watchUsersProvider(_cachedIds))` always hits the
+  /// same provider instance for the same participant set.
+  List<String> _cachedIds = const [];
+
+  List<String> _resolveIds() {
+    final newIds = widget.participantIdsAsync.value ?? [];
+    if (!listEquals(_cachedIds, newIds)) {
+      _cachedIds = newIds;
+    }
+    return _cachedIds;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ids = _resolveIds();
     final currentUid = FirebaseAuth.instance.currentUser?.uid;
-    final isCreator = currentUid == session.creatorId;
+    final isCreator = currentUid == widget.session.creatorId;
 
     final usersAsync = ref.watch(watchUsersProvider(ids));
     final accountsAsync =
-        ref.watch(watchSessionAccountsProvider(session.id));
+        ref.watch(watchSessionAccountsProvider(widget.session.id));
     final accounts = accountsAsync.asData?.value ?? [];
     final manualUsersAsync =
-        ref.watch(watchManualUsersProvider(session.id));
+        ref.watch(watchManualUsersProvider(widget.session.id));
     final manualUsers = manualUsersAsync.asData?.value ?? [];
 
     // Build a userId → groupName lookup.
@@ -1057,7 +1091,7 @@ class _ParticipantsSection extends ConsumerWidget {
             ];
             final volumeById = <String, double>{
               for (final id in allIds)
-                id: StatsCalculator.userPouredMl(pours, id),
+                id: StatsCalculator.userPouredMl(widget.pours, id),
             };
             // Sort ids by volume descending to assign rank.
             final sortedIds = [...allIds]
@@ -1077,12 +1111,29 @@ class _ParticipantsSection extends ConsumerWidget {
                 return (rankOf[a.id] ?? 99).compareTo(rankOf[b.id] ?? 99);
               });
 
-            return Column(
-              children: [
-                // Registered users
-                for (final user in sortedUsers)
-                  _UnifiedParticipantRow(
-                    key: ValueKey('participant_${user.id}'),
+            // Build a unified ordered key list for the animated column.
+            // Current user is always first (pinned at top).
+            final orderedKeys = <String>[
+              for (final user in sortedUsers) 'participant_${user.id}',
+              for (final guest in sortedGuests) 'guest_${guest.id}',
+            ];
+
+            // Build lookup maps for quick access by key.
+            final userByKey = <String, AppUser>{
+              for (final user in sortedUsers) 'participant_${user.id}': user,
+            };
+            final guestByKey = <String, ManualUser>{
+              for (final guest in sortedGuests) 'guest_${guest.id}': guest,
+            };
+
+            return AnimatedReorderableColumn(
+              itemKeys: orderedKeys,
+              itemBuilder: (key) {
+                // Registered user row
+                if (userByKey.containsKey(key)) {
+                  final user = userByKey[key]!;
+                  return _UnifiedParticipantRow(
+                    key: ValueKey(key),
                     displayName: user.displayName +
                         (user.id == currentUid
                             ? AppLocalizations.of(context)!.youSuffix
@@ -1091,23 +1142,23 @@ class _ParticipantsSection extends ConsumerWidget {
                     isMe: user.id == currentUid,
                     isGuest: false,
                     rank: rankOf[user.id] ?? 0,
-                    beerCount: StatsCalculator.beerCount(pours, user.id),
+                    beerCount: StatsCalculator.beerCount(widget.pours, user.id),
                     cost: StatsCalculator.userCost(
-                      pours, user.id, session.kegPrice, session.volumeTotalMl,
+                      widget.pours, user.id, widget.session.kegPrice, widget.session.volumeTotalMl,
                     ),
                     lastPourTime: StatsCalculator.timeSinceLastPour(
-                      pours.where((p) => p.userId == user.id && !p.undone).toList(),
+                      widget.pours.where((p) => p.userId == user.id && !p.undone).toList(),
                     ),
                     groupName: userGroupNames[user.id],
                     prefs: prefs,
-                    showPourButton: session.status == KegStatus.active,
+                    showPourButton: widget.session.status == KegStatus.active,
                     onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute<void>(
                           builder: (_) => ParticipantDetailScreen(
                             user: user,
-                            session: session,
-                            pours: pours,
+                            session: widget.session,
+                            pours: widget.pours,
                             isMe: user.id == currentUid,
                             prefs: prefs,
                           ),
@@ -1116,7 +1167,7 @@ class _ParticipantsSection extends ConsumerWidget {
                     },
                     onPour: () {
                       if (user.id == currentUid) {
-                        onPourSelf();
+                        widget.onPourSelf();
                       } else {
                         if (!user.allowPourForMe) {
                           ScaffoldMessenger.of(context)
@@ -1131,46 +1182,47 @@ class _ParticipantsSection extends ConsumerWidget {
                             );
                           return;
                         }
-                        onPourFor(user.id, user.displayName);
+                        widget.onPourFor(user.id, user.displayName);
                       }
                     },
+                  );
+                }
+                // Guest row
+                final guest = guestByKey[key]!;
+                return _UnifiedParticipantRow(
+                  key: ValueKey(key),
+                  displayName: guest.nickname,
+                  isMe: false,
+                  isGuest: true,
+                  rank: rankOf[guest.id] ?? 0,
+                  beerCount: StatsCalculator.beerCount(widget.pours, guest.id),
+                  cost: StatsCalculator.userCost(
+                    widget.pours, guest.id, widget.session.kegPrice, widget.session.volumeTotalMl,
                   ),
-                // Manual (guest) users
-                for (final guest in sortedGuests)
-                  _UnifiedParticipantRow(
-                    key: ValueKey('guest_${guest.id}'),
-                    displayName: guest.nickname,
-                    isMe: false,
-                    isGuest: true,
-                    rank: rankOf[guest.id] ?? 0,
-                    beerCount: StatsCalculator.beerCount(pours, guest.id),
-                    cost: StatsCalculator.userCost(
-                      pours, guest.id, session.kegPrice, session.volumeTotalMl,
-                    ),
-                    lastPourTime: StatsCalculator.timeSinceLastPour(
-                      pours.where((p) => p.userId == guest.id && !p.undone).toList(),
-                    ),
-                    prefs: prefs,
-                    showPourButton: session.status == KegStatus.active,
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (_) => ParticipantDetailScreen(
-                            guest: guest,
-                            session: session,
-                            pours: pours,
-                            isMe: false,
-                            prefs: prefs,
-                            onRemoveGuest: isCreator
-                                ? () => _removeGuest(context, ref, guest)
-                                : null,
-                          ),
+                  lastPourTime: StatsCalculator.timeSinceLastPour(
+                    widget.pours.where((p) => p.userId == guest.id && !p.undone).toList(),
+                  ),
+                  prefs: prefs,
+                  showPourButton: widget.session.status == KegStatus.active,
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => ParticipantDetailScreen(
+                          guest: guest,
+                          session: widget.session,
+                          pours: widget.pours,
+                          isMe: false,
+                          prefs: prefs,
+                          onRemoveGuest: isCreator
+                              ? () => _removeGuest(context, ref, guest)
+                              : null,
                         ),
-                      );
-                    },
-                    onPour: () => onPourFor(guest.id, guest.nickname),
-                  ),
-              ],
+                      ),
+                    );
+                  },
+                  onPour: () => widget.onPourFor(guest.id, guest.nickname),
+                );
+              },
             );
           },
           loading: () => const SizedBox.shrink(),
@@ -1204,7 +1256,7 @@ class _ParticipantsSection extends ConsumerWidget {
     if (confirmed != true) return;
 
     final repo = ref.read(kegRepositoryProvider);
-    await repo.removeManualUser(session.id, guest.id);
+    await repo.removeManualUser(widget.session.id, guest.id);
 
     // Pop the guest detail screen that initiated this action.
     if (context.mounted) Navigator.of(context).pop();
@@ -1215,6 +1267,9 @@ class _ParticipantsSection extends ConsumerWidget {
 ///
 /// Shows: rank badge, avatar, name, beer count, cost, last pour time,
 /// and a prominent pour button.
+///
+/// Uses [AnimatedRollingText] for beer count, cost, and timer values
+/// so that changes animate with a vertical roll effect.
 class _UnifiedParticipantRow extends StatelessWidget {
   const _UnifiedParticipantRow({
     super.key,
@@ -1251,6 +1306,14 @@ class _UnifiedParticipantRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final smallStyle = Theme.of(context).textTheme.bodySmall;
 
+    // Pre-format values for the rolling text animation.
+    final beerCountText = prefs.formatDecimal(beerCount, 1);
+    final costText = TimeFormatter.formatCurrency(cost, prefs: prefs,
+        decimalPlaces: 0);
+    final timerText = lastPourTime != null
+        ? '${TimeFormatter.formatDuration(lastPourTime!)} ${AppLocalizations.of(context)!.ago}'
+        : null;
+
     return Card(
       margin: const EdgeInsets.only(bottom: 6),
       child: InkWell(
@@ -1263,8 +1326,8 @@ class _UnifiedParticipantRow extends StatelessWidget {
               // Rank badge
               SizedBox(
                 width: 22,
-                child: Text(
-                  '#$rank',
+                child: AnimatedRollingText(
+                  text: '#$rank',
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
                         color: rank <= 3
                             ? BeerColors.primaryAmber
@@ -1351,24 +1414,26 @@ class _UnifiedParticipantRow extends StatelessWidget {
                         const Icon(Icons.sports_bar_outlined,
                             size: 14, color: BeerColors.onSurfaceSecondary),
                         const SizedBox(width: 3),
-                        Text(
-                          prefs.formatDecimal(beerCount, 1),
+                        AnimatedRollingText(
+                          text: beerCountText,
                           style: smallStyle,
                         ),
                         const SizedBox(width: 12),
-                        Text(
-                          TimeFormatter.formatCurrency(cost, prefs: prefs,
-                              decimalPlaces: 0),
+                        AnimatedRollingText(
+                          text: costText,
                           style: smallStyle,
                         ),
-                        if (lastPourTime != null) ...[
+                        if (timerText != null) ...[
                           const SizedBox(width: 12),
                           const Icon(Icons.timer,
                               size: 13, color: BeerColors.onSurfaceSecondary),
                           const SizedBox(width: 3),
-                          Text(
-                            '${TimeFormatter.formatDuration(lastPourTime!)} ${AppLocalizations.of(context)!.ago}',
-                            style: smallStyle,
+                          Flexible(
+                            child: Text(
+                              timerText,
+                              style: smallStyle,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
                         ],
                       ],
