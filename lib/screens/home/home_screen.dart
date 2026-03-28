@@ -124,7 +124,7 @@ class HomeScreen extends ConsumerWidget {
                     left: 16,
                     right: 16,
                     top: 16,
-                    bottom: 100,
+                    bottom: 16,
                   ),
                   children: [
                     for (final session in active)
@@ -153,9 +153,7 @@ class HomeScreen extends ConsumerWidget {
           ),
         ],
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: Container(
-        width: double.infinity,
+      bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: BeerColors.background,
           boxShadow: [
@@ -166,11 +164,11 @@ class HomeScreen extends ConsumerWidget {
             ),
           ],
         ),
-        padding: const EdgeInsets.only(
+        padding: EdgeInsets.only(
           left: 16,
           right: 16,
           top: 12,
-          bottom: 24,
+          bottom: MediaQuery.of(context).padding.bottom + 12,
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,

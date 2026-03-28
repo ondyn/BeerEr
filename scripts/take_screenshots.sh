@@ -13,6 +13,7 @@
 # Usage:
 #   chmod +x scripts/take_screenshots.sh
 #   ./scripts/take_screenshots.sh --drive
+#   ./scripts/take_screenshots.sh --single --emulator pixel_8A --orientation portrait
 #
 # Google Play requirements:
 #   - PNG or JPEG, up to 8 MB each
@@ -51,7 +52,7 @@ get_category() {
 }
 
 # ─── Timeout for flutter drive (seconds) ────────────────────────────────
-DRIVE_TIMEOUT=300  # 5 minutes per device
+DRIVE_TIMEOUT=420  # 7 minutes per device
 
 # ─── Colours ────────────────────────────────────────────────────────────
 RED='\033[0;31m'
@@ -188,23 +189,64 @@ run_drive_for_device() {
   fi
   mkdir -p "$outdir"
 
-  # Set orientation
-  if [ "$orientation" = "landscape" ]; then
-    log "Rotating $avd_name to landscape…"
-    "$ADB" -s "$serial" shell settings put system accelerometer_rotation 0 2>/dev/null || true
-    "$ADB" -s "$serial" shell settings put system user_rotation 1 2>/dev/null || true
-    sleep 3
-  else
-    log "Ensuring $avd_name is in portrait…"
-    "$ADB" -s "$serial" shell settings put system accelerometer_rotation 0 2>/dev/null || true
-    "$ADB" -s "$serial" shell settings put system user_rotation 0 2>/dev/null || true
-    sleep 2
+  # Set orientation.
+  # user_rotation values are relative to the device's *natural* orientation:
+  #   0 = natural, 1 = 90° CW, 2 = 180°, 3 = 270° CW
+  # A phone's natural orientation is portrait  → 0=portrait, 1=landscape
+  # A tablet's natural orientation is landscape → 0=landscape, 1=portrait
+  # We detect the natural orientation by checking physical display size and
+  # then pick the correct rotation value.
+  "$ADB" -s "$serial" shell settings put system accelerometer_rotation 0 2>/dev/null || true
+
+  # Get the physical display size (e.g. "1080x1920" or "2560x1600")
+  local phy_size
+  phy_size=$("$ADB" -s "$serial" shell wm size 2>/dev/null | grep "Physical" | awk '{print $NF}' | tr -d '\r')
+  local phy_w="${phy_size%%x*}"
+  local phy_h="${phy_size##*x}"
+  local natural_portrait=true
+  if [ -n "$phy_w" ] && [ -n "$phy_h" ] && [ "$phy_w" -gt "$phy_h" ] 2>/dev/null; then
+    natural_portrait=false
   fi
+
+  if [ "$orientation" = "landscape" ]; then
+    log "Rotating $avd_name to landscape… (natural_portrait=$natural_portrait, phys=${phy_size})"
+    if [ "$natural_portrait" = true ]; then
+      # Phone: natural=portrait, landscape=rotation 1
+      "$ADB" -s "$serial" shell settings put system user_rotation 1 2>/dev/null || true
+    else
+      # Tablet: natural=landscape, landscape=rotation 0
+      "$ADB" -s "$serial" shell settings put system user_rotation 0 2>/dev/null || true
+    fi
+  else
+    log "Ensuring $avd_name is in portrait… (natural_portrait=$natural_portrait, phys=${phy_size})"
+    if [ "$natural_portrait" = true ]; then
+      # Phone: natural=portrait, portrait=rotation 0
+      "$ADB" -s "$serial" shell settings put system user_rotation 0 2>/dev/null || true
+    else
+      # Tablet: natural=landscape, portrait=rotation 1
+      "$ADB" -s "$serial" shell settings put system user_rotation 1 2>/dev/null || true
+    fi
+  fi
+  sleep 3
+
+  # Verify the rotation took effect by checking current display dimensions.
+  local cur_size
+  cur_size=$("$ADB" -s "$serial" shell wm size 2>/dev/null | grep "Override" | awk '{print $NF}' | tr -d '\r')
+  if [ -z "$cur_size" ]; then
+    cur_size=$("$ADB" -s "$serial" shell wm size 2>/dev/null | grep "Physical" | awk '{print $NF}' | tr -d '\r')
+  fi
+  log "  Display after rotation: ${cur_size:-unknown}"
 
   # Delete old screenshots and logs before capturing new ones.
   log "Cleaning old screenshots in $outdir/"
   find "$outdir" -name "*.png" -delete 2>/dev/null || true
   rm -f "${outdir}/flutter_drive.log" 2>/dev/null || true
+
+  # Clear app data before every run so each orientation starts fresh
+  # with the welcome / sign-in screen.
+  log "Clearing app data for a fresh run…"
+  "$ADB" -s "$serial" shell pm clear com.beerer.beerer 2>/dev/null || true
+  sleep 2
 
   log "Running flutter drive on $avd_name ($serial)…"
   log "Screenshots → $outdir/"
@@ -255,7 +297,11 @@ run_drive_for_device() {
   # Restore portrait orientation after landscape run
   if [ "$orientation" = "landscape" ]; then
     log "Restoring $avd_name to portrait…"
-    "$ADB" -s "$serial" shell settings put system user_rotation 0 2>/dev/null || true
+    if [ "$natural_portrait" = true ]; then
+      "$ADB" -s "$serial" shell settings put system user_rotation 0 2>/dev/null || true
+    else
+      "$ADB" -s "$serial" shell settings put system user_rotation 1 2>/dev/null || true
+    fi
     sleep 2
   fi
 
@@ -297,7 +343,61 @@ echo "  🍺  Beerer Screenshot Automation"
 echo "══════════════════════════════════════════════════════════════"
 echo ""
 
-MODE="${1:---drive}"
+MODE=""
+SINGLE_EMULATOR=""
+SINGLE_ORIENTATION="both"  # "portrait", "landscape", or "both"
+
+# ─── Argument parsing ───────────────────────────────────────────────────
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --drive|--flutter-drive)
+      MODE="drive"
+      shift
+      ;;
+    --adb|--capture)
+      MODE="adb"
+      shift
+      ;;
+    --single)
+      MODE="single"
+      shift
+      ;;
+    --emulator)
+      if [ -z "${2:-}" ]; then
+        err "--emulator requires an AVD name (e.g. pixel_8A, Tablet10)"
+        exit 1
+      fi
+      SINGLE_EMULATOR="$2"
+      shift 2
+      ;;
+    --orientation)
+      if [ -z "${2:-}" ]; then
+        err "--orientation requires a value: portrait, landscape, or both"
+        exit 1
+      fi
+      case "$2" in
+        portrait|landscape|both) SINGLE_ORIENTATION="$2" ;;
+        *)
+          err "Invalid orientation: $2. Use portrait, landscape, or both."
+          exit 1
+          ;;
+      esac
+      shift 2
+      ;;
+    --help|-h)
+      MODE="help"
+      shift
+      ;;
+    *)
+      err "Unknown argument: $1"
+      echo "Use --help for usage info."
+      exit 1
+      ;;
+  esac
+done
+
+# Default mode
+MODE="${MODE:-drive}"
 
 # Check prerequisites
 if [ ! -x "$FLUTTER" ] && [ ! -f "$FLUTTER" ]; then
@@ -312,7 +412,7 @@ if [ ! -x "$ADB" ] && [ ! -f "$ADB" ]; then
 fi
 
 case "$MODE" in
-  --drive|--flutter-drive)
+  drive)
     log "Mode: Flutter Drive (sequential — one emulator at a time, portrait + landscape)"
     echo ""
     for avd in "${EMULATOR_ORDER[@]}"; do
@@ -331,7 +431,43 @@ case "$MODE" in
     done
     ;;
 
-  --adb|--capture)
+  single)
+    # Validate --emulator was provided
+    if [ -z "$SINGLE_EMULATOR" ]; then
+      err "--single requires --emulator <AVD_NAME>"
+      err "Available emulators: ${EMULATOR_ORDER[*]}"
+      exit 1
+    fi
+
+    # Resolve category for the given emulator
+    single_category="$(get_category "$SINGLE_EMULATOR")"
+    if [ "$single_category" = "unknown" ]; then
+      warn "Emulator '$SINGLE_EMULATOR' is not in the predefined list."
+      warn "Using category '$SINGLE_EMULATOR' as-is."
+      single_category="$SINGLE_EMULATOR"
+    fi
+
+    log "Mode: Single device — $SINGLE_EMULATOR ($single_category), orientation: $SINGLE_ORIENTATION"
+    echo ""
+
+    if [ "$SINGLE_ORIENTATION" = "portrait" ] || [ "$SINGLE_ORIENTATION" = "both" ]; then
+      log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+      log "  📱 $SINGLE_EMULATOR → $single_category (portrait)"
+      log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+      run_drive_for_device "$SINGLE_EMULATOR" "$single_category" "portrait" || true
+      echo ""
+    fi
+
+    if [ "$SINGLE_ORIENTATION" = "landscape" ] || [ "$SINGLE_ORIENTATION" = "both" ]; then
+      log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+      log "  🔄 $SINGLE_EMULATOR → ${single_category}_landscape (landscape)"
+      log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+      run_drive_for_device "$SINGLE_EMULATOR" "$single_category" "landscape" || true
+      echo ""
+    fi
+    ;;
+
+  adb)
     log "Mode: ADB screencap (capture current screen on running emulators)"
     echo ""
     for avd in "${EMULATOR_ORDER[@]}"; do
@@ -340,13 +476,24 @@ case "$MODE" in
     done
     ;;
 
-  --help|-h)
-    echo "Usage: $0 [--drive | --adb | --help]"
+  help)
+    echo "Usage: $0 [--drive | --single --emulator <AVD> [--orientation <orient>] | --adb | --help]"
     echo ""
-    echo "  --drive    Run flutter drive on each emulator sequentially (default)"
-    echo "             Starts/stops emulators as needed to save CPU/RAM."
-    echo "  --adb      Take ADB screenshot of current screen on running emulators"
-    echo "  --help     Show this help"
+    echo "Modes:"
+    echo "  --drive                Run flutter drive on ALL emulators sequentially (default)"
+    echo "                         Starts/stops emulators as needed to save CPU/RAM."
+    echo "  --single               Run flutter drive on a SINGLE emulator + orientation."
+    echo "    --emulator <AVD>     AVD name to use (required). E.g. pixel_8A, Tablet10"
+    echo "    --orientation <val>  portrait, landscape, or both (default: both)"
+    echo "  --adb                  Take ADB screenshot of current screen on running emulators"
+    echo "  --help                 Show this help"
+    echo ""
+    echo "Examples:"
+    echo "  $0 --drive"
+    echo "  $0 --single --emulator pixel_8A --orientation portrait"
+    echo "  $0 --single --emulator Tablet10 --orientation landscape"
+    echo "  $0 --single --emulator pixel_8A"
+    echo "  $0 --adb"
     echo ""
     echo "Emulators: ${EMULATOR_ORDER[*]}"
     echo "Output:    screenshots/<device_category>/"

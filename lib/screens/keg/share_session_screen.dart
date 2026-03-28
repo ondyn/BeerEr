@@ -25,7 +25,7 @@ class ShareSessionScreen extends StatelessWidget {
         ),
         title: Text(AppLocalizations.of(context)!.shareKegSession),
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,

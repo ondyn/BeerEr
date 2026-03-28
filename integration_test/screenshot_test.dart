@@ -15,6 +15,7 @@ library;
 import 'dart:io';
 
 import 'package:beerer/main.dart' as app;
+import 'package:beerer/widgets/volume_picker_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -147,33 +148,67 @@ void main() {
   }
 
   /// Opens the drawer and taps a menu item by text.
+  /// If [icon] is provided and the text is not found, falls back to
+  /// finding a ListTile whose leading icon matches.
   Future<bool> navigateViaDrawer(
-      WidgetTester tester, String menuText) async {
+      WidgetTester tester, String menuText,
+      {IconData? icon}) async {
     debugPrint('📍 Opening drawer for: $menuText');
     final scaffoldFinder = find.byType(Scaffold);
     try {
-      tester.firstState<ScaffoldState>(scaffoldFinder).openDrawer();
-      await settle(tester, const Duration(seconds: 2));
+      // Try each Scaffold state until one has a drawer.
+      var drawerOpened = false;
+      for (final element in scaffoldFinder.evaluate()) {
+        final state = tester.state<ScaffoldState>(
+          find.byWidget(element.widget),
+        );
+        if (state.hasDrawer) {
+          state.openDrawer();
+          drawerOpened = true;
+          break;
+        }
+      }
+      if (!drawerOpened) {
+        debugPrint('⚠️  No Scaffold with drawer found');
+        return false;
+      }
+      await settle(tester, const Duration(seconds: 3));
     } catch (e) {
       debugPrint('⚠️  Could not open drawer: $e');
       return false;
     }
 
+    // Try text first.
     final menuItem = find.text(menuText);
-    if (menuItem.evaluate().isEmpty) {
-      debugPrint('⚠️  Menu item "$menuText" not found in drawer');
-      // Close the drawer
-      await tester.tapAt(Offset(
-        tester.view.physicalSize.width / tester.view.devicePixelRatio - 20,
-        tester.view.physicalSize.height / tester.view.devicePixelRatio / 2,
-      ));
-      await settle(tester, const Duration(seconds: 1));
-      return false;
+    if (menuItem.evaluate().isNotEmpty) {
+      await tester.tap(menuItem.first, warnIfMissed: false);
+      await settle(tester, const Duration(seconds: 3));
+      return true;
     }
 
-    await tester.tap(menuItem.first, warnIfMissed: false);
-    await settle(tester, const Duration(seconds: 3));
-    return true;
+    // Fallback: find by leading icon.
+    if (icon != null) {
+      debugPrint('📍 Text "$menuText" not found, trying icon fallback');
+      final iconTile = find.byWidgetPredicate(
+        (w) => w is ListTile &&
+            w.leading is Icon &&
+            (w.leading as Icon).icon == icon,
+      );
+      if (iconTile.evaluate().isNotEmpty) {
+        await tester.tap(iconTile.first, warnIfMissed: false);
+        await settle(tester, const Duration(seconds: 3));
+        return true;
+      }
+    }
+
+    debugPrint('⚠️  Menu item "$menuText" not found in drawer');
+    // Close the drawer
+    await tester.tapAt(Offset(
+      tester.view.physicalSize.width / tester.view.devicePixelRatio - 20,
+      tester.view.physicalSize.height / tester.view.devicePixelRatio / 2,
+    ));
+    await settle(tester, const Duration(seconds: 1));
+    return false;
   }
 
   // ── Test ─────────────────────────────────────────────────────────────
@@ -269,9 +304,21 @@ void main() {
       debugPrint('📍 Step 3: Drawer');
       try {
         final scaffoldFinder = find.byType(Scaffold);
-        tester.firstState<ScaffoldState>(scaffoldFinder).openDrawer();
-        await settle(tester, const Duration(seconds: 2));
-        await takeScreenshot(tester, '04_navigation_drawer');
+        var drawerOpened = false;
+        for (final element in scaffoldFinder.evaluate()) {
+          final state = tester.state<ScaffoldState>(
+            find.byWidget(element.widget),
+          );
+          if (state.hasDrawer) {
+            state.openDrawer();
+            drawerOpened = true;
+            break;
+          }
+        }
+        if (drawerOpened) {
+          await settle(tester, const Duration(seconds: 3));
+          await takeScreenshot(tester, '04_navigation_drawer');
+        }
         // Close drawer by tapping outside (right edge).
         await tester.tapAt(Offset(
           tester.view.physicalSize.width / tester.view.devicePixelRatio - 20,
@@ -295,6 +342,48 @@ void main() {
         await tester.drag(scrollable, const Offset(0, -350));
         await settle(tester, const Duration(seconds: 2));
         await takeScreenshot(tester, '07_keg_detail_participants');
+
+        // ── 4b. Volume picker / "Pour for" bottom sheet ──────────────
+        // Tap the pour (beer) icon button on a participant row to open
+        // the volume picker sheet. The small FilledButton with a
+        // sports_bar icon appears in each participant row.
+        debugPrint('📍 Step 4b: Volume picker sheet (pour for)');
+        final pourBtns = find.byWidgetPredicate(
+          (w) => w is FilledButton &&
+              w.child is Icon &&
+              (w.child as Icon).icon == Icons.sports_bar,
+        );
+        // Tap the second pour button (first non-self participant).
+        if (pourBtns.evaluate().length >= 2) {
+          await tester.tap(pourBtns.at(1), warnIfMissed: false);
+          await settle(tester, const Duration(seconds: 3));
+          // Look for VolumePickerSheet by type (more reliable than
+          // BottomSheet which may be an internal implementation detail).
+          final volumeSheet = find.byType(VolumePickerSheet);
+          if (volumeSheet.evaluate().isNotEmpty) {
+            await takeScreenshot(tester, '07b_pour_for_volume_picker');
+            // Dismiss the sheet by tapping the barrier (outside area).
+            await tester.tapAt(const Offset(20, 20));
+            await settle(tester, const Duration(seconds: 1));
+          } else {
+            debugPrint('⚠️  Volume picker sheet not found after tap');
+            // Try to dismiss anything that may have opened.
+            await tester.tapAt(const Offset(20, 20));
+            await settle(tester, const Duration(seconds: 1));
+          }
+        } else if (pourBtns.evaluate().isNotEmpty) {
+          await tester.tap(pourBtns.first, warnIfMissed: false);
+          await settle(tester, const Duration(seconds: 3));
+          final volumeSheet = find.byType(VolumePickerSheet);
+          if (volumeSheet.evaluate().isNotEmpty) {
+            await takeScreenshot(tester, '07b_pour_for_volume_picker');
+            await tester.tapAt(const Offset(20, 20));
+            await settle(tester, const Duration(seconds: 1));
+          }
+        } else {
+          debugPrint('⚠️  No pour buttons found on participant rows');
+        }
+
         await goBack(tester);
       }
 
@@ -321,8 +410,9 @@ void main() {
       // ── 7. History via drawer ──────────────────────────────────────
       await ensureOnHome(tester);
       debugPrint('📍 Step 7: History');
-      if (await navigateViaDrawer(tester, 'Past Sessions')) {
-        await settle(tester, const Duration(seconds: 3));
+      if (await navigateViaDrawer(tester, 'Past Sessions',
+          icon: Icons.history)) {
+        await settle(tester, const Duration(seconds: 4));
         await takeScreenshot(tester, '10_history');
         if (await safeTap(tester, find.text('Gambrinus 11°'),
             label: 'Gambrinus 11°')) {
@@ -340,10 +430,6 @@ void main() {
       // ── 8. Profile ─────────────────────────────────────────────────
       await ensureOnHome(tester);
       debugPrint('📍 Step 8: Profile');
-      // Tap the profile IconButton in the AppBar (contains a person Icon
-      // inside a CircleAvatar). Find the specific IconButton wrapping
-      // the CircleAvatar, not the CircleAvatar itself (which can't
-      // receive taps if obscured).
       final profileBtn = find.byWidgetPredicate(
         (w) => w is IconButton && w.icon is CircleAvatar,
       );
@@ -365,7 +451,6 @@ void main() {
       // ── 9. Create keg ──────────────────────────────────────────────
       await ensureOnHome(tester);
       debugPrint('📍 Step 9: Create keg');
-      // Target the "New Keg Session" FAB specifically by its heroTag.
       final newKegFab = find.byWidgetPredicate(
         (w) => w is FloatingActionButton && w.heroTag == 'new_keg',
       );
@@ -425,13 +510,25 @@ void main() {
       // ── 11. Settings via drawer ────────────────────────────────────
       await ensureOnHome(tester);
       debugPrint('📍 Step 11: Settings');
-      if (await navigateViaDrawer(tester, 'Settings')) {
+      if (await navigateViaDrawer(tester, 'Settings',
+          icon: Icons.settings)) {
         await settle(tester, const Duration(seconds: 3));
         await takeScreenshot(tester, '17_settings');
         await goBack(tester);
       }
 
+      // ── 12. Sign out so the next orientation run starts fresh ──────
       await ensureOnHome(tester);
+      debugPrint('📍 Step 12: Signing out');
+      final signedOut = await navigateViaDrawer(tester, 'Sign out',
+          icon: Icons.logout);
+      if (signedOut) {
+        await settle(tester, const Duration(seconds: 4));
+        debugPrint('✅ Signed out — next run will see welcome screen');
+      } else {
+        debugPrint('⚠️  Could not sign out — pm clear will handle it');
+      }
+
       debugPrint('🏁 Screenshot tour complete!');
     });
   });
