@@ -28,6 +28,36 @@ class UserRepository {
     await _col.doc(user.id).set(data, SetOptions(merge: true));
   }
 
+  /// Creates a minimal profile with only nickname and email.
+  /// Used as a fallback when auto-creating profiles to avoid overwriting
+  /// existing fields (weight, age, gender) with default values.
+  Future<void> createMinimalProfile({
+    required String uid,
+    required String nickname,
+    required String email,
+  }) async {
+    await _col.doc(uid).set(
+      {
+        'nickname': nickname,
+        'email': email,
+      },
+      SetOptions(merge: true),
+    );
+  }
+
+  /// Updates only the preferences map for a user, merging with existing values.
+  Future<void> updatePreferences({
+    required String userId,
+    required Map<String, dynamic> preferences,
+  }) async {
+    await _col.doc(userId).set(
+      {
+        'preferences': preferences,
+      },
+      SetOptions(merge: true),
+    );
+  }
+
   /// Reads a user once.
   Future<AppUser?> getUser(String userId) async {
     final snap = await _col.doc(userId).get();

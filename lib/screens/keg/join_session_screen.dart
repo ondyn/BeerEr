@@ -42,9 +42,10 @@ class _JoinSessionScreenState extends ConsumerState<JoinSessionScreen> {
       final kegRepo = ref.read(kegRepositoryProvider);
       final userRepo = ref.read(userRepositoryProvider);
 
-      // Preserve existing nickname from profile; only update preferences.
-      // Fall back to displayName or the local part of the email so the
-      // participant chip never shows "?".
+      // Preserve existing profile data; only ensure nickname, email, and
+      // join preferences are set. Use createMinimalProfile + a targeted
+      // preferences update so we don't overwrite weight/age/gender with
+      // defaults.
       final existingUser = await userRepo.getUser(user.uid);
       final existingNickname =
           (existingUser?.nickname.trim().isNotEmpty ?? false)
@@ -54,15 +55,21 @@ class _JoinSessionScreenState extends ConsumerState<JoinSessionScreen> {
           user.displayName?.trim().isNotEmpty == true
               ? user.displayName!
               : (user.email?.split('@').first ?? '');
-      await userRepo.createOrUpdateUser(AppUser(
-        id: user.uid,
-        nickname: existingNickname ?? fallbackNickname,
-        email: user.email ?? '',
+      if (existingUser == null) {
+        await userRepo.createMinimalProfile(
+          uid: user.uid,
+          nickname: existingNickname ?? fallbackNickname,
+          email: user.email ?? '',
+        );
+      }
+      // Always update join preferences.
+      await userRepo.updatePreferences(
+        userId: user.uid,
         preferences: {
           'show_stats': _showStats,
           'show_bac': _showBac,
         },
-      ));
+      );
 
       // Add participant
       await kegRepo.addParticipant(widget.sessionId, user.uid);

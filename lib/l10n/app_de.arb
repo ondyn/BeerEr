@@ -11,7 +11,6 @@
   "estimatedBac": "Geschätzter BAK",
   "drinkResponsibly": "Bitte trinken Sie verantwortungsvoll.",
   "volumeRemaining": "{volume} ml übrig",
-
   "kegInformation": "Fass-Informationen",
   "beerInformation": "Bier-Informationen",
   "kegInfo": "Fass-Informationen",
@@ -28,7 +27,6 @@
   "price": "Preis",
   "status": "Status",
   "started": "Gestartet",
-
   "home": "Startseite",
   "settings": "Einstellungen",
   "about": "Über",
@@ -36,7 +34,6 @@
   "myProfile": "Mein Profil",
   "pastSessions": "Vergangene Sitzungen",
   "signOut": "Abmelden",
-
   "beerer": "Beerer",
   "noKegSessionsYet": "Noch keine Fasssitzungen",
   "tapPlusToCreate": "Tippen Sie auf +, um Ihre erste Sitzung zu erstellen!",
@@ -55,7 +52,6 @@
   "noPastSessions": "Keine vergangenen Sitzungen",
   "error": "Fehler: {message}",
   "notSignedIn": "Nicht angemeldet",
-
   "signIn": "Anmelden",
   "createAccount": "Konto erstellen",
   "signInToBeerEr": "Bei Beerer anmelden",
@@ -77,7 +73,6 @@
   "accountCreatedVerify": "Konto erstellt. Überprüfen Sie Ihre E-Mail, um sich anzumelden.",
   "registrationFailed": "Registrierung fehlgeschlagen. Bitte versuchen Sie es erneut.",
   "emailSignInNotConfigured": "E-Mail-Anmeldung ist nicht konfiguriert. Bitte kontaktieren Sie den Administrator.",
-
   "forgotPasswordTitle": "Passwort vergessen?",
   "forgotPasswordSubtitle": "Geben Sie Ihre E-Mail ein und wir senden Ihnen einen Link zum Zurücksetzen.",
   "sendResetLink": "Link senden",
@@ -85,7 +80,6 @@
   "resetLinkSent": "Wir haben einen Link zum Zurücksetzen an {email} gesendet.",
   "backToSignIn": "Zurück zur Anmeldung",
   "pleaseEnterValidEmail": "Bitte geben Sie eine gültige E-Mail-Adresse ein",
-
   "profileDetails": "Profildetails",
   "nickname": "Spitzname",
   "pleaseChooseNickname": "Bitte wählen Sie einen Spitznamen",
@@ -95,11 +89,8 @@
   "male": "Männlich",
   "female": "Weiblich",
   "bacPrivacyNote": "ℹ Gewicht & Alter werden nur für die BAK-Schätzung auf Ihrem Gerät verwendet.",
-
   "welcomeTagline": "Zähle jeden Schluck.\nTeile jede Rechnung.\nTrinke alle Fässer.",
-
   "splashTagline": "Zähle jeden Tropfen",
-
   "editProfile": "Profil bearbeiten",
   "save": "Speichern",
   "weight": "Gewicht",
@@ -111,7 +102,6 @@
   "sessionHistory": "Sitzungsverlauf",
   "viewHistory": "Verlauf anzeigen",
   "privacySettings": "Datenschutzeinstellungen",
-
   "notifications": "Benachrichtigungen",
   "display": "Anzeige",
   "account": "Konto",
@@ -131,7 +121,6 @@
   "commaSeparator": "Komma (1,5)",
   "changePassword": "Passwort ändern",
   "language": "Sprache",
-
   "version": "Version {version}",
   "aboutDescription": "Beerer ist ein Fass-Bier-Tracker für Partys. Verfolge jeden Ausschank, sieh Echtzeit-Statistiken und teile Kosten einfach auf.",
   "enjoyUsingBeerer": "Gefällt Ihnen Beerer?",
@@ -144,24 +133,21 @@
   "beerTastingQuestion": "Möchten Sie Bierverkostung lernen?",
   "privacyPolicy": "Datenschutzrichtlinie",
   "openSourceLicences": "Open-Source-Lizenzen",
-
   "shareKegSession": "Sitzung teilen",
   "inviteFriendsToJoin": "Freunde einladen",
   "copyLink": "Link kopieren",
   "shareLink": "Link teilen",
   "linkCopied": "Link kopiert!",
   "joinMyKegParty": "Komm zu meiner Fassparty! {link}",
-
   "exportToSettleUp": "Nach Settle Up exportieren",
   "reviewBillSplit": "Kostenaufteilung prüfen",
   "noJointAccountsFound": "Keine gemeinsamen Konten gefunden. Einzelkosten werden exportiert.",
   "membersCount": "{count} Mitglieder",
-  "total": "Gesamt: {amount}",
+  "total": "Gesamt",
   "settleUpInfo": "ℹ Settle Up erstellt eine Gruppe mit diesen Beträgen.",
   "exportedSuccessfully": "Erfolgreich nach Settle Up exportiert!",
   "exportFailed": "Export fehlgeschlagen: {error}",
   "sessionNotFound": "Sitzung nicht gefunden",
-
   "newKegSessionTitle": "Neue Fasssitzung  {step}/2",
   "searchBeerOnBeerWeb": "Bier auf BeerWeb suchen…",
   "searchBeerHint": "z.B. Kozel",
@@ -200,24 +186,19 @@
   "volumeMl": "Volumen (ml)",
   "volumeHint": "z.B. 500",
   "add": "Hinzufügen",
-
   "logPourForYou": "Bier für Sie eintragen",
   "orEnterManually": "Oder manuell eingeben:",
   "logPour": "Eintragen",
-
   "checkInboxToVerify": "Überprüfen Sie Ihren Posteingang, um Ihre E-Mail zu bestätigen.",
   "resend": "Erneut senden",
-
   "estBacValue": "Geschätzter BAK: {value} ‰",
   "readyToDriveIn": "Fahrbereit in ~{duration}",
-
   "statusReady": "Bereit",
   "statusActive": "Aktiv",
   "statusPaused": "Pausiert",
   "statusDone": "Fertig",
   "percentLeft": "{percent} übrig",
   "peopleDuration": "{count} Personen · {duration}",
-
   "myJointAccount": "Mein gemeinsames Konto",
   "jointAccounts": "Gemeinsame Konten",
   "members": "Mitglieder",
@@ -234,12 +215,16 @@
   "failedToCreateGroup": "Gruppe konnte nicht erstellt werden: {error}",
   "allParticipantsInGroup": "Alle Teilnehmer sind bereits in einer Gruppe.",
   "userAlreadyInAnotherGroup": "Dieser Benutzer ist bereits in einer anderen Gruppe.",
-
   "guest": "Gast",
-
   "guestNameTaken": "Dieser Name wird bereits von einem anderen Teilnehmer verwendet. Bitte wählen Sie einen anderen Namen.",
-
   "english": "English",
   "czech": "Čeština",
-  "german": "Deutsch"
+  "german": "Deutsch",
+  "wrongPasswordError": "Falsches Passwort. Bitte versuchen Sie es erneut.",
+  "userNotFoundError": "Kein Konto mit dieser E-Mail-Adresse gefunden.",
+  "invalidCredentialError": "Ungültige E-Mail oder ungültiges Passwort. Bitte überprüfen Sie Ihre Anmeldedaten.",
+  "tooManyRequestsError": "Zu viele Versuche. Bitte versuchen Sie es später erneut.",
+  "emailNotVerifiedError": "Ihre E-Mail wurde noch nicht bestätigt. Bitte überprüfen Sie Ihren Posteingang.",
+  "verificationEmailResent": "Bestätigungs-E-Mail gesendet! Überprüfen Sie Ihren Posteingang.",
+  "resendVerificationEmail": "Bestätigungs-E-Mail erneut senden"
 }

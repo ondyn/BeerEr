@@ -1,5 +1,6 @@
 import 'package:beerer/providers/auth_provider.dart';
 import 'package:beerer/screens/screens.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -10,16 +11,37 @@ part 'router.g.dart';
 /// the widget tree is ready.
 final appNavigatorKey = GlobalKey<NavigatorState>();
 
+/// A [ChangeNotifier] that wraps the Firebase auth-state stream so
+/// [GoRouter.refreshListenable] can trigger a redirect re-evaluation
+/// without rebuilding the entire GoRouter (which would reset the
+/// navigation stack and lose any in-screen error state).
+class _AuthNotifier extends ChangeNotifier {
+  _AuthNotifier() {
+    FirebaseAuth.instance.authStateChanges().listen((user) {
+      _user = user;
+      notifyListeners();
+    });
+  }
+
+  User? _user;
+  User? get user => _user;
+}
+
+/// Single instance shared by the router provider.
+final _authNotifier = _AuthNotifier();
+
 @riverpod
 GoRouter router(Ref ref) {
-  final authAsync = ref.watch(authStateProvider);
+  // Listen to the Riverpod auth stream so the provider stays alive,
+  // but do NOT recreate the GoRouter on every change.
+  ref.listen(authStateProvider, (_, _) {});
 
   return GoRouter(
     navigatorKey: appNavigatorKey,
-    // initialLocation: '/', // SKIP SPLASH: was '/', now going straight to /welcome
     initialLocation: '/welcome',
+    refreshListenable: _authNotifier,
     redirect: (context, state) {
-      final user = authAsync.value;
+      final user = _authNotifier.user;
       final emailVerified = user?.emailVerified ?? false;
       final loggedIn = user != null && emailVerified;
       final path = state.uri.path;

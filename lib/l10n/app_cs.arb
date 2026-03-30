@@ -11,7 +11,6 @@
   "estimatedBac": "Odhad BAC",
   "drinkResponsibly": "Pijte prosím zodpovědně.",
   "volumeRemaining": "{volume} ml zbývá",
-
   "kegInformation": "Informace o sudu",
   "beerInformation": "Informace o pivu",
   "kegInfo": "Informace o sudu",
@@ -28,7 +27,6 @@
   "price": "Cena",
   "status": "Stav",
   "started": "Zahájeno",
-
   "home": "Domů",
   "settings": "Nastavení",
   "about": "O aplikaci",
@@ -36,7 +34,6 @@
   "myProfile": "Můj profil",
   "pastSessions": "Minulé akce",
   "signOut": "Odhlásit se",
-
   "beerer": "Beerer",
   "noKegSessionsYet": "Zatím žádné akce",
   "tapPlusToCreate": "Klepněte na + a vytvořte svou první akci!",
@@ -55,7 +52,6 @@
   "noPastSessions": "Žádné minulé akce",
   "error": "Chyba: {message}",
   "notSignedIn": "Nepřihlášen/a",
-
   "signIn": "Přihlásit se",
   "createAccount": "Vytvořit účet",
   "signInToBeerEr": "Přihlásit se do Beerer",
@@ -77,7 +73,6 @@
   "accountCreatedVerify": "Účet vytvořen. Před přihlášením ověřte svůj e-mail.",
   "registrationFailed": "Registrace se nezdařila. Zkuste to prosím znovu.",
   "emailSignInNotConfigured": "Přihlašování e-mailem není nakonfigurováno. Kontaktujte prosím správce.",
-
   "forgotPasswordTitle": "Zapomenuté heslo?",
   "forgotPasswordSubtitle": "Zadejte svůj e-mail a my vám pošleme odkaz pro obnovení.",
   "sendResetLink": "Odeslat odkaz pro obnovení",
@@ -85,7 +80,6 @@
   "resetLinkSent": "Na adresu {email} jsme poslali odkaz pro obnovení hesla.",
   "backToSignIn": "Zpět k přihlášení",
   "pleaseEnterValidEmail": "Zadejte prosím platnou e-mailovou adresu",
-
   "profileDetails": "Údaje profilu",
   "nickname": "Přezdívka",
   "pleaseChooseNickname": "Zvolte si prosím přezdívku",
@@ -95,11 +89,8 @@
   "male": "Muž",
   "female": "Žena",
   "bacPrivacyNote": "ℹ Váha a věk se používají pouze pro odhad BAC na vašem zařízení.",
-
   "welcomeTagline": "Sleduj každé pivo.\nVyrovnej každý účet.\nVypij všechny sudy.",
-
   "splashTagline": "Počítej každou kapku",
-
   "editProfile": "Upravit profil",
   "save": "Uložit",
   "weight": "Váha",
@@ -111,7 +102,6 @@
   "sessionHistory": "Historie akcí",
   "viewHistory": "Zobrazit historii",
   "privacySettings": "Nastavení soukromí",
-
   "notifications": "Oznámení",
   "display": "Zobrazení",
   "account": "Účet",
@@ -131,7 +121,6 @@
   "commaSeparator": "Čárka (1,5)",
   "changePassword": "Změnit heslo",
   "language": "Jazyk",
-
   "version": "Verze {version}",
   "aboutDescription": "Beerer je aplikace pro sledování čepování piva ze sudu na párty. Sledujte každé pivo, zobrazujte statistiky v reálném čase a snadno vyrovnejte náklady.",
   "enjoyUsingBeerer": "Baví vás Beerer?",
@@ -144,24 +133,21 @@
   "beerTastingQuestion": "Chcete se naučit degustovat pivo?",
   "privacyPolicy": "Zásady ochrany osobních údajů",
   "openSourceLicences": "Open-source licence",
-
   "shareKegSession": "Sdílet akci",
   "inviteFriendsToJoin": "Pozvěte přátele",
   "copyLink": "Kopírovat odkaz",
   "shareLink": "Sdílet odkaz",
   "linkCopied": "Odkaz zkopírován!",
   "joinMyKegParty": "Připoj se k mé párty! {link}",
-
   "exportToSettleUp": "Exportovat do Settle Up",
   "reviewBillSplit": "Přehled rozúčtování",
   "noJointAccountsFound": "Nenalezeny žádné společné účty. Budou exportovány individuální náklady.",
   "membersCount": "{count} členů",
-  "total": "Celkem: {amount}",
+  "total": "Celkem",
   "settleUpInfo": "ℹ Settle Up vytvoří skupinu s těmito částkami.",
   "exportedSuccessfully": "Úspěšně exportováno do Settle Up!",
   "exportFailed": "Export se nezdařil: {error}",
   "sessionNotFound": "Akce nenalezena",
-
   "newKegSessionTitle": "Nová akce  {step}/2",
   "searchBeerOnBeerWeb": "Hledat pivo na BeerWeb…",
   "searchBeerHint": "např. Kozel",
@@ -200,24 +186,19 @@
   "volumeMl": "Objem (ml)",
   "volumeHint": "např. 500",
   "add": "Přidat",
-
   "logPourForYou": "Zaznamenat pivo pro vás",
   "orEnterManually": "Nebo zadejte ručně:",
   "logPour": "Zaznamenat",
-
   "checkInboxToVerify": "Zkontrolujte doručenou poštu a ověřte svůj e-mail.",
   "resend": "Poslat znovu",
-
   "estBacValue": "Odhad BAC: {value} ‰",
   "readyToDriveIn": "Připraven k řízení za ~{duration}",
-
   "statusReady": "Připraven",
   "statusActive": "Aktivní",
   "statusPaused": "Pozastaven",
   "statusDone": "Dokončen",
   "percentLeft": "{percent} zbývá",
   "peopleDuration": "{count} lidí · {duration}",
-
   "myJointAccount": "Můj společný účet",
   "jointAccounts": "Společné účty",
   "members": "Členové",
@@ -234,12 +215,16 @@
   "failedToCreateGroup": "Vytvoření skupiny se nezdařilo: {error}",
   "allParticipantsInGroup": "Všichni účastníci jsou již ve skupině.",
   "userAlreadyInAnotherGroup": "Tento uživatel je již v jiné skupině.",
-
   "guest": "Host",
-
   "guestNameTaken": "Tento název je již obsazen jiným účastníkem. Zvolte prosím jiné jméno.",
-
   "english": "English",
   "czech": "Čeština",
-  "german": "Deutsch"
+  "german": "Deutsch",
+  "wrongPasswordError": "Nesprávné heslo. Zkuste to prosím znovu.",
+  "userNotFoundError": "Účet s touto e-mailovou adresou nebyl nalezen.",
+  "invalidCredentialError": "Neplatný e-mail nebo heslo. Zkontrolujte prosím své údaje.",
+  "tooManyRequestsError": "Příliš mnoho pokusů. Zkuste to prosím později.",
+  "emailNotVerifiedError": "Váš e-mail nebyl dosud ověřen. Zkontrolujte prosím doručenou poštu.",
+  "verificationEmailResent": "Ověřovací e-mail odeslán! Zkontrolujte doručenou poštu.",
+  "resendVerificationEmail": "Znovu odeslat ověřovací e-mail"
 }

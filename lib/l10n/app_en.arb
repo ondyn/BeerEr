@@ -1,598 +1,514 @@
-{{
-
-  "@@locale": "en",  "@@locale": "en",
-
-  "appTitle": "Beerer",  "appTitle": "Beerer",
-
-  "@appTitle": { "description": "The application title" },  "@appTitle": {
-
-    "description": "The application title"
-
-  "tapKeg": "Tap Keg",  },
-
-  "@tapKeg": { "description": "Button to start/resume a keg session" },  "tapKeg": "Tap Keg",
-
-  "untapKeg": "Untap Keg",  "@tapKeg": { "description": "Button to start/resume a keg session" },
-
-  "@untapKeg": { "description": "Button to pause a keg session" },  "untapKeg": "Untap Keg",
-
-  "kegDone": "Keg Done",  "@untapKeg": { "description": "Button to pause a keg session" },
-
-  "@kegDone": { "description": "Button to mark keg as finished" },  "kegDone": "Keg Done",
-
-  "iGotBeer": "I Got Beer",  "@kegDone": { "description": "Button to mark keg as finished" },
-
-  "@iGotBeer": { "description": "Button to log a pour for yourself" },  "iGotBeer": "I Got Beer",
-
-  "pourForSomeone": "Pour for Someone",  "@iGotBeer": { "description": "Button to log a pour for yourself" },
-
-  "@pourForSomeone": { "description": "Button to log a pour for another user" },  "pourForSomeone": "Pour for Someone",
-
-  "undo": "Undo",  "@pourForSomeone": { "description": "Button to log a pour for another user" },
-
-  "@undo": { "description": "Undo button label" },  "undo": "Undo",
-
-  "statistics": "Statistics",  "@undo": { "description": "Undo button label" },
-
-  "@statistics": { "description": "Statistics section heading" },  "statistics": "Statistics",
-
-  "estimatedBac": "Est. BAC",  "@statistics": { "description": "Statistics section heading" },
-
-  "@estimatedBac": { "description": "Estimated blood alcohol content label" },  "estimatedBac": "Est. BAC",
-
-  "drinkResponsibly": "Please drink responsibly.",  "@estimatedBac": { "description": "Estimated blood alcohol content label" },
-
-  "@drinkResponsibly": { "description": "Responsible drinking disclaimer" },  "drinkResponsibly": "Please drink responsibly.",
-
-  "volumeRemaining": "{volume} ml remaining",  "@drinkResponsibly": { "description": "Responsible drinking disclaimer" },
-
-  "@volumeRemaining": {  "volumeRemaining": "{volume} ml remaining",
-
-    "description": "Volume remaining in keg",  "@volumeRemaining": {
-
-    "placeholders": { "volume": { "type": "String" } }    "description": "Volume remaining in keg",
-
-  },    "placeholders": {
-
-      "volume": { "type": "String" }
-
-  "kegInformation": "Keg Information",    }
-
-  "@kegInformation": { "description": "Title for keg information screen" },  },
-
-  "beerInformation": "Beer Information",  "kegInformation": "Keg Information",
-
-  "@beerInformation": { "description": "Section header for beer details" },  "@kegInformation": { "description": "Title for keg information screen" },
-
-  "kegInfo": "Keg Information",  "beerInformation": "Beer Information",
-
-  "@kegInfo": { "description": "Section header for keg details" },  "@beerInformation": { "description": "Section header for beer details" },
-
-  "beerName": "Name",  "kegInfo": "Keg Information",
-
-  "@beerName": { "description": "Beer name label" },  "@kegInfo": { "description": "Section header for keg details" },
-
-  "alcoholPercent": "Alcohol %",  "beerName": "Name",
-
-  "@alcoholPercent": { "description": "Alcohol percentage label" },  "@beerName": { "description": "Beer name label" },
-
-  "brewery": "Brewery",  "alcoholPercent": "Alcohol %",
-
-  "@brewery": { "description": "Brewery label" },  "@alcoholPercent": { "description": "Alcohol percentage label" },
-
-  "malt": "Malt",  "brewery": "Brewery",
-
-  "@malt": { "description": "Malt label" },  "@brewery": { "description": "Brewery label" },
-
-  "fermentation": "Fermentation",  "malt": "Malt",
-
-  "@fermentation": { "description": "Fermentation label" },  "@malt": { "description": "Malt label" },
-
-  "beerType": "Type",  "fermentation": "Fermentation",
-
-  "@beerType": { "description": "Beer type label" },  "@fermentation": { "description": "Fermentation label" },
-
-  "beerGroup": "Group",  "beerType": "Type",
-
-  "@beerGroup": { "description": "Beer group label" },  "@beerType": { "description": "Beer type label" },
-
-  "beerStyle": "Style",  "beerGroup": "Group",
-
-  "@beerStyle": { "description": "Beer style label" },  "@beerGroup": { "description": "Beer group label" },
-
-  "degreePlato": "Degree Plato",  "beerStyle": "Style",
-
-  "@degreePlato": { "description": "Degree Plato label" },  "@beerStyle": { "description": "Beer style label" },
-
-  "totalVolume": "Total Volume",  "degreePlato": "Degree Plato",
-
-  "@totalVolume": { "description": "Total keg volume label" },  "@degreePlato": { "description": "Degree Plato label" },
-
-  "price": "Price",  "totalVolume": "Total Volume",
-
-  "@price": { "description": "Keg price label" },  "@totalVolume": { "description": "Total keg volume label" },
-
-  "status": "Status",  "price": "Price",
-
-  "@status": { "description": "Status label" },  "@price": { "description": "Keg price label" },
-
-  "started": "Started",  "status": "Status",
-
-  "@started": { "description": "Started label" },  "@status": { "description": "Session status label" },
-
+{
+  "@@locale": "en",
+  "appTitle": "Beerer",
+  "tapKeg": "Tap Keg",
+  "untapKeg": "Untap Keg",
+  "kegDone": "Keg Done",
+  "iGotBeer": "I Got Beer",
+  "pourForSomeone": "Pour for Someone",
+  "undo": "Undo",
+  "statistics": "Statistics",
+  "estimatedBac": "Est. BAC",
+  "drinkResponsibly": "Please drink responsibly.",
+  "kegInformation": "Keg Information",
+  "beerInformation": "Beer Information",
+  "kegInfo": "Keg Information",
+  "beerName": "Name",
+  "alcoholPercent": "Alcohol %",
+  "brewery": "Brewery",
+  "malt": "Malt",
+  "fermentation": "Fermentation",
+  "beerType": "Type",
+  "beerGroup": "Group",
+  "beerStyle": "Style",
+  "degreePlato": "Degree Plato",
+  "totalVolume": "Total Volume",
+  "price": "Price",
+  "status": "Status",
   "started": "Started",
-
-  "home": "Home",  "@started": { "description": "Session start time label" }
-
-  "@home": { "description": "Home nav item" },}
-
+  "home": "Home",
   "settings": "Settings",
-  "@settings": { "description": "Settings screen title" },
   "about": "About",
-  "@about": { "description": "About screen title" },
   "profile": "Profile",
-  "@profile": { "description": "Profile nav item" },
   "myProfile": "My Profile",
-  "@myProfile": { "description": "Profile screen title" },
   "pastSessions": "Past Sessions",
-  "@pastSessions": { "description": "History screen title / drawer item" },
   "signOut": "Sign out",
-  "@signOut": { "description": "Sign out button" },
-
   "beerer": "Beerer",
-  "@beerer": { "description": "App name shown in home app bar" },
   "noKegSessionsYet": "No keg sessions yet",
-  "@noKegSessionsYet": { "description": "Home empty state title" },
   "tapPlusToCreate": "Tap + to create your first keg session!",
-  "@tapPlusToCreate": { "description": "Home empty state subtitle" },
   "noActiveKegSessions": "No active keg sessions",
-  "@noActiveKegSessions": { "description": "Home no active sessions title" },
   "tapPlusToCreateNew": "Tap + to create a new keg session",
-  "@tapPlusToCreateNew": { "description": "Home no active sessions subtitle" },
   "joinKegSession": "Join Keg Session",
-  "@joinKegSession": { "description": "FAB label to join a session" },
   "newKegSession": "New Keg Session",
-  "@newKegSession": { "description": "FAB label to create a session" },
   "joinAKegSession": "Join a Keg Session",
-  "@joinAKegSession": { "description": "Dialog title for joining a session" },
   "pasteInviteLinkOrId": "Paste the invite link or enter the session ID:",
-  "@pasteInviteLinkOrId": { "description": "Join dialog instruction" },
   "inviteLinkHint": "beerer://join/... or session ID",
-  "@inviteLinkHint": { "description": "Join dialog text field hint" },
   "pasteFromClipboard": "Paste from clipboard",
-  "@pasteFromClipboard": { "description": "Paste button tooltip" },
   "scanQrCode": "Scan QR code",
-  "@scanQrCode": { "description": "QR scanner button" },
   "cancel": "Cancel",
-  "@cancel": { "description": "Cancel button" },
   "join": "Join",
-  "@join": { "description": "Join button" },
   "invalidLinkOrId": "Invalid link or session ID",
-  "@invalidLinkOrId": { "description": "Error for invalid session link" },
   "noPastSessions": "No past sessions",
-  "@noPastSessions": { "description": "History empty state" },
+  "notSignedIn": "Not signed in",
+  "signIn": "Sign in",
+  "createAccount": "Create account",
+  "signInToBeerEr": "Sign in to Beerer",
+  "email": "Email",
+  "password": "Password",
+  "confirmPassword": "Confirm password",
+  "pleaseEnterEmail": "Please enter your email",
+  "enterValidEmail": "Enter a valid email",
+  "pleaseEnterPassword": "Please enter your password",
+  "passwordMinLength": "Password must be at least 6 characters",
+  "passwordsDoNotMatch": "Passwords do not match",
+  "forgotPassword": "Forgot password?",
+  "noAccount": "No account? ",
+  "registerLink": "Register ›",
+  "alreadyHaveOne": "Already have one? ",
+  "signInLink": "Sign in ›",
+  "signInFailed": "Sign in failed. Please try again.",
+  "verifyEmailMessage": "Please verify your email address. We've sent you a verification link.",
+  "accountCreatedVerify": "Account created. Check your email to verify before signing in.",
+  "registrationFailed": "Registration failed. Please try again.",
+  "emailSignInNotConfigured": "Email sign-in is not configured. Please contact the app admin.",
+  "forgotPasswordTitle": "Forgot password?",
+  "forgotPasswordSubtitle": "Enter your email and we'll send you a reset link.",
+  "sendResetLink": "Send reset link",
+  "checkYourEmail": "Check your email",
+  "backToSignIn": "Back to sign in",
+  "pleaseEnterValidEmail": "Please enter a valid email address",
+  "profileDetails": "Profile details",
+  "nickname": "Nickname",
+  "pleaseChooseNickname": "Please choose a nickname",
+  "weightKg": "Weight (kg)",
+  "age": "Age",
+  "genderLabel": "Gender:",
+  "male": "Male",
+  "female": "Female",
+  "bacPrivacyNote": "ℹ Weight & age are used only for BAC estimation on your device.",
+  "welcomeTagline": "Track every pour.\\nSettle every tab.\\nDrink all the kegs.",
+  "splashTagline": "Count every drop",
+  "editProfile": "Edit Profile",
+  "save": "Save",
+  "weight": "Weight",
+  "gender": "Gender",
+  "deleteAccount": "Delete account",
+  "showStatsToOthers": "Show stats to others",
+  "showBacEstimate": "Show BAC estimate",
+  "setWeightForBac": "Set your weight in profile to enable BAC",
+  "sessionHistory": "Session History",
+  "viewHistory": "View history",
+  "privacySettings": "Privacy settings",
+  "notifications": "Notifications",
+  "display": "Display",
+  "account": "Account",
+  "allowPourForMe": "Allow others to pour for me",
+  "allowPourForMeSubtitle": "Other participants can log a pour on your behalf",
+  "notifyPourForMe": "Notify when poured for me",
+  "notifyPourForMeSubtitle": "Get notified when someone pours beer on your behalf",
+  "kegNearlyEmpty": "Keg nearly empty",
+  "readyToDrive": "Ready to drive",
+  "readyToDriveSubtitle": "Get notified when your estimated BAC reaches 0",
+  "slowdownReminder": "Slowdown reminder",
+  "slowdownReminderSubtitle": "Get nudged when your drinking pace drops",
+  "volumeUnits": "Volume units",
+  "currencySymbol": "Currency symbol",
+  "decimalSeparator": "Decimal separator",
+  "dotSeparator": "Dot (1.5)",
+  "commaSeparator": "Comma (1,5)",
+  "changePassword": "Change password",
+  "language": "Language",
+  "aboutDescription": "Beerer is a keg beer tracker for parties. Track every pour, see real-time stats, and settle costs easily.",
+  "enjoyUsingBeerer": "Enjoy using Beerer?",
+  "buyDeveloperBeer": "Buy the developer a beer!",
+  "tipViaRevolut": "Tip via Revolut",
+  "drinkResponsiblyTitle": "Drink Responsibly",
+  "drinkResponsiblyBody": "BAC estimates are for informational purposes only and should not be used to determine fitness to drive. Please drink responsibly.",
+  "addictionAwareness": "If you are using this app often, consider visiting:",
+  "addictionCenterEU": "Addiction Center EU",
+  "beerTastingQuestion": "Want to learn beer tasting?",
+  "privacyPolicy": "Privacy Policy",
+  "openSourceLicences": "Open-source licences",
+  "shareKegSession": "Share Keg Session",
+  "inviteFriendsToJoin": "Invite friends to join",
+  "copyLink": "Copy link",
+  "shareLink": "Share link",
+  "linkCopied": "Link copied!",
+  "exportToSettleUp": "Export to Settle Up",
+  "reviewBillSplit": "Review the bill split",
+  "noJointAccountsFound": "No joint accounts found. Individual costs will be exported.",
+  "settleUpInfo": "ℹ Settle Up will create a group with these amounts.",
+  "exportedSuccessfully": "Exported to Settle Up successfully!",
+  "sessionNotFound": "Session not found",
+  "searchBeerOnBeerWeb": "Search beer on BeerWeb…",
+  "egKozel": "e.g. Kozel",
+  "egPilsnerUrquell": "e.g. Pilsner Urquell",
+  "pleaseEnterBeerName": "Please enter a beer name",
+  "beerDetailsOptional": "Beer details (optional)",
+  "alcoholContentPercent": "Alcohol content (%)",
+  "egAlcohol": "e.g. 5.0",
+  "egBrewery": "e.g. Pilsner Urquell Brewery",
+  "egMalt": "e.g. barley",
+  "egFermentation": "e.g. Bottom-fermented",
+  "type": "Type",
+  "egType": "e.g. Pale",
+  "group": "Group",
+  "egGroup": "e.g. Full",
+  "egBeerStyle": "e.g. Pale Ale",
+  "egDegreePlato": "e.g. 12",
+  "next": "Next →",
+  "back": "← Back",
+  "kegVolumeLitres": "Keg volume (litres)",
+  "orEnterCustomVolume": "Or enter custom volume",
+  "egVolume": "e.g. 25",
+  "enterValidNumber": "Enter a valid number",
+  "predefinedPourSizes": "Predefined pour sizes",
+  "tapToRemove": "Tap × to remove",
+  "addChip": "+ Add",
+  "createSession": "Create Session",
+  "addPourSize": "Add pour size",
+  "volumeMl": "Volume (ml)",
+  "egPourSize": "e.g. 500",
+  "add": "Add",
+  "logPourForYou": "Log a pour for you",
+  "orEnterManually": "Or enter manually:",
+  "logPour": "Log Pour",
+  "checkInboxToVerify": "Check your inbox to verify your email.",
+  "resend": "Resend",
+  "chooseAvatar": "Choose avatar",
+  "statusCreated": "Created",
+  "statusReady": "Ready",
+  "statusActive": "Active",
+  "statusPaused": "Paused",
+  "statusDone": "Done",
+  "myJointAccount": "My Joint Account",
+  "jointAccounts": "Joint Accounts",
+  "members": "Members",
+  "youSuffix": " (you)",
+  "addMember": "Add member",
+  "leaveAccount": "Leave account",
+  "createANewGroup": "Create a new group",
+  "groupNameHint": "Group name (e.g. \"Novák family\")",
+  "createGroup": "Create Group",
+  "orJoinExistingGroup": "Or join an existing group",
+  "alreadyInGroup": "You are already in a group.",
+  "leaveCurrentGroupFirst": "You must leave your current group first.",
+  "allParticipantsInGroup": "All participants are already in a group.",
+  "userAlreadyInAnotherGroup": "This user is already in another group.",
+  "guest": "Guest",
+  "english": "English",
+  "czech": "Čeština",
+  "german": "Deutsch",
+  "sessionReady": "SESSION READY",
+  "tapTheKegToStart": "Tap the keg to start!",
+  "kegIsUntapped": "Keg is untapped",
+  "pouringDisabled": "Pouring is disabled.",
+  "tapKegAgain": "Tap Keg Again",
+  "sessionComplete": "SESSION COMPLETE",
+  "finalStats": "Final stats",
+  "totalKegTime": "Total keg time",
+  "totalPoured": "Total poured",
+  "pureAlcohol": "Pure alcohol",
+  "participantsLabel": "Participants",
+  "myTotal": "My total",
+  "kegPriceLabel2": "Keg price",
+  "billSplit": "Bill split",
+  "basedOnActualConsumption": "Based on actual consumption",
+  "reviewBill": "Review Bill",
+  "kegLevel": "KEG LEVEL",
+  "remaining": "remaining",
+  "untilEmpty": "until empty",
+  "myStats": "My stats",
+  "currentBeer": "Current beer",
+  "sinceLast": "Since last",
+  "avgRate": "Avg rate",
+  "myVolume": "My volume",
+  "beers": "Beers",
+  "bacEstimate": "BAC estimate",
+  "driveIn": "Drive in",
+  "bacEstimateWarning": "⚠ BAC is an estimate only — actual values may differ.",
+  "pourLogged": "Pour logged!",
+  "accountsBills": "Accounts / Bills",
+  "joinCreateAccount": "Join / Create Account",
+  "addGuest": "Add Guest",
+  "guestName": "Guest name",
+  "removeGuest": "Remove Guest",
+  "remove": "Remove",
+  "markKegAsDoneQuestion": "Mark keg as done?",
+  "sessionReadOnlyWarning": "The session will become read-only. This cannot be undone.",
+  "deleteSessionQuestion": "Delete session?",
+  "deleteSessionWarning": "This will permanently delete the keg session. This cannot be undone.",
+  "delete": "Delete",
+  "shareJoinLink": "Share join link",
+  "editSession": "Edit session",
+  "untapUnfinishedKeg": "Untap unfinished keg",
+  "markKegAsDone": "Mark keg as done",
+  "solo": "solo",
+  "pours": "Pours",
+  "drinkers": "Drinkers",
+  "totalConsumed": "Total consumed",
+  "noPours": "No pours logged",
+  "failedToAddPour": "Failed to add pour",
+  "removePourQuestion": "Remove pour?",
+  "pourRemoved": "Pour removed",
+  "consumptionOverTime": "CONSUMPTION OVER TIME",
+  "estimatedBacOverTime": "ESTIMATED BAC OVER TIME",
+  "bacDoNotUseForDriving": "⚠ BAC is an estimate only — do not use it to determine fitness to drive.",
+  "stats": "STATS",
+  "beerCount": "Beer count",
+  "volume": "Volume",
+  "shareOfKeg": "Share of keg",
+  "avgRateLabel": "Avg. rate",
+  "cost": "Cost",
+  "estBac": "Est. BAC",
+  "estTimeToDrive": "Est. time to drive",
+  "visibilitySettings": "Visibility settings",
+  "showMyStats": "Show my stats",
+  "showBacEstimateJoin": "Show BAC estimate",
+  "areYouOneOfGuests": "Are you one of these guests?",
+  "selectYourselfToMerge": "Select yourself to take over their pours, or skip.",
+  "joinAndMerge": "Join & Merge",
+  "joinSession": "Join Session",
+  "failedToJoin": "Failed to join",
+  "pointAtBeererQrCode": "Point at a Beerer QR code",
+  "guestLower": "guest",
+  "removeGuestTooltip": "Remove guest",
+  "removePourTooltip": "Remove pour",
+  "ago": "ago",
+  "total": "Total",
+  "pourBeer": "Pour Beer",
+  "addPerson": "Add Person",
+  "removeFromSession": "Remove from session",
+  "guestDetail": "Guest detail",
+  "guestNameTaken": "This name is already taken by another participant. Please choose a different name.",
+  "volumeRemaining": "{volume} ml remaining",
+  "@volumeRemaining": {
+    "placeholders": {
+      "volume": {
+        "type": "String"
+      }
+    }
+  },
   "error": "Error: {message}",
   "@error": {
-    "description": "Generic error display",
-    "placeholders": { "message": { "type": "String" } }
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   },
-  "notSignedIn": "Not signed in",
-  "@notSignedIn": { "description": "Shown when user is not signed in" },
-
-  "signIn": "Sign in",
-  "@signIn": { "description": "Sign in button label" },
-  "createAccount": "Create account",
-  "@createAccount": { "description": "Create account button" },
-  "signInToBeerEr": "Sign in to Beerer",
-  "@signInToBeerEr": { "description": "Sign in screen title" },
-  "email": "Email",
-  "@email": { "description": "Email field label" },
-  "password": "Password",
-  "@password": { "description": "Password field label" },
-  "confirmPassword": "Confirm password",
-  "@confirmPassword": { "description": "Confirm password field label" },
-  "pleaseEnterEmail": "Please enter your email",
-  "@pleaseEnterEmail": { "description": "Email validation error" },
-  "enterValidEmail": "Enter a valid email",
-  "@enterValidEmail": { "description": "Email format validation error" },
-  "pleaseEnterPassword": "Please enter your password",
-  "@pleaseEnterPassword": { "description": "Password validation error" },
-  "passwordMinLength": "Password must be at least 6 characters",
-  "@passwordMinLength": { "description": "Password length validation" },
-  "passwordsDoNotMatch": "Passwords do not match",
-  "@passwordsDoNotMatch": { "description": "Password confirm validation" },
-  "forgotPassword": "Forgot password?",
-  "@forgotPassword": { "description": "Forgot password link" },
-  "noAccount": "No account? ",
-  "@noAccount": { "description": "Sign in screen link to register" },
-  "registerLink": "Register ›",
-  "@registerLink": { "description": "Register link text" },
-  "alreadyHaveOne": "Already have one? ",
-  "@alreadyHaveOne": { "description": "Register screen link to sign in" },
-  "signInLink": "Sign in ›",
-  "@signInLink": { "description": "Sign in link text" },
-  "signInFailed": "Sign in failed. Please try again.",
-  "@signInFailed": { "description": "Generic sign in error" },
-  "verifyEmailMessage": "Please verify your email address. We've sent you a verification link.",
-  "@verifyEmailMessage": { "description": "Email verification prompt" },
-  "accountCreatedVerify": "Account created. Check your email to verify before signing in.",
-  "@accountCreatedVerify": { "description": "Account created snackbar" },
-  "registrationFailed": "Registration failed. Please try again.",
-  "@registrationFailed": { "description": "Generic registration error" },
-  "emailSignInNotConfigured": "Email sign-in is not configured. Please contact the app admin.",
-  "@emailSignInNotConfigured": { "description": "Auth config error" },
-
-  "forgotPasswordTitle": "Forgot password?",
-  "@forgotPasswordTitle": { "description": "Forgot password screen title" },
-  "forgotPasswordSubtitle": "Enter your email and we'll send you a reset link.",
-  "@forgotPasswordSubtitle": { "description": "Forgot password instruction" },
-  "sendResetLink": "Send reset link",
-  "@sendResetLink": { "description": "Send reset link button" },
-  "checkYourEmail": "Check your email",
-  "@checkYourEmail": { "description": "Reset email sent title" },
   "resetLinkSent": "We've sent a password reset link to {email}.",
   "@resetLinkSent": {
-    "description": "Reset email sent subtitle",
-    "placeholders": { "email": { "type": "String" } }
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
   },
-  "backToSignIn": "Back to sign in",
-  "@backToSignIn": { "description": "Back to sign in button" },
-  "pleaseEnterValidEmail": "Please enter a valid email address",
-  "@pleaseEnterValidEmail": { "description": "Email validation on forgot screen" },
-
-  "profileDetails": "Profile details",
-  "@profileDetails": { "description": "Section header on register screen" },
-  "nickname": "Nickname",
-  "@nickname": { "description": "Nickname field label" },
-  "pleaseChooseNickname": "Please choose a nickname",
-  "@pleaseChooseNickname": { "description": "Nickname validation" },
-  "weightKg": "Weight (kg)",
-  "@weightKg": { "description": "Weight field label" },
-  "age": "Age",
-  "@age": { "description": "Age field label" },
-  "genderLabel": "Gender:",
-  "@genderLabel": { "description": "Gender field label" },
-  "male": "Male",
-  "@male": { "description": "Male gender option" },
-  "female": "Female",
-  "@female": { "description": "Female gender option" },
-  "bacPrivacyNote": "ℹ Weight & age are used only for BAC estimation on your device.",
-  "@bacPrivacyNote": { "description": "Privacy note about BAC data" },
-
-  "welcomeTagline": "Track every pour.\nSettle every tab.\nDrink all the kegs.",
-  "@welcomeTagline": { "description": "Welcome screen tagline" },
-
-  "splashTagline": "Count every drop",
-  "@splashTagline": { "description": "Splash screen tagline" },
-
-  "editProfile": "Edit Profile",
-  "@editProfile": { "description": "Edit profile sheet title" },
-  "save": "Save",
-  "@save": { "description": "Save button" },
-  "weight": "Weight",
-  "@weight": { "description": "Weight label in profile" },
-  "gender": "Gender",
-  "@gender": { "description": "Gender label in profile" },
-  "deleteAccount": "Delete account",
-  "@deleteAccount": { "description": "Delete account button" },
-  "showStatsToOthers": "Show stats to others",
-  "@showStatsToOthers": { "description": "Privacy toggle for stats" },
-  "showBacEstimate": "Show BAC estimate",
-  "@showBacEstimate": { "description": "Privacy toggle for BAC" },
-  "setWeightForBac": "Set your weight in profile to enable BAC",
-  "@setWeightForBac": { "description": "BAC toggle subtitle when weight missing" },
-  "sessionHistory": "Session History",
-  "@sessionHistory": { "description": "Profile section header" },
-  "viewHistory": "View history",
-  "@viewHistory": { "description": "View history list tile" },
-  "privacySettings": "Privacy settings",
-  "@privacySettings": { "description": "Profile section header for privacy" },
-
-  "notifications": "Notifications",
-  "@notifications": { "description": "Settings section header" },
-  "display": "Display",
-  "@display": { "description": "Settings section header" },
-  "account": "Account",
-  "@account": { "description": "Settings section header" },
-  "allowPourForMe": "Allow others to pour for me",
-  "@allowPourForMe": { "description": "Settings toggle" },
-  "allowPourForMeSubtitle": "Other participants can log a pour on your behalf",
-  "@allowPourForMeSubtitle": { "description": "Settings toggle subtitle" },
-  "notifyPourForMe": "Notify when poured for me",
-  "@notifyPourForMe": { "description": "Settings toggle" },
-  "notifyPourForMeSubtitle": "Get notified when someone pours beer on your behalf",
-  "@notifyPourForMeSubtitle": { "description": "Settings toggle subtitle" },
-  "kegNearlyEmpty": "Keg nearly empty",
-  "@kegNearlyEmpty": { "description": "Settings toggle" },
-  "readyToDrive": "Ready to drive",
-  "@readyToDrive": { "description": "Settings toggle" },
-  "readyToDriveSubtitle": "Get notified when your estimated BAC reaches 0",
-  "@readyToDriveSubtitle": { "description": "Settings toggle subtitle" },
-  "slowdownReminder": "Slowdown reminder",
-  "@slowdownReminder": { "description": "Settings toggle" },
-  "slowdownReminderSubtitle": "Get nudged when your drinking pace drops",
-  "@slowdownReminderSubtitle": { "description": "Settings toggle subtitle" },
-  "volumeUnits": "Volume units",
-  "@volumeUnits": { "description": "Settings label" },
-  "currencySymbol": "Currency symbol",
-  "@currencySymbol": { "description": "Settings label" },
-  "decimalSeparator": "Decimal separator",
-  "@decimalSeparator": { "description": "Settings label" },
-  "dotSeparator": "Dot (1.5)",
-  "@dotSeparator": { "description": "Decimal separator option" },
-  "commaSeparator": "Comma (1,5)",
-  "@commaSeparator": { "description": "Decimal separator option" },
-  "changePassword": "Change password",
-  "@changePassword": { "description": "Settings option" },
-  "language": "Language",
-  "@language": { "description": "Settings label for language selector" },
-
   "version": "Version {version}",
   "@version": {
-    "description": "Version label",
-    "placeholders": { "version": { "type": "String" } }
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
   },
-  "aboutDescription": "Beerer is a keg beer tracker for parties. Track every pour, see real-time stats, and settle costs easily.",
-  "@aboutDescription": { "description": "About screen description" },
-  "enjoyUsingBeerer": "Enjoy using Beerer?",
-  "@enjoyUsingBeerer": { "description": "Tip card title" },
-  "buyDeveloperBeer": "Buy the developer a beer!",
-  "@buyDeveloperBeer": { "description": "Tip card subtitle" },
-  "tipViaRevolut": "Tip via Revolut",
-  "@tipViaRevolut": { "description": "Tip button label" },
-  "drinkResponsiblyTitle": "Drink Responsibly",
-  "@drinkResponsiblyTitle": { "description": "Responsible drinking card title" },
-  "drinkResponsiblyBody": "BAC estimates are for informational purposes only and should not be used to determine fitness to drive. Please drink responsibly.",
-  "@drinkResponsiblyBody": { "description": "Responsible drinking disclaimer body" },
-  "addictionAwareness": "If you are using this app often, consider visiting:",
-  "@addictionAwareness": { "description": "Addiction awareness note" },
-  "addictionCenterEU": "Addiction Center EU",
-  "@addictionCenterEU": { "description": "Addiction center link label" },
-  "beerTastingQuestion": "Want to learn beer tasting?",
-  "@beerTastingQuestion": { "description": "Beer tasting card title" },
-  "privacyPolicy": "Privacy Policy",
-  "@privacyPolicy": { "description": "Privacy policy link" },
-  "openSourceLicences": "Open-source licences",
-  "@openSourceLicences": { "description": "Licences link" },
-
-  "shareKegSession": "Share Keg Session",
-  "@shareKegSession": { "description": "Share screen title" },
-  "inviteFriendsToJoin": "Invite friends to join",
-  "@inviteFriendsToJoin": { "description": "Share screen heading" },
-  "copyLink": "Copy link",
-  "@copyLink": { "description": "Copy link button" },
-  "shareLink": "Share link",
-  "@shareLink": { "description": "Share link button" },
-  "linkCopied": "Link copied!",
-  "@linkCopied": { "description": "Snackbar after copying link" },
   "joinMyKegParty": "Join my keg party! {link}",
   "@joinMyKegParty": {
-    "description": "Share message text",
-    "placeholders": { "link": { "type": "String" } }
+    "placeholders": {
+      "link": {
+        "type": "String"
+      }
+    }
   },
-
-  "exportToSettleUp": "Export to Settle Up",
-  "@exportToSettleUp": { "description": "Settle up screen title and button" },
-  "reviewBillSplit": "Review the bill split",
-  "@reviewBillSplit": { "description": "Settle up heading" },
-  "noJointAccountsFound": "No joint accounts found. Individual costs will be exported.",
-  "@noJointAccountsFound": { "description": "No accounts message" },
   "membersCount": "{count} members",
   "@membersCount": {
-    "description": "Member count label",
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
-  "total": "Total: {amount}",
-  "@total": {
-    "description": "Total cost label",
-    "placeholders": { "amount": { "type": "String" } }
+  "totalWithAmount": "Total: {amount}",
+  "@totalWithAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
   },
-  "settleUpInfo": "ℹ Settle Up will create a group with these amounts.",
-  "@settleUpInfo": { "description": "Info text below export button" },
-  "exportedSuccessfully": "Exported to Settle Up successfully!",
-  "@exportedSuccessfully": { "description": "Export success snackbar" },
   "exportFailed": "Export failed: {error}",
   "@exportFailed": {
-    "description": "Export error snackbar",
-    "placeholders": { "error": { "type": "String" } }
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
-  "sessionNotFound": "Session not found",
-  "@sessionNotFound": { "description": "Error when session is missing" },
-
-  "newKegSessionTitle": "New Keg Session  {step}/2",
-  "@newKegSessionTitle": {
-    "description": "Create keg screen title with step",
-    "placeholders": { "step": { "type": "int" } }
+  "newKegSessionStep": "New Keg Session  {step}/2",
+  "@newKegSessionStep": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      }
+    }
   },
-  "searchBeerOnBeerWeb": "Search beer on BeerWeb…",
-  "@searchBeerOnBeerWeb": { "description": "Beer search field label" },
-  "searchBeerHint": "e.g. Kozel",
-  "@searchBeerHint": { "description": "Beer search field hint" },
-  "beerNameLabel": "Beer name",
-  "@beerNameLabel": { "description": "Beer name input label" },
-  "beerNameHint": "e.g. Pilsner Urquell",
-  "@beerNameHint": { "description": "Beer name input hint" },
-  "pleaseEnterBeerName": "Please enter a beer name",
-  "@pleaseEnterBeerName": { "description": "Beer name validation" },
-  "beerDetailsOptional": "Beer details (optional)",
-  "@beerDetailsOptional": { "description": "Section header" },
-  "alcoholContentPercent": "Alcohol content (%)",
-  "@alcoholContentPercent": { "description": "Alcohol input label" },
-  "alcoholHint": "e.g. 5.0",
-  "@alcoholHint": { "description": "Alcohol input hint" },
-  "breweryLabel": "Brewery",
-  "@breweryLabel": { "description": "Brewery input label" },
-  "breweryHint": "e.g. Pilsner Urquell Brewery",
-  "@breweryHint": { "description": "Brewery input hint" },
-  "maltLabel": "Malt",
-  "@maltLabel": { "description": "Malt input label" },
-  "maltHint": "e.g. barley",
-  "@maltHint": { "description": "Malt input hint" },
-  "fermentationLabel": "Fermentation",
-  "@fermentationLabel": { "description": "Fermentation input label" },
-  "fermentationHint": "e.g. Bottom-fermented",
-  "@fermentationHint": { "description": "Fermentation input hint" },
-  "typeLabel": "Type",
-  "@typeLabel": { "description": "Type input label" },
-  "typeHint": "e.g. Pale",
-  "@typeHint": { "description": "Type input hint" },
-  "groupLabel": "Group",
-  "@groupLabel": { "description": "Group input label" },
-  "groupHint": "e.g. Full",
-  "@groupHint": { "description": "Group input hint" },
-  "beerStyleLabel": "Beer style",
-  "@beerStyleLabel": { "description": "Beer style input label" },
-  "beerStyleHint": "e.g. Pale Ale",
-  "@beerStyleHint": { "description": "Beer style input hint" },
-  "degreePlatoLabel": "Degree Plato (°P)",
-  "@degreePlatoLabel": { "description": "Degree Plato input label" },
-  "degreePlatoHint": "e.g. 12",
-  "@degreePlatoHint": { "description": "Degree Plato input hint" },
-  "next": "Next →",
-  "@next": { "description": "Next button" },
-  "back": "← Back",
-  "@back": { "description": "Back button" },
-  "kegVolumeLitres": "Keg volume (litres)",
-  "@kegVolumeLitres": { "description": "Volume section label" },
-  "orEnterCustomVolume": "Or enter custom volume",
-  "@orEnterCustomVolume": { "description": "Custom volume field label" },
   "kegPriceLabel": "Keg price ({currency})",
   "@kegPriceLabel": {
-    "description": "Keg price field label",
-    "placeholders": { "currency": { "type": "String" } }
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
   },
-  "enterValidNumber": "Enter a valid number",
-  "@enterValidNumber": { "description": "Number validation error" },
-  "predefinedPourSizes": "Predefined pour sizes",
-  "@predefinedPourSizes": { "description": "Section header" },
-  "tapToRemove": "Tap × to remove",
-  "@tapToRemove": { "description": "Instruction for removing chips" },
-  "addChip": "+ Add",
-  "@addChip": { "description": "Add chip button" },
-  "createSession": "Create Session",
-  "@createSession": { "description": "Create session button" },
   "failedToCreateSession": "Failed to create session: {error}",
   "@failedToCreateSession": {
-    "description": "Create session error",
-    "placeholders": { "error": { "type": "String" } }
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
-  "addPourSize": "Add pour size",
-  "@addPourSize": { "description": "Dialog title for adding pour size" },
-  "volumeMl": "Volume (ml)",
-  "@volumeMl": { "description": "Volume input label in ml" },
-  "volumeHint": "e.g. 500",
-  "@volumeHint": { "description": "Volume input hint" },
-  "add": "Add",
-  "@add": { "description": "Add button" },
-
-  "logPourForYou": "Log a pour for you",
-  "@logPourForYou": { "description": "Volume picker sheet title" },
-  "orEnterManually": "Or enter manually:",
-  "@orEnterManually": { "description": "Manual volume entry label" },
-  "logPour": "Log Pour",
-  "@logPour": { "description": "Log pour button" },
-
-  "checkInboxToVerify": "Check your inbox to verify your email.",
-  "@checkInboxToVerify": { "description": "Email verification banner" },
-  "resend": "Resend",
-  "@resend": { "description": "Resend verification email button" },
-
   "estBacValue": "Est. BAC: {value} ‰",
   "@estBacValue": {
-    "description": "BAC banner value display",
-    "placeholders": { "value": { "type": "String" } }
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
   },
   "readyToDriveIn": "Ready to drive in ~{duration}",
   "@readyToDriveIn": {
-    "description": "Time to drive message",
-    "placeholders": { "duration": { "type": "String" } }
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
   },
-
-  "statusReady": "Ready",
-  "@statusReady": { "description": "Keg status badge: created" },
-  "statusActive": "Active",
-  "@statusActive": { "description": "Keg status badge: active" },
-  "statusPaused": "Paused",
-  "@statusPaused": { "description": "Keg status badge: paused" },
-  "statusDone": "Done",
-  "@statusDone": { "description": "Keg status badge: done" },
   "percentLeft": "{percent} left",
   "@percentLeft": {
-    "description": "Keg fill percent remaining",
-    "placeholders": { "percent": { "type": "String" } }
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "memberCount": "{count} member(s)",
+  "@memberCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "failedToCreateGroup": "Failed to create group: {error}",
+  "@failedToCreateGroup": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "pourFailed": "Pour failed: {error}",
+  "@pourFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "pourForNickname": "Pour for {nickname}",
+  "@pourForNickname": {
+    "placeholders": {
+      "nickname": {
+        "type": "String"
+      }
+    }
+  },
+  "pouredForNickname": "Poured for {nickname}!",
+  "@pouredForNickname": {
+    "placeholders": {
+      "nickname": {
+        "type": "String"
+      }
+    }
+  },
+  "removeGuestConfirm": "Remove \"{nickname}\" and all their pours from this session?",
+  "@removeGuestConfirm": {
+    "placeholders": {
+      "nickname": {
+        "type": "String"
+      }
+    }
+  },
+  "pourForDisabled": "{name} has disabled \"Pour for me\".",
+  "@pourForDisabled": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "addBeerFor": "Add beer for {name}",
+  "@addBeerFor": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "removePourConfirm": "Remove {volume} pour?",
+  "@removePourConfirm": {
+    "placeholders": {
+      "volume": {
+        "type": "String"
+      }
+    }
+  },
+  "errorWithMessage": "Error: {error}",
+  "@errorWithMessage": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "removeFromSessionConfirm": "Remove \"{nickname}\" and all their pours from this session?",
+  "@removeFromSessionConfirm": {
+    "placeholders": {
+      "nickname": {
+        "type": "String"
+      }
+    }
   },
   "peopleDuration": "{count} people · {duration}",
   "@peopleDuration": {
-    "description": "Session card subtitle",
     "placeholders": {
-      "count": { "type": "int" },
-      "duration": { "type": "String" }
+      "count": {
+        "type": "int"
+      },
+      "duration": {
+        "type": "String"
+      }
     }
   },
-
-  "myJointAccount": "My Joint Account",
-  "@myJointAccount": { "description": "Joint account sheet title when user has one" },
-  "jointAccounts": "Joint Accounts",
-  "@jointAccounts": { "description": "Joint account sheet title" },
-  "members": "Members",
-  "@members": { "description": "Members label in joint account" },
-  "youSuffix": " (you)",
-  "@youSuffix": { "description": "Suffix for current user in member list" },
-  "addMember": "Add member",
-  "@addMember": { "description": "Add member button" },
-  "leaveAccount": "Leave account",
-  "@leaveAccount": { "description": "Leave joint account button" },
-  "createANewGroup": "Create a new group",
-  "@createANewGroup": { "description": "Create group section title" },
-  "groupNameHint": "Group name (e.g. \"Novák family\")",
-  "@groupNameHint": { "description": "Group name input hint" },
-  "createGroup": "Create Group",
-  "@createGroup": { "description": "Create group button" },
-  "orJoinExistingGroup": "Or join an existing group",
-  "@orJoinExistingGroup": { "description": "Join group section title" },
-  "memberCount": "{count} member(s)",
-  "@memberCount": {
-    "description": "Member count in join list",
-    "placeholders": { "count": { "type": "int" } }
+  "addedVolumeFor": "Added {volume} for {name}",
+  "@addedVolumeFor": {
+    "placeholders": {
+      "volume": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
   },
-  "alreadyInGroup": "You are already in a group.",
-  "@alreadyInGroup": { "description": "Snackbar when already in group" },
-  "leaveCurrentGroupFirst": "You must leave your current group first.",
-  "@leaveCurrentGroupFirst": { "description": "Snackbar when trying to join another group" },
-  "failedToCreateGroup": "Failed to create group: {error}",
-  "@failedToCreateGroup": {
-    "description": "Create group error",
-    "placeholders": { "error": { "type": "String" } }
-  },
-  "allParticipantsInGroup": "All participants are already in a group.",
-  "@allParticipantsInGroup": { "description": "Snackbar when no eligible members" },
-  "userAlreadyInAnotherGroup": "This user is already in another group.",
-  "@userAlreadyInAnotherGroup": { "description": "Snackbar when adding user in another group" },
-
-  "guest": "Guest",
-  "@guest": { "description": "Default display name for unauthenticated user" },
-
-  "guestNameTaken": "This name is already taken by another participant. Please choose a different name.",
-  "@guestNameTaken": { "description": "Error when guest name conflicts with an existing participant" },
-
-  "english": "English",
-  "@english": { "description": "English language name" },
-  "czech": "Čeština",
-  "@czech": { "description": "Czech language name" },
-  "german": "Deutsch",
-  "@german": { "description": "German language name" },
-
-  "pourBeer": "Pour Beer",
-  "@pourBeer": { "description": "Button to pour beer for any participant" },
-  "addPerson": "Add Person",
-  "@addPerson": { "description": "Unified button to add guest or create/join account" },
-  "removeFromSession": "Remove from session",
-  "@removeFromSession": { "description": "Button to remove a guest from the session" },
-  "removeFromSessionConfirm": "Remove \"{nickname}\" and all their pours from this session?",
-  "@removeFromSessionConfirm": {
-    "description": "Confirm removal of guest",
-    "placeholders": { "nickname": { "type": "String" } }
-  },
-  "guestDetail": "Guest detail",
-  "@guestDetail": { "description": "Title for guest detail screen" }
+  "wrongPasswordError": "Incorrect password. Please try again.",
+  "userNotFoundError": "No account found with this email address.",
+  "invalidCredentialError": "Invalid email or password. Please check your credentials.",
+  "tooManyRequestsError": "Too many attempts. Please try again later.",
+  "emailNotVerifiedError": "Your email has not been verified yet. Please check your inbox.",
+  "verificationEmailResent": "Verification email sent! Check your inbox.",
+  "resendVerificationEmail": "Resend verification email",
+  "youreInvitedToParty": "You're invited to a party!"
 }

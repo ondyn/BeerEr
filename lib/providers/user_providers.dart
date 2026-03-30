@@ -15,7 +15,9 @@ Stream<AppUser?> watchCurrentUser(Ref ref, String userId) {
   bool autoCreating = false;
   return repo.watchUser(userId).map((user) {
     if (user == null && !autoCreating) {
-      // No profile in Firestore — create one from Firebase Auth data.
+      // No profile in Firestore — create a minimal one from Firebase Auth
+      // data. Use createMinimalProfile to avoid overwriting fields like
+      // weight/age/gender with default values if the doc is later restored.
       autoCreating = true;
       final fbUser = FirebaseAuth.instance.currentUser;
       if (fbUser != null && fbUser.uid == userId) {
@@ -26,11 +28,11 @@ Stream<AppUser?> watchCurrentUser(Ref ref, String userId) {
                     ? fbUser.email!.split('@').first
                     : 'Beerer user');
         // Fire and forget — the snapshot stream will emit the new doc.
-        repo.createOrUpdateUser(AppUser(
-          id: fbUser.uid,
+        repo.createMinimalProfile(
+          uid: fbUser.uid,
           nickname: fallbackNickname,
           email: fbUser.email ?? '',
-        ));
+        );
       }
       return null;
     }

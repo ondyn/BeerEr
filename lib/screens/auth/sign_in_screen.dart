@@ -1,5 +1,4 @@
 import 'package:beerer/l10n/app_localizations.dart';
-import 'package:beerer/models/models.dart';
 import 'package:beerer/repositories/user_repository.dart';
 import 'package:beerer/theme/beer_theme.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -22,6 +21,8 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   bool _obscurePassword = true;
   bool _isLoading = false;
   String? _error;
+  bool _emailNotVerified = false;
+  bool _isResending = false;
 
   @override
   void dispose() {
@@ -36,6 +37,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     setState(() {
       _isLoading = true;
       _error = null;
+      _emailNotVerified = false;
     });
 
     try {
@@ -61,15 +63,12 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
 
       if (user == null || !user.emailVerified) {
         // Block access until email is verified.
-        try {
-          await user?.sendEmailVerification();
-        } catch (_) {
-          // Ignore resend failures here.
-        }
+        // Sign out immediately so the router doesn't redirect.
         await FirebaseAuth.instance.signOut();
         if (mounted) {
           setState(() {
-            _error = AppLocalizations.of(context)!.verifyEmailMessage;
+            _emailNotVerified = true;
+            _error = AppLocalizations.of(context)!.emailNotVerifiedError;
           });
         }
         return;
@@ -77,6 +76,8 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
 
       // Ensure a Firestore profile exists (may have been wiped or never
       // created — e.g. the DB was cleared while Auth users were kept).
+      // Use createMinimalProfile so we don't overwrite weight/age/gender
+      // with default values if the profile somehow already exists.
       final userRepo = ref.read(userRepositoryProvider);
       final existingProfile = await userRepo.getUser(user.uid);
       if (existingProfile == null) {
@@ -86,20 +87,80 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                 : (user.email != null && user.email!.isNotEmpty
                     ? user.email!.split('@').first
                     : 'Beerer user');
-        await userRepo.createOrUpdateUser(AppUser(
-          id: user.uid,
+        await userRepo.createMinimalProfile(
+          uid: user.uid,
           nickname: fallbackNickname,
           email: user.email ?? '',
-        ));
+        );
       }
 
       if (mounted) context.go('/home');
     } on FirebaseAuthException catch (e) {
       setState(() {
-        _error = e.message ?? AppLocalizations.of(context)!.signInFailed;
+        _error = _mapFirebaseError(e.code);
       });
     } finally {
       if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  String _mapFirebaseError(String code) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (code) {
+      case 'wrong-password':
+        return l10n.wrongPasswordError;
+      case 'user-not-found':
+        return l10n.userNotFoundError;
+      case 'invalid-credential':
+        return l10n.invalidCredentialError;
+      case 'too-many-requests':
+        return l10n.tooManyRequestsError;
+      case 'user-disabled':
+        return l10n.signInFailed;
+      case 'invalid-email':
+        return l10n.enterValidEmail;
+      default:
+        return l10n.signInFailed;
+    }
+  }
+
+  Future<void> _resendVerificationEmail() async {
+    setState(() {
+      _isResending = true;
+    });
+
+    try {
+      // Sign in again briefly to get the user object for resend.
+      final credential =
+          await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
+      final user = credential.user;
+      if (user != null && !user.emailVerified) {
+        await user.sendEmailVerification();
+      }
+      await FirebaseAuth.instance.signOut();
+      if (mounted) {
+        setState(() {
+          _error = AppLocalizations.of(context)!.verificationEmailResent;
+          _emailNotVerified = false;
+        });
+      }
+    } on FirebaseAuthException catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = _mapFirebaseError(e.code);
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _error = AppLocalizations.of(context)!.signInFailed;
+        });
+      }
+    } finally {
+      if (mounted) setState(() => _isResending = false);
     }
   }
 
@@ -180,11 +241,71 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                 ),
                 const SizedBox(height: 8),
                 if (_error != null) ...[
-                  Text(
-                    _error!,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: BeerColors.error,
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: _emailNotVerified
+                          ? BeerColors.warning.withValues(alpha: 0.15)
+                          : BeerColors.error.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: _emailNotVerified
+                            ? BeerColors.warning.withValues(alpha: 0.3)
+                            : BeerColors.error.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              _emailNotVerified
+                                  ? Icons.mark_email_unread_outlined
+                                  : Icons.error_outline,
+                              color: _emailNotVerified
+                                  ? BeerColors.warning
+                                  : BeerColors.error,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                _error!,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(
+                                      color: _emailNotVerified
+                                          ? BeerColors.warning
+                                          : BeerColors.error,
+                                    ),
+                              ),
+                            ),
+                          ],
                         ),
+                        if (_emailNotVerified) ...[
+                          const SizedBox(height: 8),
+                          OutlinedButton.icon(
+                            onPressed:
+                                _isResending ? null : _resendVerificationEmail,
+                            icon: _isResending
+                                ? const SizedBox(
+                                    height: 16,
+                                    width: 16,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : const Icon(Icons.send_outlined, size: 18),
+                            label: Text(
+                              AppLocalizations.of(context)!
+                                  .resendVerificationEmail,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 8),
                 ],
