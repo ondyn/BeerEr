@@ -217,9 +217,7 @@ class ProfileScreen extends ConsumerWidget {
           const SizedBox(height: 32),
           // Delete account
           TextButton(
-            onPressed: () {
-              // TODO: confirm + delete account
-            },
+            onPressed: () => _confirmDeleteAccount(context, ref),
             child: Text(
               AppLocalizations.of(context)!.deleteAccount,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -357,6 +355,81 @@ class ProfileScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  /// Shows a confirmation dialog, then calls the `deleteUserAccount` Cloud
+  /// Function. On success shows a success message and navigates to welcome.
+  Future<void> _confirmDeleteAccount(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.deleteAccountConfirmTitle),
+        content: Text(l10n.deleteAccountConfirmBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: TextButton.styleFrom(foregroundColor: BeerColors.error),
+            child: Text(l10n.deleteAccountConfirmButton),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !context.mounted) return;
+
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+
+      // 1. Soft-delete the Firestore profile (keeps email for relink).
+      final userRepo = ref.read(userRepositoryProvider);
+      await userRepo.softDeleteUser(user.uid);
+
+      // 2. Delete the Firebase Auth account.
+      await user.delete();
+
+      // 3. Clear local data.
+      await LocalProfile.instance.clear();
+
+      if (!context.mounted) return;
+
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(l10n.deleteAccountSuccess),
+            duration: const Duration(seconds: 4),
+          ),
+        );
+
+      context.go('/welcome');
+    } on FirebaseAuthException catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(l10n.deleteAccountFailed(e.message ?? e.code)),
+          ),
+        );
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(l10n.deleteAccountFailed(e.toString())),
+          ),
+        );
+    }
   }
 }
 

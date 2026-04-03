@@ -177,3 +177,151 @@ export const onKegStatusChanged = onDocumentUpdated('kegSessions/{sessionId}', a
     await admin.messaging().sendEach(messages);
   }
 });
+
+// ---------------------------------------------------------------------------
+// Account deletion — callable by the authenticated user.
+// Soft-deletes the Firestore user record (clears personal data, marks as
+// suspended, keeps email for future re-registration linking) and then
+// deletes the Firebase Auth account.
+// ---------------------------------------------------------------------------
+export const deleteUserAccount = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Must be signed in');
+  }
+
+  const uid = request.auth.uid;
+
+  // 1. Fetch the user doc to preserve the email.
+  const userDoc = await db.collection('users').doc(uid).get();
+  if (!userDoc.exists) {
+    // If user doc doesn't exist, just delete auth and return.
+    await admin.auth().deleteUser(uid);
+    return { success: true };
+  }
+
+  // 2. Soft-delete the Firestore user record: wipe personal data but keep
+  //    email and the doc itself so pours/sessions remain consistent.
+  await db.collection('users').doc(uid).update({
+    nickname: 'Deleted User',
+    weight_kg: 0,
+    age: 0,
+    gender: 'male',
+    auth_provider: 'email',
+    preferences: {},
+    avatar_icon: admin.firestore.FieldValue.delete(),
+    suspended: true,
+    deleted_at: new Date().toISOString(),
+  });
+
+  // 3. Delete the Firebase Auth account.
+  await admin.auth().deleteUser(uid);
+
+  return { success: true };
+});
+
+// ---------------------------------------------------------------------------
+// Re-registration relinking — callable by a newly registered user.
+// When a user registers with an email that matches a suspended (soft-deleted)
+// account, this function reassigns all pours, sessions, and joint accounts
+// from the old UID to the new UID, then deletes the old suspended user doc.
+// ---------------------------------------------------------------------------
+export const relinkSuspendedAccount = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Must be signed in');
+  }
+
+  const email = request.data?.email as string | undefined;
+  if (!email) {
+    throw new HttpsError('invalid-argument', 'email is required');
+  }
+
+  const newUid = request.auth.uid;
+
+  // Find suspended account with matching email.
+  const suspendedSnap = await db
+    .collection('users')
+    .where('email', '==', email)
+    .where('suspended', '==', true)
+    .limit(1)
+    .get();
+
+  if (suspendedSnap.empty) {
+    return { relinked: false };
+  }
+
+  const oldDoc = suspendedSnap.docs[0];
+  const oldUid = oldDoc.id;
+
+  if (oldUid === newUid) {
+    return { relinked: false };
+  }
+
+  // Reassign pours: user_id
+  const userPours = await db
+    .collection('pours')
+    .where('user_id', '==', oldUid)
+    .get();
+  for (const doc of userPours.docs) {
+    await doc.ref.update({ user_id: newUid });
+  }
+
+  // Reassign pours: poured_by_id
+  const pouredByPours = await db
+    .collection('pours')
+    .where('poured_by_id', '==', oldUid)
+    .get();
+  for (const doc of pouredByPours.docs) {
+    await doc.ref.update({ poured_by_id: newUid });
+  }
+
+  // Update participant_ids in sessions
+  const sessions = await db
+    .collection('kegSessions')
+    .where('participant_ids', 'array-contains', oldUid)
+    .get();
+  for (const doc of sessions.docs) {
+    await doc.ref.update({
+      participant_ids: admin.firestore.FieldValue.arrayRemove([oldUid]),
+    });
+    await doc.ref.update({
+      participant_ids: admin.firestore.FieldValue.arrayUnion([newUid]),
+    });
+  }
+
+  // Update creator_id in sessions
+  const createdSessions = await db
+    .collection('kegSessions')
+    .where('creator_id', '==', oldUid)
+    .get();
+  for (const doc of createdSessions.docs) {
+    await doc.ref.update({ creator_id: newUid });
+  }
+
+  // Update joint accounts: member_user_ids
+  const memberAccounts = await db
+    .collection('jointAccounts')
+    .where('member_user_ids', 'array-contains', oldUid)
+    .get();
+  for (const doc of memberAccounts.docs) {
+    await doc.ref.update({
+      member_user_ids: admin.firestore.FieldValue.arrayRemove([oldUid]),
+    });
+    await doc.ref.update({
+      member_user_ids: admin.firestore.FieldValue.arrayUnion([newUid]),
+    });
+  }
+
+  // Update joint accounts: creator_id
+  const creatorAccounts = await db
+    .collection('jointAccounts')
+    .where('creator_id', '==', oldUid)
+    .get();
+  for (const doc of creatorAccounts.docs) {
+    await doc.ref.update({ creator_id: newUid });
+  }
+
+  // Delete the old suspended user doc
+  await db.collection('users').doc(oldUid).delete();
+
+  return { relinked: true, oldUid };
+});

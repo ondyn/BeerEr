@@ -86,7 +86,7 @@
   "male": "Male",
   "female": "Female",
   "bacPrivacyNote": "ℹ Weight & age are used only for BAC estimation on your device.",
-  "welcomeTagline": "Track every pour.\\nSettle every tab.\\nDrink all the kegs.",
+  "welcomeTagline": "Track every pour.\nSettle every tab.\nDrink all the kegs.",
   "splashTagline": "Count every drop",
   "editProfile": "Edit Profile",
   "save": "Save",
@@ -510,5 +510,17 @@
   "emailNotVerifiedError": "Your email has not been verified yet. Please check your inbox.",
   "verificationEmailResent": "Verification email sent! Check your inbox.",
   "resendVerificationEmail": "Resend verification email",
-  "youreInvitedToParty": "You're invited to a party!"
+  "youreInvitedToParty": "You're invited to a party!",
+  "deleteAccountConfirmTitle": "Delete Account?",
+  "deleteAccountConfirmBody": "This action is permanent. Your personal data will be removed and your account will be deactivated. Your pours in other users' sessions will be kept as 'Deleted User'.",
+  "deleteAccountSuccess": "Your account has been deleted. We're sorry to see you go!",
+  "deleteAccountFailed": "Failed to delete account: {message}",
+  "@deleteAccountFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteAccountConfirmButton": "Delete My Account"
 }

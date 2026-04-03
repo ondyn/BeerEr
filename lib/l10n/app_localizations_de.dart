@@ -1009,4 +1009,21 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get youreInvitedToParty => 'You\'re invited to a party!';
+
+  @override
+  String get deleteAccountConfirmTitle => 'Konto löschen?';
+
+  @override
+  String get deleteAccountConfirmBody => 'Diese Aktion ist unwiderruflich. Ihre persönlichen Daten werden entfernt und Ihr Konto wird deaktiviert. Ihre Einträge in den Sitzungen anderer Benutzer bleiben als \'Gelöschter Benutzer\' erhalten.';
+
+  @override
+  String get deleteAccountSuccess => 'Ihr Konto wurde gelöscht. Es tut uns leid, Sie gehen zu sehen!';
+
+  @override
+  String deleteAccountFailed(String message) {
+    return 'Konto konnte nicht gelöscht werden: $message';
+  }
+
+  @override
+  String get deleteAccountConfirmButton => 'Mein Konto löschen';
 }

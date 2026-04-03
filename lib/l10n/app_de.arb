@@ -226,5 +226,10 @@
   "tooManyRequestsError": "Zu viele Versuche. Bitte versuchen Sie es später erneut.",
   "emailNotVerifiedError": "Ihre E-Mail wurde noch nicht bestätigt. Bitte überprüfen Sie Ihren Posteingang.",
   "verificationEmailResent": "Bestätigungs-E-Mail gesendet! Überprüfen Sie Ihren Posteingang.",
-  "resendVerificationEmail": "Bestätigungs-E-Mail erneut senden"
+  "resendVerificationEmail": "Bestätigungs-E-Mail erneut senden",
+  "deleteAccountConfirmTitle": "Konto löschen?",
+  "deleteAccountConfirmBody": "Diese Aktion ist unwiderruflich. Ihre persönlichen Daten werden entfernt und Ihr Konto wird deaktiviert. Ihre Einträge in den Sitzungen anderer Benutzer bleiben als 'Gelöschter Benutzer' erhalten.",
+  "deleteAccountSuccess": "Ihr Konto wurde gelöscht. Es tut uns leid, Sie gehen zu sehen!",
+  "deleteAccountFailed": "Konto konnte nicht gelöscht werden: {message}",
+  "deleteAccountConfirmButton": "Mein Konto löschen"
 }

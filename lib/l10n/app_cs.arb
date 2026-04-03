@@ -226,5 +226,10 @@
   "tooManyRequestsError": "Příliš mnoho pokusů. Zkuste to prosím později.",
   "emailNotVerifiedError": "Váš e-mail nebyl dosud ověřen. Zkontrolujte prosím doručenou poštu.",
   "verificationEmailResent": "Ověřovací e-mail odeslán! Zkontrolujte doručenou poštu.",
-  "resendVerificationEmail": "Znovu odeslat ověřovací e-mail"
+  "resendVerificationEmail": "Znovu odeslat ověřovací e-mail",
+  "deleteAccountConfirmTitle": "Smazat účet?",
+  "deleteAccountConfirmBody": "Tato akce je nevratná. Vaše osobní údaje budou odstraněny a účet bude deaktivován. Vaše záznamy o čepování v akcích ostatních uživatelů zůstanou jako 'Smazaný uživatel'.",
+  "deleteAccountSuccess": "Váš účet byl smazán. Je nám líto, že odcházíte!",
+  "deleteAccountFailed": "Nepodařilo se smazat účet: {message}",
+  "deleteAccountConfirmButton": "Smazat můj účet"
 }

@@ -1009,4 +1009,21 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get youreInvitedToParty => 'You\'re invited to a party!';
+
+  @override
+  String get deleteAccountConfirmTitle => 'Smazat účet?';
+
+  @override
+  String get deleteAccountConfirmBody => 'Tato akce je nevratná. Vaše osobní údaje budou odstraněny a účet bude deaktivován. Vaše záznamy o čepování v akcích ostatních uživatelů zůstanou jako \'Smazaný uživatel\'.';
+
+  @override
+  String get deleteAccountSuccess => 'Váš účet byl smazán. Je nám líto, že odcházíte!';
+
+  @override
+  String deleteAccountFailed(String message) {
+    return 'Nepodařilo se smazat účet: $message';
+  }
+
+  @override
+  String get deleteAccountConfirmButton => 'Smazat můj účet';
 }

@@ -97,6 +97,29 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         gender: _gender,
         authProvider: 'email',
       ));
+
+      // Try to relink a previously deleted (suspended) account with the
+      // same email — this reassigns all old pours/sessions to the new UID.
+      try {
+        final suspended = await userRepo.findSuspendedByEmail(
+          user.email ?? '',
+        );
+        if (suspended != null) {
+          await userRepo.relinkSuspendedAccount(
+            oldUserId: suspended.id,
+            newUserId: uid,
+            nickname: _nicknameController.text.trim(),
+            email: user.email ?? '',
+            weightKg: weight,
+            age: age,
+            gender: _gender,
+          );
+        }
+      } catch (_) {
+        // Best-effort: don't block registration if relinking fails.
+        debugPrint('[Beerer] relinkSuspendedAccount failed (non-critical)');
+      }
+
       // Persist weight/age/gender locally.
       await LocalProfile.instance.save(
         weightKg: weight,

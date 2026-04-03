@@ -267,7 +267,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get bacPrivacyNote => 'ℹ Weight & age are used only for BAC estimation on your device.';
 
   @override
-  String get welcomeTagline => 'Track every pour.\\nSettle every tab.\\nDrink all the kegs.';
+  String get welcomeTagline => 'Track every pour.\nSettle every tab.\nDrink all the kegs.';
 
   @override
   String get splashTagline => 'Count every drop';
@@ -1009,4 +1009,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get youreInvitedToParty => 'You\'re invited to a party!';
+
+  @override
+  String get deleteAccountConfirmTitle => 'Delete Account?';
+
+  @override
+  String get deleteAccountConfirmBody => 'This action is permanent. Your personal data will be removed and your account will be deactivated. Your pours in other users\' sessions will be kept as \'Deleted User\'.';
+
+  @override
+  String get deleteAccountSuccess => 'Your account has been deleted. We\'re sorry to see you go!';
+
+  @override
+  String deleteAccountFailed(String message) {
+    return 'Failed to delete account: $message';
+  }
+
+  @override
+  String get deleteAccountConfirmButton => 'Delete My Account';
 }

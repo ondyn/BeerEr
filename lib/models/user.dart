@@ -15,6 +15,13 @@ abstract class AppUser with _$AppUser {
     @Default('email') String authProvider,
     @Default({}) Map<String, dynamic> preferences,
     int? avatarIcon,
+
+    /// Whether the account has been soft-deleted. Personal data is wiped but
+    /// the record is kept so pours/sessions remain consistent for others.
+    @Default(false) bool suspended,
+
+    /// ISO-8601 timestamp when the account was soft-deleted, or null if active.
+    String? deletedAt,
   }) = _AppUser;
 
   const AppUser._();
@@ -26,7 +33,9 @@ abstract class AppUser with _$AppUser {
 
   /// Returns nickname if set, otherwise falls back to email, then a
   /// shortened user id so the chip is never blank.
+  /// Suspended accounts always show 'Deleted User'.
   String get displayName {
+    if (suspended) return 'Deleted User';
     if (nickname.trim().isNotEmpty) return nickname.trim();
     if (email.trim().isNotEmpty) return email.trim();
     // Last resort: first 6 chars of the uid

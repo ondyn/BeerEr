@@ -194,7 +194,8 @@ void main() {
       );
     });
 
-    testWidgets('cannot pour more than remaining volume', (tester) async {
+    testWidgets('can pour more than remaining volume (volume goes negative)',
+        (tester) async {
       const session = KegSession(
         id: '',
         creatorId: testUserId,
@@ -214,14 +215,17 @@ void main() {
         sessionId: created.id,
         userId: testUserId,
         pouredById: testUserId,
-        volumeMl: 1500, // More than remaining
+        volumeMl: 1500, // More than remaining — allowed, volume goes negative
         timestamp: DateTime.now(),
       );
 
-      expect(
-        () => kegRepo.addPour(pour),
-        throwsA(isA<StateError>()),
-      );
+      final createdPour = await kegRepo.addPour(pour);
+      expect(createdPour.id, isNotEmpty);
+      expect(createdPour.volumeMl, 1500);
+
+      // Volume goes negative (over-pour allowed by design)
+      final afterPour = await kegRepo.getSession(created.id);
+      expect(afterPour!.volumeRemainingMl, -500);
     });
 
     testWidgets('keg status transitions: created → active → paused → active → done',

@@ -80,4 +80,119 @@ class UserRepository {
   Future<void> deleteUser(String userId) async {
     await _col.doc(userId).delete();
   }
+
+  /// Soft-deletes a user: clears personal data but keeps the record with
+  /// email so pours/sessions remain consistent for other participants.
+  Future<void> softDeleteUser(String userId) async {
+    await _col.doc(userId).update({
+      'nickname': 'Deleted User',
+      'weight_kg': 0,
+      'age': 0,
+      'gender': 'male',
+      'auth_provider': 'email',
+      'preferences': <String, dynamic>{},
+      'avatar_icon': FieldValue.delete(),
+      'suspended': true,
+      'deleted_at': DateTime.now().toUtc().toIso8601String(),
+    });
+  }
+
+  /// Finds a suspended account by email (for relinking on re-registration).
+  Future<AppUser?> findSuspendedByEmail(String email) async {
+    final qs = await _col
+        .where('email', isEqualTo: email)
+        .where('suspended', isEqualTo: true)
+        .limit(1)
+        .get();
+    if (qs.docs.isEmpty) return null;
+    final d = qs.docs.first;
+    return AppUser.fromJson(firestoreDoc(d.id, d.data()));
+  }
+
+  /// Reactivates a suspended account with new user data and links it to a
+  /// new Firebase Auth UID. Copies the document to the new UID and deletes
+  /// the old one.
+  Future<void> relinkSuspendedAccount({
+    required String oldUserId,
+    required String newUserId,
+    required String nickname,
+    required String email,
+    required double weightKg,
+    required int age,
+    required String gender,
+  }) async {
+    final batch = _db.batch();
+    // Create new user doc under the new UID
+    batch.set(_col.doc(newUserId), {
+      'nickname': nickname,
+      'email': email,
+      'weight_kg': weightKg,
+      'age': age,
+      'gender': gender,
+      'auth_provider': 'email',
+      'preferences': <String, dynamic>{},
+      'suspended': false,
+      'deleted_at': FieldValue.delete(),
+    });
+    // Delete the old suspended doc
+    batch.delete(_col.doc(oldUserId));
+    await batch.commit();
+
+    // Reassign all pours from old UID to new UID
+    final poursCol = _db.collection('pours');
+    final userPours = await poursCol
+        .where('user_id', isEqualTo: oldUserId)
+        .get();
+    for (final doc in userPours.docs) {
+      await doc.reference.update({'user_id': newUserId});
+    }
+    final pouredByPours = await poursCol
+        .where('poured_by_id', isEqualTo: oldUserId)
+        .get();
+    for (final doc in pouredByPours.docs) {
+      await doc.reference.update({'poured_by_id': newUserId});
+    }
+
+    // Update participant_ids in all sessions
+    final sessionsCol = _db.collection('kegSessions');
+    final sessions = await sessionsCol
+        .where('participant_ids', arrayContains: oldUserId)
+        .get();
+    for (final doc in sessions.docs) {
+      await doc.reference.update({
+        'participant_ids': FieldValue.arrayRemove([oldUserId]),
+      });
+      await doc.reference.update({
+        'participant_ids': FieldValue.arrayUnion([newUserId]),
+      });
+    }
+
+    // Update creator_id in sessions created by the old user
+    final createdSessions = await sessionsCol
+        .where('creator_id', isEqualTo: oldUserId)
+        .get();
+    for (final doc in createdSessions.docs) {
+      await doc.reference.update({'creator_id': newUserId});
+    }
+
+    // Update joint accounts
+    final accountsCol = _db.collection('jointAccounts');
+    final memberAccounts = await accountsCol
+        .where('member_user_ids', arrayContains: oldUserId)
+        .get();
+    for (final doc in memberAccounts.docs) {
+      await doc.reference.update({
+        'member_user_ids': FieldValue.arrayRemove([oldUserId]),
+      });
+      await doc.reference.update({
+        'member_user_ids': FieldValue.arrayUnion([newUserId]),
+      });
+    }
+    final creatorAccounts = await accountsCol
+        .where('creator_id', isEqualTo: oldUserId)
+        .get();
+    for (final doc in creatorAccounts.docs) {
+      await doc.reference.update({'creator_id': newUserId});
+    }
+  }
 }

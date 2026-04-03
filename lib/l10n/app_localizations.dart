@@ -616,7 +616,7 @@ abstract class AppLocalizations {
   /// No description provided for @welcomeTagline.
   ///
   /// In en, this message translates to:
-  /// **'Track every pour.\\nSettle every tab.\\nDrink all the kegs.'**
+  /// **'Track every pour.\nSettle every tab.\nDrink all the kegs.'**
   String get welcomeTagline;
 
   /// No description provided for @splashTagline.
@@ -1992,6 +1992,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You\'re invited to a party!'**
   String get youreInvitedToParty;
+
+  /// No description provided for @deleteAccountConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Account?'**
+  String get deleteAccountConfirmTitle;
+
+  /// No description provided for @deleteAccountConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This action is permanent. Your personal data will be removed and your account will be deactivated. Your pours in other users\' sessions will be kept as \'Deleted User\'.'**
+  String get deleteAccountConfirmBody;
+
+  /// No description provided for @deleteAccountSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account has been deleted. We\'re sorry to see you go!'**
+  String get deleteAccountSuccess;
+
+  /// No description provided for @deleteAccountFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to delete account: {message}'**
+  String deleteAccountFailed(String message);
+
+  /// No description provided for @deleteAccountConfirmButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete My Account'**
+  String get deleteAccountConfirmButton;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
