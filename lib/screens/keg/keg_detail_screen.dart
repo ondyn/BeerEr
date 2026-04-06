@@ -136,11 +136,6 @@ class _KegDetailBodyState extends ConsumerState<_KegDetailBody> {
                 value: 'share',
                 child: Text(l10n.shareJoinLink),
               ),
-              if (session.status == KegStatus.created && isCreator)
-                PopupMenuItem(
-                  value: 'edit',
-                  child: Text(l10n.editSession),
-                ),
               if (session.status == KegStatus.active)
                 PopupMenuItem(
                   value: 'pause',
@@ -188,9 +183,6 @@ class _KegDetailBodyState extends ConsumerState<_KegDetailBody> {
     switch (action) {
       case 'info':
         context.push('/keg/${session.id}/info');
-      case 'edit':
-        // TODO: navigate to edit screen
-        break;
       case 'delete':
         _confirmDelete(context, repo);
       case 'pause':

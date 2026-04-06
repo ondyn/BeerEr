@@ -432,10 +432,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get searchBeerOnBeerWeb => 'Bier auf BeerWeb suchen…';
 
   @override
-  String get egKozel => 'e.g. Kozel';
+  String get egKozel => 'z.B. Kozel';
 
   @override
-  String get egPilsnerUrquell => 'e.g. Pilsner Urquell';
+  String get egPilsnerUrquell => 'z.B. Pilsner Urquell';
 
   @override
   String get pleaseEnterBeerName => 'Bitte geben Sie einen Biernamen ein';
@@ -447,34 +447,34 @@ class AppLocalizationsDe extends AppLocalizations {
   String get alcoholContentPercent => 'Alkoholgehalt (%)';
 
   @override
-  String get egAlcohol => 'e.g. 5.0';
+  String get egAlcohol => 'z.B. 5,0';
 
   @override
-  String get egBrewery => 'e.g. Pilsner Urquell Brewery';
+  String get egBrewery => 'z.B. Pilsner Urquell Brauerei';
 
   @override
-  String get egMalt => 'e.g. barley';
+  String get egMalt => 'z.B. Gerste';
 
   @override
-  String get egFermentation => 'e.g. Bottom-fermented';
+  String get egFermentation => 'z.B. Untergärig';
 
   @override
-  String get type => 'Type';
+  String get type => 'Typ';
 
   @override
-  String get egType => 'e.g. Pale';
+  String get egType => 'z.B. Hell';
 
   @override
-  String get group => 'Group';
+  String get group => 'Gruppe';
 
   @override
-  String get egGroup => 'e.g. Full';
+  String get egGroup => 'z.B. Vollbier';
 
   @override
-  String get egBeerStyle => 'e.g. Pale Ale';
+  String get egBeerStyle => 'z.B. Pale Ale';
 
   @override
-  String get egDegreePlato => 'e.g. 12';
+  String get egDegreePlato => 'z.B. 12';
 
   @override
   String get next => 'Weiter →';
@@ -489,7 +489,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get orEnterCustomVolume => 'Oder eigenes Volumen eingeben';
 
   @override
-  String get egVolume => 'e.g. 25';
+  String get egVolume => 'z.B. 25';
 
   @override
   String get enterValidNumber => 'Geben Sie eine gültige Zahl ein';
@@ -513,7 +513,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get volumeMl => 'Volumen (ml)';
 
   @override
-  String get egPourSize => 'e.g. 500';
+  String get egPourSize => 'z.B. 500';
 
   @override
   String get add => 'Hinzufügen';
@@ -534,10 +534,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get resend => 'Erneut senden';
 
   @override
-  String get chooseAvatar => 'Choose avatar';
+  String get chooseAvatar => 'Avatar wählen';
 
   @override
-  String get statusCreated => 'Created';
+  String get statusCreated => 'Erstellt';
 
   @override
   String get statusReady => 'Bereit';
@@ -606,247 +606,247 @@ class AppLocalizationsDe extends AppLocalizations {
   String get german => 'Deutsch';
 
   @override
-  String get sessionReady => 'SESSION READY';
+  String get sessionReady => 'FASS BEREIT';
 
   @override
-  String get tapTheKegToStart => 'Tap the keg to start!';
+  String get tapTheKegToStart => 'Zapfen Sie das Fass an und los geht\'s!';
 
   @override
-  String get kegIsUntapped => 'Keg is untapped';
+  String get kegIsUntapped => 'Fass ist abgeschlossen';
 
   @override
-  String get pouringDisabled => 'Pouring is disabled.';
+  String get pouringDisabled => 'Einschenken ist deaktiviert.';
 
   @override
-  String get tapKegAgain => 'Tap Keg Again';
+  String get tapKegAgain => 'Fass erneut anzapfen';
 
   @override
-  String get sessionComplete => 'SESSION COMPLETE';
+  String get sessionComplete => 'SITZUNG ABGESCHLOSSEN';
 
   @override
-  String get finalStats => 'Final stats';
+  String get finalStats => 'Endstatistiken';
 
   @override
-  String get totalKegTime => 'Total keg time';
+  String get totalKegTime => 'Gesamte Fasszeit';
 
   @override
-  String get totalPoured => 'Total poured';
+  String get totalPoured => 'Gesamt ausgeschenkt';
 
   @override
-  String get pureAlcohol => 'Pure alcohol';
+  String get pureAlcohol => 'Reiner Alkohol';
 
   @override
-  String get participantsLabel => 'Participants';
+  String get participantsLabel => 'Teilnehmer';
 
   @override
-  String get myTotal => 'My total';
+  String get myTotal => 'Mein Gesamt';
 
   @override
-  String get kegPriceLabel2 => 'Keg price';
+  String get kegPriceLabel2 => 'Fasspreis';
 
   @override
-  String get billSplit => 'Bill split';
+  String get billSplit => 'Kostenaufteilung';
 
   @override
-  String get basedOnActualConsumption => 'Based on actual consumption';
+  String get basedOnActualConsumption => 'Basierend auf tatsächlichem Verbrauch';
 
   @override
-  String get reviewBill => 'Review Bill';
+  String get reviewBill => 'Rechnung anzeigen';
 
   @override
-  String get kegLevel => 'KEG LEVEL';
+  String get kegLevel => 'FASSSTAND';
 
   @override
-  String get remaining => 'remaining';
+  String get remaining => 'übrig';
 
   @override
-  String get untilEmpty => 'until empty';
+  String get untilEmpty => 'bis leer';
 
   @override
-  String get myStats => 'My stats';
+  String get myStats => 'Meine Statistiken';
 
   @override
-  String get currentBeer => 'Current beer';
+  String get currentBeer => 'Aktuelles Bier';
 
   @override
-  String get sinceLast => 'Since last';
+  String get sinceLast => 'Seit letztem';
 
   @override
-  String get avgRate => 'Avg rate';
+  String get avgRate => 'Durchschn. Tempo';
 
   @override
-  String get myVolume => 'My volume';
+  String get myVolume => 'Mein Volumen';
 
   @override
-  String get beers => 'Beers';
+  String get beers => 'Biere';
 
   @override
-  String get bacEstimate => 'BAC estimate';
+  String get bacEstimate => 'BAK-Schätzung';
 
   @override
-  String get driveIn => 'Drive in';
+  String get driveIn => 'Fahren in';
 
   @override
-  String get bacEstimateWarning => '⚠ BAC is an estimate only — actual values may differ.';
+  String get bacEstimateWarning => '⚠ BAK ist nur eine Schätzung — tatsächliche Werte können abweichen.';
 
   @override
-  String get pourLogged => 'Pour logged!';
+  String get pourLogged => 'Bier eingetragen!';
 
   @override
-  String get accountsBills => 'Accounts / Bills';
+  String get accountsBills => 'Konten / Rechnungen';
 
   @override
-  String get joinCreateAccount => 'Join / Create Account';
+  String get joinCreateAccount => 'Beitreten / Konto erstellen';
 
   @override
-  String get addGuest => 'Add Guest';
+  String get addGuest => 'Gast hinzufügen';
 
   @override
-  String get guestName => 'Guest name';
+  String get guestName => 'Gastname';
 
   @override
-  String get removeGuest => 'Remove Guest';
+  String get removeGuest => 'Gast entfernen';
 
   @override
-  String get remove => 'Remove';
+  String get remove => 'Entfernen';
 
   @override
-  String get markKegAsDoneQuestion => 'Mark keg as done?';
+  String get markKegAsDoneQuestion => 'Fass als leer markieren?';
 
   @override
-  String get sessionReadOnlyWarning => 'The session will become read-only. This cannot be undone.';
+  String get sessionReadOnlyWarning => 'Die Sitzung wird schreibgeschützt. Diese Aktion kann nicht rückgängig gemacht werden.';
 
   @override
-  String get deleteSessionQuestion => 'Delete session?';
+  String get deleteSessionQuestion => 'Sitzung löschen?';
 
   @override
-  String get deleteSessionWarning => 'This will permanently delete the keg session. This cannot be undone.';
+  String get deleteSessionWarning => 'Dies löscht die Sitzung permanent. Diese Aktion kann nicht rückgängig gemacht werden.';
 
   @override
-  String get delete => 'Delete';
+  String get delete => 'Löschen';
 
   @override
-  String get shareJoinLink => 'Share join link';
+  String get shareJoinLink => 'Beitrittslink teilen';
 
   @override
-  String get editSession => 'Edit session';
+  String get editSession => 'Sitzung bearbeiten';
 
   @override
-  String get untapUnfinishedKeg => 'Untap unfinished keg';
+  String get untapUnfinishedKeg => 'Unvollständiges Fass abschließen';
 
   @override
-  String get markKegAsDone => 'Mark keg as done';
+  String get markKegAsDone => 'Fass als leer markieren';
 
   @override
-  String get solo => 'solo';
+  String get solo => 'allein';
 
   @override
-  String get pours => 'Pours';
+  String get pours => 'Ausschank';
 
   @override
-  String get drinkers => 'Drinkers';
+  String get drinkers => 'Trinker';
 
   @override
-  String get totalConsumed => 'Total consumed';
+  String get totalConsumed => 'Gesamt getrunken';
 
   @override
-  String get noPours => 'No pours logged';
+  String get noPours => 'Kein Ausschank';
 
   @override
-  String get failedToAddPour => 'Failed to add pour';
+  String get failedToAddPour => 'Ausschank konnte nicht hinzugefügt werden';
 
   @override
-  String get removePourQuestion => 'Remove pour?';
+  String get removePourQuestion => 'Ausschank entfernen?';
 
   @override
-  String get pourRemoved => 'Pour removed';
+  String get pourRemoved => 'Ausschank entfernt';
 
   @override
-  String get consumptionOverTime => 'CONSUMPTION OVER TIME';
+  String get consumptionOverTime => 'VERBRAUCH IM ZEITVERLAUF';
 
   @override
-  String get estimatedBacOverTime => 'ESTIMATED BAC OVER TIME';
+  String get estimatedBacOverTime => 'GESCHÄTZTER BAK IM ZEITVERLAUF';
 
   @override
-  String get bacDoNotUseForDriving => '⚠ BAC is an estimate only — do not use it to determine fitness to drive.';
+  String get bacDoNotUseForDriving => '⚠ BAK ist nur eine Schätzung — verwenden Sie ihn nicht zur Beurteilung der Fahrtüchtigkeit.';
 
   @override
-  String get stats => 'STATS';
+  String get stats => 'STATISTIKEN';
 
   @override
-  String get beerCount => 'Beer count';
+  String get beerCount => 'Bieranzahl';
 
   @override
-  String get volume => 'Volume';
+  String get volume => 'Volumen';
 
   @override
-  String get shareOfKeg => 'Share of keg';
+  String get shareOfKeg => 'Fassanteil';
 
   @override
-  String get avgRateLabel => 'Avg. rate';
+  String get avgRateLabel => 'Durchschn. Tempo';
 
   @override
-  String get cost => 'Cost';
+  String get cost => 'Kosten';
 
   @override
-  String get estBac => 'Est. BAC';
+  String get estBac => 'Geschätzter BAK';
 
   @override
-  String get estTimeToDrive => 'Est. time to drive';
+  String get estTimeToDrive => 'Geschätzte Zeit zum Fahren';
 
   @override
-  String get visibilitySettings => 'Visibility settings';
+  String get visibilitySettings => 'Sichtbarkeitseinstellungen';
 
   @override
-  String get showMyStats => 'Show my stats';
+  String get showMyStats => 'Meine Statistiken zeigen';
 
   @override
-  String get showBacEstimateJoin => 'Show BAC estimate';
+  String get showBacEstimateJoin => 'BAK-Schätzung anzeigen';
 
   @override
-  String get areYouOneOfGuests => 'Are you one of these guests?';
+  String get areYouOneOfGuests => 'Sind Sie einer dieser Gäste?';
 
   @override
-  String get selectYourselfToMerge => 'Select yourself to take over their pours, or skip.';
+  String get selectYourselfToMerge => 'Wählen Sie sich aus, um deren Ausschank zu übernehmen, oder überspringen Sie.';
 
   @override
-  String get joinAndMerge => 'Join & Merge';
+  String get joinAndMerge => 'Beitreten und zusammenführen';
 
   @override
-  String get joinSession => 'Join Session';
+  String get joinSession => 'Sitzung beitreten';
 
   @override
-  String get failedToJoin => 'Failed to join';
+  String get failedToJoin => 'Beitritt fehlgeschlagen';
 
   @override
-  String get pointAtBeererQrCode => 'Point at a Beerer QR code';
+  String get pointAtBeererQrCode => 'Richten Sie die Kamera auf den Beerer QR-Code';
 
   @override
-  String get guestLower => 'guest';
+  String get guestLower => 'gast';
 
   @override
-  String get removeGuestTooltip => 'Remove guest';
+  String get removeGuestTooltip => 'Gast entfernen';
 
   @override
-  String get removePourTooltip => 'Remove pour';
+  String get removePourTooltip => 'Ausschank entfernen';
 
   @override
-  String get ago => 'ago';
+  String get ago => 'vor';
 
   @override
   String get total => 'Gesamt';
 
   @override
-  String get pourBeer => 'Pour Beer';
+  String get pourBeer => 'Bier einschenken';
 
   @override
-  String get addPerson => 'Add Person';
+  String get addPerson => 'Person hinzufügen';
 
   @override
-  String get removeFromSession => 'Remove from session';
+  String get removeFromSession => 'Aus Sitzung entfernen';
 
   @override
-  String get guestDetail => 'Guest detail';
+  String get guestDetail => 'Gastdetails';
 
   @override
   String get guestNameTaken => 'Dieser Name wird bereits von einem anderen Teilnehmer verwendet. Bitte wählen Sie einen anderen Namen.';
@@ -883,7 +883,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String totalWithAmount(String amount) {
-    return 'Total: $amount';
+    return 'Gesamt: $amount';
   }
 
   @override
@@ -893,7 +893,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String newKegSessionStep(int step) {
-    return 'New Keg Session  $step/2';
+    return 'Neue Sitzung  $step/2';
   }
 
   @override
@@ -933,47 +933,47 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String pourFailed(String error) {
-    return 'Pour failed: $error';
+    return 'Einschenken fehlgeschlagen: $error';
   }
 
   @override
   String pourForNickname(String nickname) {
-    return 'Pour for $nickname';
+    return 'Einschenken für $nickname';
   }
 
   @override
   String pouredForNickname(String nickname) {
-    return 'Poured for $nickname!';
+    return 'Eingeschenkt für $nickname!';
   }
 
   @override
   String removeGuestConfirm(String nickname) {
-    return 'Remove \"$nickname\" and all their pours from this session?';
+    return '\"$nickname\" und alle Ausschänke aus dieser Sitzung entfernen?';
   }
 
   @override
   String pourForDisabled(String name) {
-    return '$name has disabled \"Pour for me\".';
+    return '$name hat \"Für mich einschenken\" deaktiviert.';
   }
 
   @override
   String addBeerFor(String name) {
-    return 'Add beer for $name';
+    return 'Bier hinzufügen für $name';
   }
 
   @override
   String removePourConfirm(String volume) {
-    return 'Remove $volume pour?';
+    return '$volume Ausschank entfernen?';
   }
 
   @override
   String errorWithMessage(String error) {
-    return 'Error: $error';
+    return 'Fehler: $error';
   }
 
   @override
   String removeFromSessionConfirm(String nickname) {
-    return 'Remove \"$nickname\" and all their pours from this session?';
+    return '\"$nickname\" und alle Ausschänke aus dieser Sitzung entfernen?';
   }
 
   @override
@@ -983,7 +983,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String addedVolumeFor(String volume, String name) {
-    return 'Added $volume for $name';
+    return '$volume hinzugefügt für $name';
   }
 
   @override
@@ -1008,7 +1008,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get resendVerificationEmail => 'Bestätigungs-E-Mail erneut senden';
 
   @override
-  String get youreInvitedToParty => 'You\'re invited to a party!';
+  String get youreInvitedToParty => 'Sie sind zu einer Party eingeladen!';
 
   @override
   String get deleteAccountConfirmTitle => 'Konto löschen?';

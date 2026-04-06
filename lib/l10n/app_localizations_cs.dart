@@ -12,10 +12,10 @@ class AppLocalizationsCs extends AppLocalizations {
   String get appTitle => 'Beerer';
 
   @override
-  String get tapKeg => 'Načepovat';
+  String get tapKeg => 'Narazit';
 
   @override
-  String get untapKeg => 'Odepnout sud';
+  String get untapKeg => 'Odrazit sud';
 
   @override
   String get kegDone => 'Sud je prázdný';
@@ -432,10 +432,10 @@ class AppLocalizationsCs extends AppLocalizations {
   String get searchBeerOnBeerWeb => 'Hledat pivo na BeerWeb…';
 
   @override
-  String get egKozel => 'e.g. Kozel';
+  String get egKozel => 'např. Kozel';
 
   @override
-  String get egPilsnerUrquell => 'e.g. Pilsner Urquell';
+  String get egPilsnerUrquell => 'např. Pilsner Urquell';
 
   @override
   String get pleaseEnterBeerName => 'Zadejte prosím název piva';
@@ -447,34 +447,34 @@ class AppLocalizationsCs extends AppLocalizations {
   String get alcoholContentPercent => 'Obsah alkoholu (%)';
 
   @override
-  String get egAlcohol => 'e.g. 5.0';
+  String get egAlcohol => 'např. 5,0';
 
   @override
-  String get egBrewery => 'e.g. Pilsner Urquell Brewery';
+  String get egBrewery => 'např. Plzeňský Prazdroj';
 
   @override
-  String get egMalt => 'e.g. barley';
+  String get egMalt => 'např. ječný';
 
   @override
-  String get egFermentation => 'e.g. Bottom-fermented';
+  String get egFermentation => 'např. spodní kvašení';
 
   @override
-  String get type => 'Type';
+  String get type => 'Druh';
 
   @override
-  String get egType => 'e.g. Pale';
+  String get egType => 'např. světlé';
 
   @override
-  String get group => 'Group';
+  String get group => 'Skupina';
 
   @override
-  String get egGroup => 'e.g. Full';
+  String get egGroup => 'např. plné';
 
   @override
-  String get egBeerStyle => 'e.g. Pale Ale';
+  String get egBeerStyle => 'např. Pale Ale';
 
   @override
-  String get egDegreePlato => 'e.g. 12';
+  String get egDegreePlato => 'např. 12';
 
   @override
   String get next => 'Další →';
@@ -489,7 +489,7 @@ class AppLocalizationsCs extends AppLocalizations {
   String get orEnterCustomVolume => 'Nebo zadejte vlastní objem';
 
   @override
-  String get egVolume => 'e.g. 25';
+  String get egVolume => 'např. 25';
 
   @override
   String get enterValidNumber => 'Zadejte platné číslo';
@@ -513,7 +513,7 @@ class AppLocalizationsCs extends AppLocalizations {
   String get volumeMl => 'Objem (ml)';
 
   @override
-  String get egPourSize => 'e.g. 500';
+  String get egPourSize => 'např. 500';
 
   @override
   String get add => 'Přidat';
@@ -534,10 +534,10 @@ class AppLocalizationsCs extends AppLocalizations {
   String get resend => 'Poslat znovu';
 
   @override
-  String get chooseAvatar => 'Choose avatar';
+  String get chooseAvatar => 'Vybrat avatar';
 
   @override
-  String get statusCreated => 'Created';
+  String get statusCreated => 'Vytvořen';
 
   @override
   String get statusReady => 'Připraven';
@@ -606,247 +606,247 @@ class AppLocalizationsCs extends AppLocalizations {
   String get german => 'Deutsch';
 
   @override
-  String get sessionReady => 'SESSION READY';
+  String get sessionReady => 'SUD PŘIPRAVEN';
 
   @override
-  String get tapTheKegToStart => 'Tap the keg to start!';
+  String get tapTheKegToStart => 'Narazte sud a začněte!';
 
   @override
-  String get kegIsUntapped => 'Keg is untapped';
+  String get kegIsUntapped => 'Sud je odražen';
 
   @override
-  String get pouringDisabled => 'Pouring is disabled.';
+  String get pouringDisabled => 'Čepování je zakázáno.';
 
   @override
-  String get tapKegAgain => 'Tap Keg Again';
+  String get tapKegAgain => 'Narazit sud znovu';
 
   @override
-  String get sessionComplete => 'SESSION COMPLETE';
+  String get sessionComplete => 'AKCE DOKONČENA';
 
   @override
-  String get finalStats => 'Final stats';
+  String get finalStats => 'Konečné statistiky';
 
   @override
-  String get totalKegTime => 'Total keg time';
+  String get totalKegTime => 'Celková doba akce';
 
   @override
-  String get totalPoured => 'Total poured';
+  String get totalPoured => 'Celkem načepováno';
 
   @override
-  String get pureAlcohol => 'Pure alcohol';
+  String get pureAlcohol => 'Čistý alkohol';
 
   @override
-  String get participantsLabel => 'Participants';
+  String get participantsLabel => 'Účastníci';
 
   @override
-  String get myTotal => 'My total';
+  String get myTotal => 'Můj celkem';
 
   @override
-  String get kegPriceLabel2 => 'Keg price';
+  String get kegPriceLabel2 => 'Cena sudu';
 
   @override
-  String get billSplit => 'Bill split';
+  String get billSplit => 'Rozúčtování';
 
   @override
-  String get basedOnActualConsumption => 'Based on actual consumption';
+  String get basedOnActualConsumption => 'Na základě skutečné spotřeby';
 
   @override
-  String get reviewBill => 'Review Bill';
+  String get reviewBill => 'Zobrazit účet';
 
   @override
-  String get kegLevel => 'KEG LEVEL';
+  String get kegLevel => 'STAV SUDU';
 
   @override
-  String get remaining => 'remaining';
+  String get remaining => 'zbývá';
 
   @override
-  String get untilEmpty => 'until empty';
+  String get untilEmpty => 'do prázdna';
 
   @override
-  String get myStats => 'My stats';
+  String get myStats => 'Moje statistiky';
 
   @override
-  String get currentBeer => 'Current beer';
+  String get currentBeer => 'Aktuální pivo';
 
   @override
-  String get sinceLast => 'Since last';
+  String get sinceLast => 'Od posledního';
 
   @override
-  String get avgRate => 'Avg rate';
+  String get avgRate => 'Průměrné tempo';
 
   @override
-  String get myVolume => 'My volume';
+  String get myVolume => 'Můj objem';
 
   @override
-  String get beers => 'Beers';
+  String get beers => 'Piv';
 
   @override
-  String get bacEstimate => 'BAC estimate';
+  String get bacEstimate => 'Odhad BAC';
 
   @override
-  String get driveIn => 'Drive in';
+  String get driveIn => 'Řízení za';
 
   @override
-  String get bacEstimateWarning => '⚠ BAC is an estimate only — actual values may differ.';
+  String get bacEstimateWarning => '⚠ BAC je pouze odhad — skutečné hodnoty se mohou lišit.';
 
   @override
-  String get pourLogged => 'Pour logged!';
+  String get pourLogged => 'Pivo zaznamenáno!';
 
   @override
-  String get accountsBills => 'Accounts / Bills';
+  String get accountsBills => 'Účty / Rozúčtování';
 
   @override
-  String get joinCreateAccount => 'Join / Create Account';
+  String get joinCreateAccount => 'Připojit / Vytvořit účet';
 
   @override
-  String get addGuest => 'Add Guest';
+  String get addGuest => 'Přidat hosta';
 
   @override
-  String get guestName => 'Guest name';
+  String get guestName => 'Jméno hosta';
 
   @override
-  String get removeGuest => 'Remove Guest';
+  String get removeGuest => 'Odebrat hosta';
 
   @override
-  String get remove => 'Remove';
+  String get remove => 'Odebrat';
 
   @override
-  String get markKegAsDoneQuestion => 'Mark keg as done?';
+  String get markKegAsDoneQuestion => 'Označit sud jako prázdný?';
 
   @override
-  String get sessionReadOnlyWarning => 'The session will become read-only. This cannot be undone.';
+  String get sessionReadOnlyWarning => 'Akce bude pouze pro čtení. Tuto akci nelze vrátit.';
 
   @override
-  String get deleteSessionQuestion => 'Delete session?';
+  String get deleteSessionQuestion => 'Smazat akci?';
 
   @override
-  String get deleteSessionWarning => 'This will permanently delete the keg session. This cannot be undone.';
+  String get deleteSessionWarning => 'Toto trvale smaže akci. Tuto akci nelze vrátit.';
 
   @override
-  String get delete => 'Delete';
+  String get delete => 'Smazat';
 
   @override
-  String get shareJoinLink => 'Share join link';
+  String get shareJoinLink => 'Sdílet odkaz pro připojení';
 
   @override
-  String get editSession => 'Edit session';
+  String get editSession => 'Upravit akci';
 
   @override
-  String get untapUnfinishedKeg => 'Untap unfinished keg';
+  String get untapUnfinishedKeg => 'Odrazit nedopitý sud';
 
   @override
-  String get markKegAsDone => 'Mark keg as done';
+  String get markKegAsDone => 'Označit sud jako prázdný';
 
   @override
-  String get solo => 'solo';
+  String get solo => 'sám';
 
   @override
-  String get pours => 'Pours';
+  String get pours => 'Čepování';
 
   @override
-  String get drinkers => 'Drinkers';
+  String get drinkers => 'Pijáci';
 
   @override
-  String get totalConsumed => 'Total consumed';
+  String get totalConsumed => 'Celkem vypito';
 
   @override
-  String get noPours => 'No pours logged';
+  String get noPours => 'Žádné čepování';
 
   @override
-  String get failedToAddPour => 'Failed to add pour';
+  String get failedToAddPour => 'Přidání čepování se nezdařilo';
 
   @override
-  String get removePourQuestion => 'Remove pour?';
+  String get removePourQuestion => 'Odebrat čepování?';
 
   @override
-  String get pourRemoved => 'Pour removed';
+  String get pourRemoved => 'Čepování odebráno';
 
   @override
-  String get consumptionOverTime => 'CONSUMPTION OVER TIME';
+  String get consumptionOverTime => 'SPOTŘEBA V ČASE';
 
   @override
-  String get estimatedBacOverTime => 'ESTIMATED BAC OVER TIME';
+  String get estimatedBacOverTime => 'ODHADOVANÝ BAC V ČASE';
 
   @override
-  String get bacDoNotUseForDriving => '⚠ BAC is an estimate only — do not use it to determine fitness to drive.';
+  String get bacDoNotUseForDriving => '⚠ BAC je pouze odhad — nepoužívejte jej k posouzení způsobilosti řídit.';
 
   @override
-  String get stats => 'STATS';
+  String get stats => 'STATISTIKY';
 
   @override
-  String get beerCount => 'Beer count';
+  String get beerCount => 'Počet piv';
 
   @override
-  String get volume => 'Volume';
+  String get volume => 'Objem';
 
   @override
-  String get shareOfKeg => 'Share of keg';
+  String get shareOfKeg => 'Podíl sudu';
 
   @override
-  String get avgRateLabel => 'Avg. rate';
+  String get avgRateLabel => 'Prům. tempo';
 
   @override
-  String get cost => 'Cost';
+  String get cost => 'Cena';
 
   @override
-  String get estBac => 'Est. BAC';
+  String get estBac => 'Odhad BAC';
 
   @override
-  String get estTimeToDrive => 'Est. time to drive';
+  String get estTimeToDrive => 'Odhad času k řízení';
 
   @override
-  String get visibilitySettings => 'Visibility settings';
+  String get visibilitySettings => 'Nastavení viditelnosti';
 
   @override
-  String get showMyStats => 'Show my stats';
+  String get showMyStats => 'Zobrazit mé statistiky';
 
   @override
-  String get showBacEstimateJoin => 'Show BAC estimate';
+  String get showBacEstimateJoin => 'Zobrazit odhad BAC';
 
   @override
-  String get areYouOneOfGuests => 'Are you one of these guests?';
+  String get areYouOneOfGuests => 'Jste jedním z těchto hostů?';
 
   @override
-  String get selectYourselfToMerge => 'Select yourself to take over their pours, or skip.';
+  String get selectYourselfToMerge => 'Vyberte se a převezměte jejich čepování, nebo přeskočte.';
 
   @override
-  String get joinAndMerge => 'Join & Merge';
+  String get joinAndMerge => 'Připojit a sloučit';
 
   @override
-  String get joinSession => 'Join Session';
+  String get joinSession => 'Připojit se k akci';
 
   @override
-  String get failedToJoin => 'Failed to join';
+  String get failedToJoin => 'Připojení se nezdařilo';
 
   @override
-  String get pointAtBeererQrCode => 'Point at a Beerer QR code';
+  String get pointAtBeererQrCode => 'Namiřte na Beerer QR kód';
 
   @override
-  String get guestLower => 'guest';
+  String get guestLower => 'host';
 
   @override
-  String get removeGuestTooltip => 'Remove guest';
+  String get removeGuestTooltip => 'Odebrat hosta';
 
   @override
-  String get removePourTooltip => 'Remove pour';
+  String get removePourTooltip => 'Odebrat čepování';
 
   @override
-  String get ago => 'ago';
+  String get ago => 'zpět';
 
   @override
   String get total => 'Celkem';
 
   @override
-  String get pourBeer => 'Pour Beer';
+  String get pourBeer => 'Načepovat pivo';
 
   @override
-  String get addPerson => 'Add Person';
+  String get addPerson => 'Přidat osobu';
 
   @override
-  String get removeFromSession => 'Remove from session';
+  String get removeFromSession => 'Odebrat z akce';
 
   @override
-  String get guestDetail => 'Guest detail';
+  String get guestDetail => 'Detail hosta';
 
   @override
   String get guestNameTaken => 'Tento název je již obsazen jiným účastníkem. Zvolte prosím jiné jméno.';
@@ -883,7 +883,7 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String totalWithAmount(String amount) {
-    return 'Total: $amount';
+    return 'Celkem: $amount';
   }
 
   @override
@@ -893,7 +893,7 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String newKegSessionStep(int step) {
-    return 'New Keg Session  $step/2';
+    return 'Nová akce  $step/2';
   }
 
   @override
@@ -933,47 +933,47 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String pourFailed(String error) {
-    return 'Pour failed: $error';
+    return 'Čepování se nezdařilo: $error';
   }
 
   @override
   String pourForNickname(String nickname) {
-    return 'Pour for $nickname';
+    return 'Načepovat pro $nickname';
   }
 
   @override
   String pouredForNickname(String nickname) {
-    return 'Poured for $nickname!';
+    return 'Načepováno pro $nickname!';
   }
 
   @override
   String removeGuestConfirm(String nickname) {
-    return 'Remove \"$nickname\" and all their pours from this session?';
+    return 'Odebrat \"$nickname\" a všechna jejich čepování z této akce?';
   }
 
   @override
   String pourForDisabled(String name) {
-    return '$name has disabled \"Pour for me\".';
+    return '$name zakázal/a funkci \"Načepovat za mě\".';
   }
 
   @override
   String addBeerFor(String name) {
-    return 'Add beer for $name';
+    return 'Přidat pivo pro $name';
   }
 
   @override
   String removePourConfirm(String volume) {
-    return 'Remove $volume pour?';
+    return 'Odebrat $volume čepování?';
   }
 
   @override
   String errorWithMessage(String error) {
-    return 'Error: $error';
+    return 'Chyba: $error';
   }
 
   @override
   String removeFromSessionConfirm(String nickname) {
-    return 'Remove \"$nickname\" and all their pours from this session?';
+    return 'Odebrat \"$nickname\" a všechna jejich čepování z této akce?';
   }
 
   @override
@@ -983,7 +983,7 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String addedVolumeFor(String volume, String name) {
-    return 'Added $volume for $name';
+    return 'Přidáno $volume pro $name';
   }
 
   @override
@@ -1008,7 +1008,7 @@ class AppLocalizationsCs extends AppLocalizations {
   String get resendVerificationEmail => 'Znovu odeslat ověřovací e-mail';
 
   @override
-  String get youreInvitedToParty => 'You\'re invited to a party!';
+  String get youreInvitedToParty => 'Jste zváni na párty!';
 
   @override
   String get deleteAccountConfirmTitle => 'Smazat účet?';

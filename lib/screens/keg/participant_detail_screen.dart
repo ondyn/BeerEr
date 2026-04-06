@@ -88,10 +88,11 @@ class _ParticipantDetailScreenState extends State<ParticipantDetailScreen> {
     final beerCount = StatsCalculator.beerCount(pours, _participantId);
     final pureAlcMl = StatsCalculator.userPureAlcoholMl(
         pours, _participantId, session.alcoholPercent);
-    final cost = StatsCalculator.userCostByConsumption(
+    final cost = StatsCalculator.userCost(
       pours,
       _participantId,
       session.kegPrice,
+      session.volumeTotalMl,
     );
     final ratio = StatsCalculator.userConsumptionRatio(pours, _participantId);
 
