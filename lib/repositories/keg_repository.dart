@@ -120,6 +120,7 @@ class KegRepository {
       tx.set(pourRef, data);
       tx.update(_sessions.doc(pour.sessionId), {
         'volume_remaining_ml': keg.volumeRemainingMl - pour.volumeMl,
+        'last_volumes_ml.${pour.userId}': pour.volumeMl,
       });
 
       return pour.copyWith(id: pourRef.id);

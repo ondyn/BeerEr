@@ -182,7 +182,11 @@ class NotificationService {
   ///
   /// Pass `null` to cancel a previously scheduled notification (e.g. when
   /// BAC is already 0 or the user disabled the setting).
-  Future<void> scheduleBacZeroNotification(Duration? timeToZero) async {
+  Future<void> scheduleBacZeroNotification(
+    Duration? timeToZero, {
+    String title = '\u{1F697} Ready to drive!',
+    String body = 'Your estimated BAC has reached 0. Drive safely!',
+  }) async {
     // Always cancel the old timer and platform notification first.
     _bacZeroTimer?.cancel();
     _bacZeroTimer = null;
@@ -193,8 +197,8 @@ class NotificationService {
     _bacZeroTimer = Timer(timeToZero, () async {
       await _local.show(
         id: _bacZeroNotificationId,
-        title: '🚗 Ready to drive!',
-        body: 'Your estimated BAC has reached 0. Drive safely!',
+        title: title,
+        body: body,
         notificationDetails: NotificationDetails(
           android: AndroidNotificationDetails(
             _androidChannel.id,
@@ -233,14 +237,17 @@ class NotificationService {
   /// Shows a local "you've slowed down" notification **once** per slowdown
   /// window. Calling this multiple times while [_slowdownShown] is `true`
   /// is a no-op, avoiding notification spam from the 1-second ticker.
-  Future<void> showSlowdownNotification() async {
+  Future<void> showSlowdownNotification({
+    String title = '\u{1F37A} Feeling thirsty?',
+    String body = "Looks like you've slowed down\u2014ready for another round?",
+  }) async {
     if (_slowdownShown) return;
     _slowdownShown = true;
 
     await _local.show(
       id: _slowdownNotificationId,
-      title: '🍺 Feeling thirsty?',
-      body: "Looks like you've slowed down - ready for another round?",
+      title: title,
+      body: body,
       notificationDetails: NotificationDetails(
         android: AndroidNotificationDetails(
           _androidChannel.id,

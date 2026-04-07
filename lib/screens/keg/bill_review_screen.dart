@@ -71,7 +71,8 @@ class _BillReviewBody extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final pours = poursAsync.value ?? [];
     final participantIds = participantIdsAsync.value ?? [];
-    final prefs = ref.watch(formatPreferencesProvider);
+    final prefs = ref.watch(formatPreferencesProvider)
+        .withCurrency(session.currency);
 
     final usersAsync = ref.watch(watchUsersProvider(participantIds));
     final users = usersAsync.asData?.value ?? [];
@@ -92,6 +93,11 @@ class _BillReviewBody extends ConsumerWidget {
     final soloUsers =
         users.where((u) => !userAccountMap.containsKey(u.id)).toList();
 
+    // Watch guest (manual) users
+    final manualUsersAsync =
+        ref.watch(watchManualUsersProvider(session.id));
+    final manualUsers = manualUsersAsync.asData?.value ?? [];
+
     final totalPoured = StatsCalculator.totalPouredMl(pours);
 
     return Scaffold(
@@ -99,7 +105,10 @@ class _BillReviewBody extends ConsumerWidget {
         title: Text(AppLocalizations.of(context)!.reviewBill),
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.fromLTRB(
+          16, 16, 16,
+          16 + MediaQuery.paddingOf(context).bottom,
+        ),
         children: [
           // Summary card
           _SummaryCard(
@@ -133,6 +142,17 @@ class _BillReviewBody extends ConsumerWidget {
           for (final user in soloUsers) ...[
             _ParticipantSection(
               user: user,
+              pours: pours,
+              session: session,
+              prefs: prefs,
+            ),
+            const SizedBox(height: 8),
+          ],
+
+          // Guest (manual) users
+          for (final guest in manualUsers) ...[
+            _GuestParticipantSection(
+              guest: guest,
               pours: pours,
               session: session,
               prefs: prefs,
@@ -360,6 +380,54 @@ class _ParticipantSection extends ConsumerWidget {
       session: session,
       userId: user.id,
       userName: user.displayName,
+      prefs: prefs,
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Guest participant section with expandable pour list
+// ---------------------------------------------------------------------------
+
+class _GuestParticipantSection extends ConsumerWidget {
+  const _GuestParticipantSection({
+    required this.guest,
+    required this.pours,
+    required this.session,
+    required this.prefs,
+  });
+
+  final ManualUser guest;
+  final List<Pour> pours;
+  final KegSession session;
+  final FormatPreferences prefs;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final guestPours =
+        pours.where((p) => p.userId == guest.id && !p.undone).toList()
+          ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
+    final volumeMl = StatsCalculator.userPouredMl(pours, guest.id);
+    final ratio = StatsCalculator.userConsumptionRatio(pours, guest.id);
+    final cost = StatsCalculator.userCostByConsumption(
+      pours,
+      guest.id,
+      session.kegPrice,
+    );
+
+    return _ExpandableParticipantCard(
+      title: '${guest.nickname} (${AppLocalizations.of(context)!.guest})',
+      subtitle:
+          '${TimeFormatter.formatVolumeMl(volumeMl, prefs: prefs)} · '
+          '${TimeFormatter.formatRatio(ratio)}',
+      cost: TimeFormatter.formatCurrency(cost, prefs: prefs),
+      avatarLetter: guest.nickname[0].toUpperCase(),
+      isHighlighted: false,
+      pourCount: guestPours.length,
+      userPours: guestPours,
+      session: session,
+      userId: guest.id,
+      userName: guest.nickname,
       prefs: prefs,
     );
   }

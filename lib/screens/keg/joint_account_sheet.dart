@@ -51,8 +51,10 @@ class _JointAccountSheetState extends ConsumerState<JointAccountSheet> {
       padding: EdgeInsets.only(
         left: 24,
         right: 24,
-        top: 16,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+        top: 24,
+        bottom: 24 +
+            MediaQuery.viewInsetsOf(context).bottom +
+            MediaQuery.viewPaddingOf(context).bottom,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -105,7 +107,7 @@ class _JointAccountSheetState extends ConsumerState<JointAccountSheet> {
         // Account name
         Card(
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -459,7 +461,12 @@ class _MemberPickerSheet extends ConsumerWidget {
     final usersAsync = ref.watch(watchUsersProvider(eligibleIds));
 
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.only(
+        left: 16,
+        right: 16,
+        top: 16,
+        bottom: 16 + MediaQuery.viewPaddingOf(context).bottom,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,

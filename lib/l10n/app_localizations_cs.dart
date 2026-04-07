@@ -42,6 +42,20 @@ class AppLocalizationsCs extends AppLocalizations {
   String get kegInformation => 'Informace o sudu';
 
   @override
+  String get kegVolumeChart => 'Objem sudu v čase';
+
+  @override
+  String get pourRateChart => 'Rychlost čepování v čase';
+
+  @override
+  String volumeRemaining(String volume) {
+    return '$volume ml zbývá';
+  }
+
+  @override
+  String get poursPerHour => 'čepů/h';
+
+  @override
   String get beerInformation => 'Informace o pivu';
 
   @override
@@ -208,6 +222,21 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get signInFailed => 'Přihlášení se nezdařilo. Zkuste to prosím znovu.';
+
+  @override
+  String get signInWithGoogle => 'Přihlásit se přes Google';
+
+  @override
+  String get or => 'nebo';
+
+  @override
+  String get googleSignInFailed => 'Přihlášení přes Google se nezdařilo. Zkuste to prosím znovu.';
+
+  @override
+  String get googleSignInCancelled => 'Přihlášení přes Google bylo zrušeno.';
+
+  @override
+  String get accountExistsWithDifferentCredential => 'Účet s tímto e-mailem již existuje s jiným způsobem přihlášení. Zkuste se přihlásit e-mailem a heslem.';
 
   @override
   String get verifyEmailMessage => 'Ověřte prosím svou e-mailovou adresu. Poslali jsme vám ověřovací odkaz.';
@@ -852,11 +881,6 @@ class AppLocalizationsCs extends AppLocalizations {
   String get guestNameTaken => 'Tento název je již obsazen jiným účastníkem. Zvolte prosím jiné jméno.';
 
   @override
-  String volumeRemaining(String volume) {
-    return '$volume ml zbývá';
-  }
-
-  @override
   String error(String message) {
     return 'Chyba: $message';
   }
@@ -1026,4 +1050,39 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get deleteAccountConfirmButton => 'Smazat můj účet';
+
+  @override
+  String get volumeConsumed => 'Spotřebovaný objem';
+
+  @override
+  String get volumeRemaining2 => 'Zbývající objem';
+
+  @override
+  String get alcoholConsumed => 'Spotřebovaný alkohol';
+
+  @override
+  String get alcoholRemaining => 'Zbývající alkohol';
+
+  @override
+  String pricePerBeer(String beerSize) {
+    return 'Cena za $beerSize';
+  }
+
+  @override
+  String get elapsedTime => 'Uplynulý čas';
+
+  @override
+  String get sessionStatistics => 'Statistiky sezení';
+
+  @override
+  String get notifSlowdownTitle => '🍺 Máte žízeň?';
+
+  @override
+  String get notifSlowdownBody => 'Vypadá to, že jste zpomalili—dáte si další kolo?';
+
+  @override
+  String get notifBacZeroTitle => '🚗 Můžete řídit!';
+
+  @override
+  String get notifBacZeroBody => 'Váš odhadný BAC dosáhl nuly. Jezděte bezpečně!';
 }

@@ -11,10 +11,14 @@ class TimeFormatter {
   static String formatDuration(Duration duration) {
     // Guard against negative durations caused by clock skew.
     final d = duration.isNegative ? Duration.zero : duration;
-    final hours = d.inHours;
+    final days = d.inDays;
+    final hours = d.inHours.remainder(24);
     final minutes = d.inMinutes.remainder(60);
     final seconds = d.inSeconds.remainder(60);
 
+    if (days > 0) {
+      return '${days}d ${hours}h ${minutes.toString().padLeft(2, '0')}m';
+    }
     if (hours > 0) {
       return '${hours}h ${minutes.toString().padLeft(2, '0')}m';
     }
@@ -98,6 +102,18 @@ class TimeFormatter {
   }) {
     final p = prefs ?? const FormatPreferences();
     return '${p.formatDecimal(bac, fractionDigits)} ‰';
+  }
+
+  /// Formats a pure alcohol amount in ml.
+  ///
+  /// Always uses ml/l regardless of the user's volume unit preference.
+  /// Shows 2 decimal places for litre values.
+  static String formatAlcoholMl(double ml, {FormatPreferences? prefs}) {
+    final p = prefs ?? const FormatPreferences();
+    if (ml >= 1000) {
+      return '${p.formatDecimal(ml / 1000, 2)} l';
+    }
+    return '${ml.round()} ml';
   }
 
   /// Formats a currency amount.

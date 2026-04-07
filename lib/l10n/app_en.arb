@@ -11,6 +11,10 @@
   "estimatedBac": "Est. BAC",
   "drinkResponsibly": "Please drink responsibly.",
   "kegInformation": "Keg Information",
+  "kegVolumeChart": "Keg Volume Over Time",
+  "pourRateChart": "Pour Rate Over Time",
+  "volumeRemaining": "Remaining",
+  "poursPerHour": "pours/h",
   "beerInformation": "Beer Information",
   "kegInfo": "Keg Information",
   "beerName": "Name",
@@ -67,6 +71,11 @@
   "alreadyHaveOne": "Already have one? ",
   "signInLink": "Sign in ›",
   "signInFailed": "Sign in failed. Please try again.",
+  "signInWithGoogle": "Sign in with Google",
+  "or": "or",
+  "googleSignInFailed": "Google sign-in failed. Please try again.",
+  "googleSignInCancelled": "Google sign-in was cancelled.",
+  "accountExistsWithDifferentCredential": "An account already exists with this email using a different sign-in method. Try signing in with email and password instead.",
   "verifyEmailMessage": "Please verify your email address. We've sent you a verification link.",
   "accountCreatedVerify": "Account created. Check your email to verify before signing in.",
   "registrationFailed": "Registration failed. Please try again.",
@@ -522,5 +531,23 @@
       }
     }
   },
-  "deleteAccountConfirmButton": "Delete My Account"
+  "deleteAccountConfirmButton": "Delete My Account",
+  "volumeConsumed": "Volume consumed",
+  "volumeRemaining2": "Volume remaining",
+  "alcoholConsumed": "Alcohol consumed",
+  "alcoholRemaining": "Alcohol remaining",
+  "pricePerBeer": "Price per {beerSize}",
+  "@pricePerBeer": {
+    "placeholders": {
+      "beerSize": {
+        "type": "String"
+      }
+    }
+  },
+  "elapsedTime": "Elapsed time",
+  "sessionStatistics": "Session Statistics",
+  "notifSlowdownTitle": "\uD83C\uDF7A Feeling thirsty?",
+  "notifSlowdownBody": "Looks like you've slowed down\u2014ready for another round?",
+  "notifBacZeroTitle": "\uD83D\uDE97 Ready to drive!",
+  "notifBacZeroBody": "Your estimated BAC has reached 0. Drive safely!"
 }

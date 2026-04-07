@@ -46,6 +46,7 @@ class _CreateKegScreenState extends ConsumerState<CreateKegScreen> {
   final _volumeController = TextEditingController(text: '30');
   final _priceController = TextEditingController();
   final List<double> _predefinedVolumes = [500, 300];
+  String _selectedCurrency = '€';
 
   bool _isCreating = false;
   bool _prefsInitialized = false;
@@ -325,6 +326,7 @@ class _CreateKegScreenState extends ConsumerState<CreateKegScreen> {
         ),
         alcoholPercent: double.tryParse(alcoholText) ?? 0.0,
         predefinedVolumesMl: _predefinedVolumes,
+        currency: _selectedCurrency,
         brewery: _breweryController.text.trim().isNotEmpty
             ? _breweryController.text.trim()
             : null,
@@ -411,6 +413,7 @@ class _CreateKegScreenState extends ConsumerState<CreateKegScreen> {
     if (!_prefsInitialized) {
       _prefsInitialized = true;
       _priceController.text = prefs.formatDecimal(100, 2);
+      _selectedCurrency = prefs.currency;
     }
 
     return PopScope(
@@ -654,20 +657,51 @@ class _CreateKegScreenState extends ConsumerState<CreateKegScreen> {
               },
             ),
             const SizedBox(height: 16),
-            TextFormField(
-              controller: _priceController,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-              decoration: InputDecoration(
-                labelText: AppLocalizations.of(context)!.kegPriceLabel(prefs.currency),
-              ),
-              validator: (val) {
-                if (val == null ||
-                    double.tryParse(val.replaceAll(',', '.')) == null) {
-                  return AppLocalizations.of(context)!.enterValidNumber;
-                }
-                return null;
-              },
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: _priceController,
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
+                    decoration: InputDecoration(
+                      labelText: AppLocalizations.of(context)!.kegPriceLabel(_selectedCurrency),
+                    ),
+                    validator: (val) {
+                      if (val == null ||
+                          double.tryParse(val.replaceAll(',', '.')) == null) {
+                        return AppLocalizations.of(context)!.enterValidNumber;
+                      }
+                      return null;
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                SizedBox(
+                  width: 80,
+                  child: DropdownButtonFormField<String>(
+                    initialValue: _selectedCurrency,
+                    decoration: const InputDecoration(
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 16,
+                      ),
+                    ),
+                    items: ['€', '\$', '£', 'Kč']
+                        .map((c) => DropdownMenuItem(
+                              value: c,
+                              child: Text(c),
+                            ))
+                        .toList(),
+                    onChanged: (val) {
+                      if (val != null) {
+                        setState(() => _selectedCurrency = val);
+                      }
+                    },
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 24),
             Text(

@@ -31,6 +31,12 @@ abstract class KegSession with _$KegSession {
     String? beerGroup,
     String? beerStyle,
     String? degreePlato,
+    /// Per-participant last used pour volume (ml). Keyed by user ID.
+    /// Updated after each pour so the next pour for that user defaults to
+    /// their most recent volume.
+    @Default({}) Map<String, dynamic> lastVolumesMl,
+    /// Currency symbol used for this keg session's cost display.
+    @Default('€') String currency,
   }) = _KegSession;
 
   factory KegSession.fromJson(Map<String, dynamic> json) =>

@@ -1,10 +1,12 @@
 import 'package:beerer/l10n/app_localizations.dart';
+import 'package:beerer/providers/locale_provider.dart';
 import 'package:beerer/repositories/user_repository.dart';
 import 'package:beerer/theme/beer_theme.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 /// Sign-in screen with email/password and social providers.
 class SignInScreen extends ConsumerStatefulWidget {
@@ -94,6 +96,25 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
         );
       }
 
+      // Sync the pre-auth language preference to Firestore so the user
+      // keeps the language they selected on the welcome screen.
+      final preAuthLang = ref.read(preAuthLocaleProvider);
+      if (preAuthLang != null) {
+        final profile = await userRepo.getUser(user.uid);
+        if (profile != null) {
+          final currentLang =
+              profile.preferences['language'] as String? ?? 'en';
+          if (currentLang != preAuthLang) {
+            final updatedPrefs =
+                Map<String, dynamic>.from(profile.preferences)
+                  ..['language'] = preAuthLang;
+            await userRepo.createOrUpdateUser(
+              profile.copyWith(preferences: updatedPrefs),
+            );
+          }
+        }
+      }
+
       if (mounted) context.go('/home');
     } on FirebaseAuthException catch (e) {
       setState(() {
@@ -119,8 +140,123 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
         return l10n.signInFailed;
       case 'invalid-email':
         return l10n.enterValidEmail;
+      case 'account-exists-with-different-credential':
+        return l10n.accountExistsWithDifferentCredential;
       default:
         return l10n.signInFailed;
+    }
+  }
+
+  Future<void> _signInWithGoogle() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+      _emailNotVerified = false;
+    });
+
+    try {
+      debugPrint('[GoogleSignIn] Starting sign-in flow...');
+      final googleSignIn = GoogleSignIn();
+      final googleUser = await googleSignIn.signIn();
+      if (googleUser == null) {
+        debugPrint('[GoogleSignIn] User cancelled the flow.');
+        if (mounted) {
+          setState(() {
+            _error = AppLocalizations.of(context)!.googleSignInCancelled;
+            _isLoading = false;
+          });
+        }
+        return;
+      }
+
+      debugPrint('[GoogleSignIn] Got Google user: ${googleUser.email}');
+      final googleAuth = await googleUser.authentication;
+      debugPrint(
+        '[GoogleSignIn] Got tokens — '
+        'accessToken: ${googleAuth.accessToken != null ? "present" : "null"}, '
+        'idToken: ${googleAuth.idToken != null ? "present" : "null"}',
+      );
+
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      debugPrint('[GoogleSignIn] Calling signInWithCredential...');
+      final userCredential =
+          await FirebaseAuth.instance.signInWithCredential(credential);
+      final user = userCredential.user;
+      debugPrint(
+        '[GoogleSignIn] signInWithCredential result — '
+        'uid: ${user?.uid}, email: ${user?.email}, '
+        'isNewUser: ${userCredential.additionalUserInfo?.isNewUser}',
+      );
+
+      if (user == null) {
+        debugPrint('[GoogleSignIn] ERROR: user is null after signInWithCredential');
+        setState(() {
+          _error = AppLocalizations.of(context)!.googleSignInFailed;
+        });
+        return;
+      }
+
+      // Ensure a Firestore profile exists.
+      final userRepo = ref.read(userRepositoryProvider);
+      final existingProfile = await userRepo.getUser(user.uid);
+      debugPrint('[GoogleSignIn] Existing profile: ${existingProfile != null}');
+      if (existingProfile == null) {
+        final fallbackNickname =
+            user.displayName?.trim().isNotEmpty == true
+                ? user.displayName!.trim()
+                : (user.email != null && user.email!.isNotEmpty
+                    ? user.email!.split('@').first
+                    : 'Beerer user');
+        await userRepo.createMinimalProfile(
+          uid: user.uid,
+          nickname: fallbackNickname,
+          email: user.email ?? '',
+          authProvider: 'google',
+        );
+        debugPrint('[GoogleSignIn] Created profile for ${user.uid}');
+      }
+
+      // Sync pre-auth locale to Firestore.
+      final preAuthLang = ref.read(preAuthLocaleProvider);
+      if (preAuthLang != null) {
+        final profile = await userRepo.getUser(user.uid);
+        if (profile != null) {
+          final currentLang =
+              profile.preferences['language'] as String? ?? 'en';
+          if (currentLang != preAuthLang) {
+            final updatedPrefs =
+                Map<String, dynamic>.from(profile.preferences)
+                  ..['language'] = preAuthLang;
+            await userRepo.createOrUpdateUser(
+              profile.copyWith(preferences: updatedPrefs),
+            );
+          }
+        }
+      }
+
+      debugPrint('[GoogleSignIn] Success — navigating to /home');
+      if (mounted) context.go('/home');
+    } on FirebaseAuthException catch (e) {
+      debugPrint('[GoogleSignIn] FirebaseAuthException: code=${e.code}, message=${e.message}');
+      if (mounted) {
+        setState(() {
+          _error = _mapFirebaseError(e.code);
+        });
+      }
+    } catch (e, st) {
+      debugPrint('[GoogleSignIn] Unexpected error: $e');
+      debugPrint('[GoogleSignIn] Stack trace: $st');
+      if (mounted) {
+        setState(() {
+          _error = AppLocalizations.of(context)!.googleSignInFailed;
+        });
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -188,6 +324,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
                   autofillHints: const [AutofillHints.email],
+                  textInputAction: TextInputAction.next,
                   decoration: InputDecoration(
                     prefixIcon: const Icon(Icons.email_outlined),
                     labelText: AppLocalizations.of(context)!.email,
@@ -208,6 +345,8 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                   controller: _passwordController,
                   obscureText: _obscurePassword,
                   autofillHints: const [AutofillHints.password],
+                  textInputAction: TextInputAction.done,
+                  onFieldSubmitted: (_) => _signIn(),
                   decoration: InputDecoration(
                     prefixIcon: const Icon(Icons.lock_outlined),
                     labelText: AppLocalizations.of(context)!.password,
@@ -324,47 +463,27 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                       : Text(AppLocalizations.of(context)!.signIn),
                 ),
                 const SizedBox(height: 24),
-                // TODO: Uncomment divider when social sign-in is implemented
-                // const SizedBox(height: 24),
-                // Row(
-                //   children: [
-                //     const Expanded(child: Divider()),
-                //     Padding(
-                //       padding: const EdgeInsets.symmetric(horizontal: 16),
-                //       child: Text(
-                //         'or',
-                //         style: Theme.of(context).textTheme.bodySmall,
-                //       ),
-                //     ),
-                //     const Expanded(child: Divider()),
-                //   ],
-                // ),
+                Row(
+                  children: [
+                    const Expanded(child: Divider()),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        AppLocalizations.of(context)!.or,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ),
+                    const Expanded(child: Divider()),
+                  ],
+                ),
                 const SizedBox(height: 24),
-                // TODO: Social sign-in — implement Google & Apple later
-                // Row(
-                //   children: [
-                //     Expanded(
-                //       child: OutlinedButton.icon(
-                //         onPressed: () {
-                //           // TODO: Implement Google sign-in
-                //         },
-                //         icon: const Icon(Icons.g_mobiledata, size: 24),
-                //         label: const Text('Google'),
-                //       ),
-                //     ),
-                //     const SizedBox(width: 12),
-                //     Expanded(
-                //       child: OutlinedButton.icon(
-                //         onPressed: () {
-                //           // TODO: Implement Apple sign-in
-                //         },
-                //         icon: const Icon(Icons.apple, size: 24),
-                //         label: const Text('Apple'),
-                //       ),
-                //     ),
-                //   ],
-                // ),
-                // const SizedBox(height: 24),
+                OutlinedButton.icon(
+                  onPressed: _isLoading ? null : _signInWithGoogle,
+                  icon: const Icon(Icons.g_mobiledata, size: 24),
+                  label: Text(
+                      AppLocalizations.of(context)!.signInWithGoogle),
+                ),
+                const SizedBox(height: 24),
                 // Register link
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,

@@ -5,6 +5,7 @@ export 'animated_reorderable_column.dart';
 export 'animated_rolling_text.dart';
 export 'bac_banner.dart';
 export 'email_verification_banner.dart';
+export 'keg_chart.dart';
 export 'keg_fill_bar.dart';
 export 'participant_chip.dart';
 export 'pour_button.dart';

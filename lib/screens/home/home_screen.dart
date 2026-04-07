@@ -178,7 +178,9 @@ class HomeScreen extends ConsumerWidget {
                 heroTag: 'join_keg',
                 onPressed: () => _showJoinDialog(context),
                 icon: const Icon(Icons.qr_code_scanner),
-                label: Text(AppLocalizations.of(context)!.joinKegSession),
+                label: FittedBox(
+                  child: Text(AppLocalizations.of(context)!.joinKegSession),
+                ),
               ),
             ),
             const SizedBox(width: 12),
@@ -187,7 +189,9 @@ class HomeScreen extends ConsumerWidget {
                 heroTag: 'new_keg',
                 onPressed: () => context.push('/keg/new'),
                 icon: const Icon(Icons.add),
-                label: Text(AppLocalizations.of(context)!.newKegSession),
+                label: FittedBox(
+                  child: Text(AppLocalizations.of(context)!.newKegSession),
+                ),
               ),
             ),
           ],

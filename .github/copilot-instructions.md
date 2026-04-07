@@ -421,9 +421,11 @@ Map<String, dynamic> firestoreDoc(String id, Map<String, dynamic> data) {
 - **Never** skip Firestore transactions for operations modifying `volume_remaining_ml`.
 - **Never** build custom offline sync — rely on Firestore's built-in offline persistence.
 - **Never** edit generated files (`*.g.dart`, `*.freezed.dart`) by hand.
-- **Never** hardcode user-facing strings — use ARB localisation.
+- **Never** hardcode user-facing strings — use ARB localisation. When adding new screens or modifying existing ones, always add all user-facing strings to **all three** ARB files (`app_en.arb`, `app_cs.arb`, `app_de.arb`) before submitting.
 - **Never** commit `firebase_options.dart`, `google-services.json`, or `GoogleService-Info.plist`.
 - **Never** use `print()` — the `avoid_print` lint rule is enabled. Use `debugPrint()` or `logger` for dev logging.
+- **Never** use heredoc / here-document syntax (e.g. `cat > file << 'EOF'`) in terminal commands — it causes terminal disconnection with long content. Use a Python script or the `create_file` tool instead.
+- **Never** use Firebase Cloud Functions from Flutter client code. All logic should run client-side or via direct Firestore operations. Notifications should use Firestore-triggered mechanisms or local notifications only. The `cloud_functions` package dependency is deprecated and should be removed.
 
 ---
 

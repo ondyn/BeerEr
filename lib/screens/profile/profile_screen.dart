@@ -95,7 +95,10 @@ class ProfileScreen extends ConsumerWidget {
     User firebaseUser,
   ) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.fromLTRB(
+        24, 24, 24,
+        24 + MediaQuery.paddingOf(context).bottom,
+      ),
       child: Column(
         children: [
           // Avatar — tap to change
@@ -259,7 +262,9 @@ class ProfileScreen extends ConsumerWidget {
           left: 24,
           right: 24,
           top: 16,
-          bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
+          bottom: 24 +
+              MediaQuery.viewInsetsOf(ctx).bottom +
+              MediaQuery.viewPaddingOf(ctx).bottom,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,

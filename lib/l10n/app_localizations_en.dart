@@ -42,6 +42,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get kegInformation => 'Keg Information';
 
   @override
+  String get kegVolumeChart => 'Keg Volume Over Time';
+
+  @override
+  String get pourRateChart => 'Pour Rate Over Time';
+
+  @override
+  String volumeRemaining(String volume) {
+    return '$volume ml remaining';
+  }
+
+  @override
+  String get poursPerHour => 'pours/h';
+
+  @override
   String get beerInformation => 'Beer Information';
 
   @override
@@ -208,6 +222,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get signInFailed => 'Sign in failed. Please try again.';
+
+  @override
+  String get signInWithGoogle => 'Sign in with Google';
+
+  @override
+  String get or => 'or';
+
+  @override
+  String get googleSignInFailed => 'Google sign-in failed. Please try again.';
+
+  @override
+  String get googleSignInCancelled => 'Google sign-in was cancelled.';
+
+  @override
+  String get accountExistsWithDifferentCredential => 'An account already exists with this email using a different sign-in method. Try signing in with email and password instead.';
 
   @override
   String get verifyEmailMessage => 'Please verify your email address. We\'ve sent you a verification link.';
@@ -852,11 +881,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get guestNameTaken => 'This name is already taken by another participant. Please choose a different name.';
 
   @override
-  String volumeRemaining(String volume) {
-    return '$volume ml remaining';
-  }
-
-  @override
   String error(String message) {
     return 'Error: $message';
   }
@@ -1026,4 +1050,39 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get deleteAccountConfirmButton => 'Delete My Account';
+
+  @override
+  String get volumeConsumed => 'Volume consumed';
+
+  @override
+  String get volumeRemaining2 => 'Volume remaining';
+
+  @override
+  String get alcoholConsumed => 'Alcohol consumed';
+
+  @override
+  String get alcoholRemaining => 'Alcohol remaining';
+
+  @override
+  String pricePerBeer(String beerSize) {
+    return 'Price per $beerSize';
+  }
+
+  @override
+  String get elapsedTime => 'Elapsed time';
+
+  @override
+  String get sessionStatistics => 'Session Statistics';
+
+  @override
+  String get notifSlowdownTitle => '🍺 Feeling thirsty?';
+
+  @override
+  String get notifSlowdownBody => 'Looks like you\'ve slowed down—ready for another round?';
+
+  @override
+  String get notifBacZeroTitle => '🚗 Ready to drive!';
+
+  @override
+  String get notifBacZeroBody => 'Your estimated BAC has reached 0. Drive safely!';
 }

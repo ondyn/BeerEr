@@ -1,0 +1,5 @@
+- poslat mi email, kterým jsi registrovaný na Google (musím ho zadat do seznamu testerů)
+- stát se testerem: https://play.google.com/apps/testing/com.beerer.beerer
+- stáhout aplikaci: https://play.google.com/store/apps/details?id=com.beerer.beerer
+- v aplikaci se registrovat a potvrdit aktivační email. Ten může padat do spamu.
+- přihlásit se do aplikace - trochu poklikat

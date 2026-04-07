@@ -163,6 +163,30 @@ abstract class AppLocalizations {
   /// **'Keg Information'**
   String get kegInformation;
 
+  /// No description provided for @kegVolumeChart.
+  ///
+  /// In en, this message translates to:
+  /// **'Keg Volume Over Time'**
+  String get kegVolumeChart;
+
+  /// No description provided for @pourRateChart.
+  ///
+  /// In en, this message translates to:
+  /// **'Pour Rate Over Time'**
+  String get pourRateChart;
+
+  /// No description provided for @volumeRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'{volume} ml remaining'**
+  String volumeRemaining(String volume);
+
+  /// No description provided for @poursPerHour.
+  ///
+  /// In en, this message translates to:
+  /// **'pours/h'**
+  String get poursPerHour;
+
   /// No description provided for @beerInformation.
   ///
   /// In en, this message translates to:
@@ -498,6 +522,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sign in failed. Please try again.'**
   String get signInFailed;
+
+  /// No description provided for @signInWithGoogle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with Google'**
+  String get signInWithGoogle;
+
+  /// No description provided for @or.
+  ///
+  /// In en, this message translates to:
+  /// **'or'**
+  String get or;
+
+  /// No description provided for @googleSignInFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Google sign-in failed. Please try again.'**
+  String get googleSignInFailed;
+
+  /// No description provided for @googleSignInCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Google sign-in was cancelled.'**
+  String get googleSignInCancelled;
+
+  /// No description provided for @accountExistsWithDifferentCredential.
+  ///
+  /// In en, this message translates to:
+  /// **'An account already exists with this email using a different sign-in method. Try signing in with email and password instead.'**
+  String get accountExistsWithDifferentCredential;
 
   /// No description provided for @verifyEmailMessage.
   ///
@@ -1783,12 +1837,6 @@ abstract class AppLocalizations {
   /// **'This name is already taken by another participant. Please choose a different name.'**
   String get guestNameTaken;
 
-  /// No description provided for @volumeRemaining.
-  ///
-  /// In en, this message translates to:
-  /// **'{volume} ml remaining'**
-  String volumeRemaining(String volume);
-
   /// No description provided for @error.
   ///
   /// In en, this message translates to:
@@ -2022,6 +2070,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Delete My Account'**
   String get deleteAccountConfirmButton;
+
+  /// No description provided for @volumeConsumed.
+  ///
+  /// In en, this message translates to:
+  /// **'Volume consumed'**
+  String get volumeConsumed;
+
+  /// No description provided for @volumeRemaining2.
+  ///
+  /// In en, this message translates to:
+  /// **'Volume remaining'**
+  String get volumeRemaining2;
+
+  /// No description provided for @alcoholConsumed.
+  ///
+  /// In en, this message translates to:
+  /// **'Alcohol consumed'**
+  String get alcoholConsumed;
+
+  /// No description provided for @alcoholRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'Alcohol remaining'**
+  String get alcoholRemaining;
+
+  /// No description provided for @pricePerBeer.
+  ///
+  /// In en, this message translates to:
+  /// **'Price per {beerSize}'**
+  String pricePerBeer(String beerSize);
+
+  /// No description provided for @elapsedTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Elapsed time'**
+  String get elapsedTime;
+
+  /// No description provided for @sessionStatistics.
+  ///
+  /// In en, this message translates to:
+  /// **'Session Statistics'**
+  String get sessionStatistics;
+
+  /// No description provided for @notifSlowdownTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'🍺 Feeling thirsty?'**
+  String get notifSlowdownTitle;
+
+  /// No description provided for @notifSlowdownBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Looks like you\'ve slowed down—ready for another round?'**
+  String get notifSlowdownBody;
+
+  /// No description provided for @notifBacZeroTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'🚗 Ready to drive!'**
+  String get notifBacZeroTitle;
+
+  /// No description provided for @notifBacZeroBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your estimated BAC has reached 0. Drive safely!'**
+  String get notifBacZeroBody;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

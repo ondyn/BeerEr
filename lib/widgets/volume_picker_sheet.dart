@@ -58,8 +58,10 @@ class _VolumePickerSheetState extends State<VolumePickerSheet> {
       padding: EdgeInsets.only(
         left: 24,
         right: 24,
-        top: 16,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+        top: 24,
+        bottom: 24 +
+            MediaQuery.viewInsetsOf(context).bottom +
+            MediaQuery.viewPaddingOf(context).bottom,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,

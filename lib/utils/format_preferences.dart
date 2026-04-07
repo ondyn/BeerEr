@@ -23,6 +23,16 @@ class FormatPreferences {
     );
   }
 
+  /// Returns a copy of these preferences with the currency symbol replaced.
+  /// Useful for displaying keg-session-specific currency.
+  FormatPreferences withCurrency(String currencySymbol) {
+    return FormatPreferences(
+      volumeUnit: volumeUnit,
+      currency: currencySymbol,
+      decimalSeparator: decimalSeparator,
+    );
+  }
+
   /// Serialises to a map suitable for merging into Firestore preferences.
   Map<String, dynamic> toMap() => {
         'volume_unit': volumeUnit.key,

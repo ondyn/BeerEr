@@ -35,11 +35,13 @@ class UserRepository {
     required String uid,
     required String nickname,
     required String email,
+    String authProvider = 'email',
   }) async {
     await _col.doc(uid).set(
       {
         'nickname': nickname,
         'email': email,
+        'auth_provider': authProvider,
       },
       SetOptions(merge: true),
     );

@@ -10,8 +10,10 @@
   "statistics": "Statistiken",
   "estimatedBac": "Geschätzter BAK",
   "drinkResponsibly": "Bitte trinken Sie verantwortungsvoll.",
-  "kegInformation": "Fass-Informationen",
-  "beerInformation": "Bier-Informationen",
+  "kegInformation": "Fass-Informationen",  "kegVolumeChart": "Fassvolumen über Zeit",
+  "pourRateChart": "Ausschankrate über Zeit",
+  "volumeRemaining": "Verbleibend",
+  "poursPerHour": "Ausschank/h",  "beerInformation": "Bier-Informationen",
   "kegInfo": "Fass-Informationen",
   "beerName": "Name",
   "alcoholPercent": "Alkohol %",
@@ -68,6 +70,11 @@
   "alreadyHaveOne": "Bereits registriert? ",
   "signInLink": "Anmelden ›",
   "signInFailed": "Anmeldung fehlgeschlagen. Bitte versuchen Sie es erneut.",
+  "signInWithGoogle": "Mit Google anmelden",
+  "or": "oder",
+  "googleSignInFailed": "Google-Anmeldung fehlgeschlagen. Bitte versuchen Sie es erneut.",
+  "googleSignInCancelled": "Google-Anmeldung wurde abgebrochen.",
+  "accountExistsWithDifferentCredential": "Ein Konto mit dieser E-Mail existiert bereits mit einer anderen Anmeldemethode. Versuchen Sie, sich mit E-Mail und Passwort anzumelden.",
   "verifyEmailMessage": "Bitte bestätigen Sie Ihre E-Mail-Adresse. Wir haben Ihnen einen Bestätigungslink gesendet.",
   "accountCreatedVerify": "Konto erstellt. Überprüfen Sie Ihre E-Mail, um sich anzumelden.",
   "registrationFailed": "Registrierung fehlgeschlagen. Bitte versuchen Sie es erneut.",
@@ -320,5 +327,23 @@
   "deleteAccountConfirmBody": "Diese Aktion ist unwiderruflich. Ihre persönlichen Daten werden entfernt und Ihr Konto wird deaktiviert. Ihre Einträge in den Sitzungen anderer Benutzer bleiben als 'Gelöschter Benutzer' erhalten.",
   "deleteAccountSuccess": "Ihr Konto wurde gelöscht. Es tut uns leid, Sie gehen zu sehen!",
   "deleteAccountFailed": "Konto konnte nicht gelöscht werden: {message}",
-  "deleteAccountConfirmButton": "Mein Konto löschen"
+  "deleteAccountConfirmButton": "Mein Konto löschen",
+  "volumeConsumed": "Verbrauchtes Volumen",
+  "volumeRemaining2": "Restvolumen",
+  "alcoholConsumed": "Verbrauchter Alkohol",
+  "alcoholRemaining": "Restalkohol",
+  "pricePerBeer": "Preis pro {beerSize}",
+  "@pricePerBeer": {
+    "placeholders": {
+      "beerSize": {
+        "type": "String"
+      }
+    }
+  },
+  "elapsedTime": "Vergangene Zeit",
+  "sessionStatistics": "Sitzungsstatistiken",
+  "notifSlowdownTitle": "\uD83C\uDF7A Durst?",
+  "notifSlowdownBody": "Sieht aus, als h\u00e4ttest du langsamer gemacht\u2014bereit f\u00fcr eine weitere Runde?",
+  "notifBacZeroTitle": "\uD83D\uDE97 Fahrbereit!",
+  "notifBacZeroBody": "Dein gesch\u00e4tzter BAC hat 0 erreicht. F\u00e4hr sicher!"
 }

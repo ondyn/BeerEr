@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:app_links/app_links.dart';
 import 'package:beerer/app.dart';
 import 'package:beerer/firebase_options.dart';
+import 'package:beerer/providers/locale_provider.dart';
 import 'package:beerer/router.dart';
 import 'package:beerer/services/notification_service.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -17,7 +18,21 @@ Future<void> main() async {
   // Initialise push & local notifications.
   await NotificationService.instance.init();
 
-  runApp(const ProviderScope(child: BeerErApp()));
+  // Load locally persisted language so the welcome/sign-in screens use the
+  // right locale before the user has signed in.
+  final savedLanguage = await loadLocalLanguage();
+
+  final container = ProviderContainer();
+  if (savedLanguage != null) {
+    container.read(preAuthLocaleProvider.notifier).set(savedLanguage);
+  }
+
+  runApp(
+    UncontrolledProviderScope(
+      container: container,
+      child: const BeerErApp(),
+    ),
+  );
 
   // Handle deep links (beerer://join/<sessionId>) after the app is running.
   final appLinks = AppLinks();

@@ -2,7 +2,9 @@ import 'package:beerer/l10n/app_localizations.dart';
 import 'package:beerer/models/models.dart';
 import 'package:beerer/providers/providers.dart';
 import 'package:beerer/theme/beer_theme.dart';
+import 'package:beerer/utils/stats_calculator.dart';
 import 'package:beerer/utils/time_formatter.dart';
+import 'package:beerer/widgets/keg_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -51,14 +53,39 @@ class _KegInfoBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final prefs = ref.watch(formatPreferencesProvider);
+    final prefs = ref.watch(formatPreferencesProvider)
+        .withCurrency(session.currency);
+    final poursAsync = ref.watch(watchSessionPoursProvider(session.id));
+    final pours = poursAsync.asData?.value ?? [];
+
+    // Computed stats
+    final totalPouredMl = StatsCalculator.totalPouredMl(pours);
+    final volumeRemainingMl = session.volumeRemainingMl;
+    final alcoholConsumedMl =
+        StatsCalculator.pureAlcoholMl(pours, session.alcoholPercent);
+    final alcoholRemainingMl = StatsCalculator.pureAlcoholRemainingMl(
+      volumeRemainingMl,
+      session.alcoholPercent,
+    );
+    final beerPrice = StatsCalculator.pricePerReferenceBeer(
+      session.kegPrice,
+      session.volumeTotalMl,
+      unit: prefs.volumeUnit,
+    );
+    final elapsed = session.startTime != null
+        ? DateTime.now().difference(session.startTime!)
+        : null;
+
     return Scaffold(
       appBar: AppBar(
         leading: BackButton(onPressed: () => context.pop()),
         title: Text(AppLocalizations.of(context)!.kegInformation),
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.fromLTRB(
+          16, 16, 16,
+          16 + MediaQuery.paddingOf(context).bottom,
+        ),
         children: [
           // Beer Information Section
           _buildSectionHeader(context, AppLocalizations.of(context)!.beerInformation),
@@ -140,6 +167,87 @@ class _KegInfoBody extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 24),
+          // Session Statistics Section
+          if (session.startTime != null) ...[
+            _buildSectionHeader(context, AppLocalizations.of(context)!.sessionStatistics),
+            const SizedBox(height: 8),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildInfoRow(
+                      context,
+                      AppLocalizations.of(context)!.volumeConsumed,
+                      TimeFormatter.formatVolumeMl(totalPouredMl, prefs: prefs),
+                    ),
+                    const Divider(height: 16),
+                    _buildInfoRow(
+                      context,
+                      AppLocalizations.of(context)!.volumeRemaining2,
+                      TimeFormatter.formatVolumeMl(volumeRemainingMl, prefs: prefs),
+                    ),
+                    const Divider(height: 16),
+                    _buildInfoRow(
+                      context,
+                      AppLocalizations.of(context)!.alcoholConsumed,
+                      TimeFormatter.formatAlcoholMl(alcoholConsumedMl, prefs: prefs),
+                    ),
+                    const Divider(height: 16),
+                    _buildInfoRow(
+                      context,
+                      AppLocalizations.of(context)!.alcoholRemaining,
+                      TimeFormatter.formatAlcoholMl(alcoholRemainingMl, prefs: prefs),
+                    ),
+                    if (beerPrice != null) ...[
+                      const Divider(height: 16),
+                      _buildInfoRow(
+                        context,
+                        AppLocalizations.of(context)!.pricePerBeer(
+                          StatsCalculator.referenceBeerLabel(prefs.volumeUnit),
+                        ),
+                        TimeFormatter.formatCurrency(beerPrice, prefs: prefs),
+                      ),
+                    ],
+                    if (elapsed != null) ...[
+                      const Divider(height: 16),
+                      _buildInfoRow(
+                        context,
+                        AppLocalizations.of(context)!.elapsedTime,
+                        TimeFormatter.formatDuration(elapsed),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+          // Charts section (only shown when session has been started)
+          if (session.startTime != null && pours.isNotEmpty) ...[
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: KegVolumeChart(
+                  session: session,
+                  pours: pours,
+                  prefs: prefs,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: PourRateChart(
+                  session: session,
+                  pours: pours,
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+          ],
         ],
       ),
     );

@@ -22,7 +22,10 @@ class PrivacyPolicyScreen extends StatelessWidget {
         title: const Text('Privacy Policy'),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        padding: EdgeInsets.fromLTRB(
+          24, 16, 24,
+          16 + MediaQuery.paddingOf(context).bottom,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

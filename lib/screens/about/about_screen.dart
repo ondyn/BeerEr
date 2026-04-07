@@ -25,7 +25,10 @@ class AboutScreen extends StatelessWidget {
         title: Text(AppLocalizations.of(context)!.about),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.fromLTRB(
+          24, 24, 24,
+          24 + MediaQuery.paddingOf(context).bottom,
+        ),
         child: Column(
           children: [
             const SizedBox(height: 32),

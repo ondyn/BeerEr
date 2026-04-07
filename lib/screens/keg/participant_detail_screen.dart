@@ -31,6 +31,7 @@ class ParticipantDetailScreen extends StatefulWidget {
     this.user,
     this.guest,
     this.onRemoveGuest,
+    this.onPourVolumeSelect,
   }) : assert(user != null || guest != null);
 
   final AppUser? user;
@@ -42,6 +43,9 @@ class ParticipantDetailScreen extends StatefulWidget {
 
   /// Called when the keg creator taps "Remove from session" for a guest.
   final VoidCallback? onRemoveGuest;
+
+  /// Called when the user taps the "Pour" button to choose a volume.
+  final VoidCallback? onPourVolumeSelect;
 
   @override
   State<ParticipantDetailScreen> createState() =>
@@ -124,10 +128,24 @@ class _ParticipantDetailScreenState extends State<ParticipantDetailScreen> {
         title: Text(_displayName),
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.fromLTRB(
+          16, 16, 16,
+          16 + MediaQuery.paddingOf(context).bottom,
+        ),
         children: [
           // Header
           _buildHeader(context),
+
+          // Pour volume selection button (only on active sessions)
+          if (widget.onPourVolumeSelect != null &&
+              session.status == KegStatus.active) ...[
+            const SizedBox(height: 12),
+            FilledButton.icon(
+              onPressed: widget.onPourVolumeSelect,
+              icon: const Icon(Icons.sports_bar),
+              label: Text(AppLocalizations.of(context)!.logPour),
+            ),
+          ],
           const SizedBox(height: 20),
 
           // Stats card

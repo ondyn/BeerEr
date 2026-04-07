@@ -29,7 +29,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   // Local mirrors for display preferences — seeded from Firestore on first
   // data emission and written back on every change.
   VolumeUnit? _volumeUnit;
-  String? _currency;
   DecimalSeparator? _decimalSeparator;
   String? _language;
 
@@ -58,11 +57,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     _savePreference('volume_unit', unit.key);
   }
 
-  void _setCurrency(String symbol) {
-    setState(() => _currency = symbol);
-    _savePreference('currency', symbol);
-  }
-
   void _setDecimalSeparator(DecimalSeparator sep) {
     setState(() => _decimalSeparator = sep);
     _savePreference('decimal_separator', sep.key);
@@ -71,6 +65,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   void _setLanguage(String langCode) {
     setState(() => _language = langCode);
     _savePreference('language', langCode);
+    // Also persist locally so the welcome screen uses the right locale after
+    // sign-out and on next cold start.
+    saveLocalLanguage(langCode);
   }
 
   /// Shows a confirmation dialog, then calls the `deleteUserAccount` Cloud
@@ -204,14 +201,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ? FormatPreferences.fromMap(appUser.preferences)
               : const FormatPreferences();
           final effectiveVolumeUnit = _volumeUnit ?? prefs.volumeUnit;
-          final effectiveCurrency = _currency ?? prefs.currency;
           final effectiveDecimalSep =
               _decimalSeparator ?? prefs.decimalSeparator;
           final effectiveLanguage =
               _language ?? (appUser?.preferences['language'] as String? ?? 'en');
 
           return ListView(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.fromLTRB(
+              16, 16, 16,
+              16 + MediaQuery.paddingOf(context).bottom,
+            ),
             children: [
               // Notifications
               _SectionHeader(title: AppLocalizations.of(context)!.notifications),
@@ -318,26 +317,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       .toList(),
                   onChanged: (val) {
                     if (val != null) _setVolumeUnit(val);
-                  },
-                ),
-                tileColor: BeerColors.surfaceVariant,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              const SizedBox(height: 4),
-              ListTile(
-                title: Text(AppLocalizations.of(context)!.currencySymbol),
-                trailing: DropdownButton<String>(
-                  value: effectiveCurrency,
-                  items: ['€', '\$', '£', 'Kč']
-                      .map((c) => DropdownMenuItem(
-                            value: c,
-                            child: Text(c),
-                          ))
-                      .toList(),
-                  onChanged: (val) {
-                    if (val != null) _setCurrency(val);
                   },
                 ),
                 tileColor: BeerColors.surfaceVariant,

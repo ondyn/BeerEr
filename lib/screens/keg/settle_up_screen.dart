@@ -3,7 +3,6 @@ import 'package:beerer/providers/providers.dart';
 import 'package:beerer/theme/beer_theme.dart';
 import 'package:beerer/utils/stats_calculator.dart';
 import 'package:beerer/utils/time_formatter.dart';
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -36,9 +35,14 @@ class SettleUpScreen extends ConsumerWidget {
 
           final pours = poursAsync.value ?? [];
           final accounts = accountsAsync.value ?? [];
+          final prefs = ref.watch(formatPreferencesProvider)
+              .withCurrency(session.currency);
 
           return ListView(
-            padding: const EdgeInsets.all(24),
+            padding: EdgeInsets.fromLTRB(
+              24, 24, 24,
+              24 + MediaQuery.paddingOf(context).bottom,
+            ),
             children: [
               Text(
                 AppLocalizations.of(context)!.reviewBillSplit,
@@ -84,7 +88,7 @@ class SettleUpScreen extends ConsumerWidget {
                             style: Theme.of(context).textTheme.bodySmall,
                           ),
                           Text(
-                            AppLocalizations.of(context)!.totalWithAmount(TimeFormatter.formatCurrency(StatsCalculator.groupCost(pours, account.memberUserIds, session.kegPrice, session.volumeTotalMl))),
+                            AppLocalizations.of(context)!.totalWithAmount(TimeFormatter.formatCurrency(StatsCalculator.groupCost(pours, account.memberUserIds, session.kegPrice, session.volumeTotalMl), prefs: prefs)),
                             style: Theme.of(context)
                                 .textTheme
                                 .bodyMedium
@@ -122,24 +126,13 @@ class SettleUpScreen extends ConsumerWidget {
   }
 
   Future<void> _export(BuildContext context) async {
-    try {
-      final callable =
-          FirebaseFunctions.instanceFor(region: 'europe-west1')
-              .httpsCallable('exportToSettleUp');
-      await callable.call<dynamic>({'sessionId': sessionId});
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-            content: Text(AppLocalizations.of(context)!.exportedSuccessfully),
-          ),
-        );
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.exportFailed(e.toString()))),
-        );
-      }
+    // Settle Up export is not yet implemented without Cloud Functions.
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.settleUpInfo),
+        ),
+      );
     }
   }
 }

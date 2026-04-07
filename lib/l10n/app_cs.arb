@@ -11,6 +11,10 @@
   "estimatedBac": "Odhad BAC",
   "drinkResponsibly": "Pijte prosím zodpovědně.",
   "kegInformation": "Informace o sudu",
+  "kegVolumeChart": "Objem sudu v čase",
+  "pourRateChart": "Rychlost čepování v čase",
+  "volumeRemaining": "Zbývá",
+  "poursPerHour": "čepů/h",
   "beerInformation": "Informace o pivu",
   "kegInfo": "Informace o sudu",
   "beerName": "Název",
@@ -68,6 +72,11 @@
   "alreadyHaveOne": "Již máte účet? ",
   "signInLink": "Přihlásit se ›",
   "signInFailed": "Přihlášení se nezdařilo. Zkuste to prosím znovu.",
+  "signInWithGoogle": "Přihlásit se přes Google",
+  "or": "nebo",
+  "googleSignInFailed": "Přihlášení přes Google se nezdařilo. Zkuste to prosím znovu.",
+  "googleSignInCancelled": "Přihlášení přes Google bylo zrušeno.",
+  "accountExistsWithDifferentCredential": "Účet s tímto e-mailem již existuje s jiným způsobem přihlášení. Zkuste se přihlásit e-mailem a heslem.",
   "verifyEmailMessage": "Ověřte prosím svou e-mailovou adresu. Poslali jsme vám ověřovací odkaz.",
   "accountCreatedVerify": "Účet vytvořen. Před přihlášením ověřte svůj e-mail.",
   "registrationFailed": "Registrace se nezdařila. Zkuste to prosím znovu.",
@@ -320,5 +329,23 @@
   "deleteAccountConfirmBody": "Tato akce je nevratná. Vaše osobní údaje budou odstraněny a účet bude deaktivován. Vaše záznamy o čepování v akcích ostatních uživatelů zůstanou jako 'Smazaný uživatel'.",
   "deleteAccountSuccess": "Váš účet byl smazán. Je nám líto, že odcházíte!",
   "deleteAccountFailed": "Nepodařilo se smazat účet: {message}",
-  "deleteAccountConfirmButton": "Smazat můj účet"
+  "deleteAccountConfirmButton": "Smazat můj účet",
+  "volumeConsumed": "Spotřebovaný objem",
+  "volumeRemaining2": "Zbývající objem",
+  "alcoholConsumed": "Spotřebovaný alkohol",
+  "alcoholRemaining": "Zbývající alkohol",
+  "pricePerBeer": "Cena za {beerSize}",
+  "@pricePerBeer": {
+    "placeholders": {
+      "beerSize": {
+        "type": "String"
+      }
+    }
+  },
+  "elapsedTime": "Uplynulý čas",
+  "sessionStatistics": "Statistiky sezení",
+  "notifSlowdownTitle": "🍺 Máte žízeň?",
+  "notifSlowdownBody": "Vypadá to, že jste zpomalili—dáte si další kolo?",
+  "notifBacZeroTitle": "🚗 Můžete řídit!",
+  "notifBacZeroBody": "Váš odhadný BAC dosáhl nuly. Jezděte bezpečně!"
 }
