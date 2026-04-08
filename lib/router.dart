@@ -55,6 +55,7 @@ GoRouter router(Ref ref) {
         '/auth/sign-in',
         '/auth/register',
         '/auth/forgot-password',
+        '/auth/complete-profile',
       ];
       final isAuthRoute = authPaths.contains(path);
 
@@ -64,7 +65,7 @@ GoRouter router(Ref ref) {
       if (!loggedIn && !isAuthRoute && !isJoinRoute) {
         return '/welcome';
       }
-      if (loggedIn && isAuthRoute) {
+      if (loggedIn && isAuthRoute && path != '/auth/complete-profile') {
         return '/home';
       }
       return null;
@@ -93,6 +94,11 @@ GoRouter router(Ref ref) {
         path: '/auth/forgot-password',
         builder: (context, state) =>
             const ForgotPasswordScreen(),
+      ),
+      GoRoute(
+        path: '/auth/complete-profile',
+        builder: (context, state) =>
+            const CompleteProfileScreen(),
       ),
 
       // Main

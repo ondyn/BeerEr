@@ -272,6 +272,18 @@ class AppLocalizationsDe extends AppLocalizations {
   String get profileDetails => 'Profildetails';
 
   @override
+  String get completeProfile => 'Profil vervollständigen';
+
+  @override
+  String get completeProfileSubtitle => 'Füge ein paar Details für genaue Statistiken und BAK-Schätzung hinzu.';
+
+  @override
+  String get skip => 'Überspringen';
+
+  @override
+  String get pleaseEnterNickname => 'Bitte gib einen Spitznamen ein';
+
+  @override
   String get nickname => 'Spitzname';
 
   @override
@@ -321,6 +333,12 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get showBacEstimate => 'BAK-Schätzung anzeigen';
+
+  @override
+  String get showPersonalInfoToOthers => 'Persönliche Daten anderen zeigen';
+
+  @override
+  String get personalInfo => 'Persönliche Daten';
 
   @override
   String get setWeightForBac => 'Geben Sie Ihr Gewicht im Profil für BAK ein';
@@ -458,7 +476,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get sessionNotFound => 'Sitzung nicht gefunden';
 
   @override
-  String get searchBeerOnBeerWeb => 'Bier auf BeerWeb suchen…';
+  String get searchBeer => 'Bier suchen…';
 
   @override
   String get egKozel => 'z.B. Kozel';
@@ -1067,6 +1085,18 @@ class AppLocalizationsDe extends AppLocalizations {
   String pricePerBeer(String beerSize) {
     return 'Preis pro $beerSize';
   }
+
+  @override
+  String get breweryAddress => 'Adresse';
+
+  @override
+  String get breweryRegion => 'Region';
+
+  @override
+  String get breweryYearFounded => 'Gründungsjahr';
+
+  @override
+  String get breweryWebsite => 'Website';
 
   @override
   String get elapsedTime => 'Vergangene Zeit';

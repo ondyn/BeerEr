@@ -54,6 +54,7 @@ class KegVolumeChart extends StatelessWidget {
 
     final maxY = session.volumeTotalMl * 1.05;
     final maxX = spots.last.x;
+    final hourInterval = _hourInterval(maxX);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -69,6 +70,7 @@ class KegVolumeChart extends StatelessWidget {
           height: 200,
           child: LineChart(
             LineChartData(
+              clipData: const FlClipData.all(),
               gridData: FlGridData(
                 show: true,
                 drawVerticalLine: false,
@@ -89,11 +91,22 @@ class KegVolumeChart extends StatelessWidget {
                   sideTitles: SideTitles(
                     showTitles: true,
                     reservedSize: 28,
-                    interval: _interval(maxX, 5),
-                    getTitlesWidget: (value, meta) => Text(
-                      _formatMinutes(value.toInt(), maxX),
-                      style: const TextStyle(fontSize: 10),
-                    ),
+                    interval: hourInterval,
+                    getTitlesWidget: (value, meta) {
+                      // Hide labels too close to min/max to avoid overlap
+                      if ((value - meta.min).abs() < hourInterval * 0.3 &&
+                          value != meta.min) {
+                        return const SizedBox.shrink();
+                      }
+                      if ((value - meta.max).abs() < hourInterval * 0.3 &&
+                          value != meta.max) {
+                        return const SizedBox.shrink();
+                      }
+                      return Text(
+                        _formatAsClockTime(startTime, value.toInt()),
+                        style: const TextStyle(fontSize: 10),
+                      );
+                    },
                   ),
                 ),
                 leftTitles: AxisTitles(
@@ -192,6 +205,7 @@ class PourRateChart extends StatelessWidget {
     final maxRate = spots.fold(0.0, (double m, s) => math.max(m, s.y));
     final maxY = math.max(2.0, (maxRate * 1.2).ceilToDouble());
     final maxX = spots.last.x;
+    final hourInterval = _hourInterval(maxX);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -207,6 +221,7 @@ class PourRateChart extends StatelessWidget {
           height: 200,
           child: LineChart(
             LineChartData(
+              clipData: const FlClipData.all(),
               gridData: FlGridData(
                 show: true,
                 drawVerticalLine: false,
@@ -227,11 +242,22 @@ class PourRateChart extends StatelessWidget {
                   sideTitles: SideTitles(
                     showTitles: true,
                     reservedSize: 28,
-                    interval: _interval(maxX, 5),
-                    getTitlesWidget: (value, meta) => Text(
-                      _formatMinutes(value.toInt(), maxX),
-                      style: const TextStyle(fontSize: 10),
-                    ),
+                    interval: hourInterval,
+                    getTitlesWidget: (value, meta) {
+                      // Hide labels too close to min/max to avoid overlap
+                      if ((value - meta.min).abs() < hourInterval * 0.3 &&
+                          value != meta.min) {
+                        return const SizedBox.shrink();
+                      }
+                      if ((value - meta.max).abs() < hourInterval * 0.3 &&
+                          value != meta.max) {
+                        return const SizedBox.shrink();
+                      }
+                      return Text(
+                        _formatAsClockTime(startTime, value.toInt()),
+                        style: const TextStyle(fontSize: 10),
+                      );
+                    },
                   ),
                 ),
                 leftTitles: AxisTitles(
@@ -292,11 +318,23 @@ double _interval(double range, int desiredTicks) {
   return math.max(1, (nice * magnitude).ceilToDouble());
 }
 
-String _formatMinutes(int minuteValue, double maxMinutes) {
-  final diff = minuteValue - maxMinutes.round();
-  if (diff.abs() <= 1) return 'now';
-  if (diff.abs() < 60) return '${diff}m';
-  final h = diff ~/ 60;
-  final m = diff.abs() % 60;
-  return m == 0 ? '${h}h' : '${h}h${m}m';
+/// Returns an interval in minutes that aligns to round hours.
+///
+/// Scales up for very long sessions so labels never overlap.
+double _hourInterval(double totalMinutes) {
+  if (totalMinutes <= 60) return 15;
+  if (totalMinutes <= 120) return 30;
+  if (totalMinutes <= 360) return 60;
+  if (totalMinutes <= 720) return 120;
+  if (totalMinutes <= 1440) return 240;
+  if (totalMinutes <= 2880) return 480;
+  return 720;
+}
+
+/// Formats a minute offset from [startTime] as a clock time (e.g. "14:00").
+String _formatAsClockTime(DateTime startTime, int minuteOffset) {
+  final time = startTime.add(Duration(minutes: minuteOffset));
+  final h = time.hour.toString().padLeft(2, '0');
+  final m = time.minute.toString().padLeft(2, '0');
+  return '$h:$m';
 }

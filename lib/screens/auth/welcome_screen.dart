@@ -90,8 +90,14 @@ class WelcomeScreen extends ConsumerWidget {
         }
       }
 
-      debugPrint('[GoogleSignIn] Success — navigating to /home');
-      if (context.mounted) context.go('/home');
+      debugPrint('[GoogleSignIn] Success — navigating');
+      if (context.mounted) {
+        if (existingProfile == null) {
+          context.go('/auth/complete-profile');
+        } else {
+          context.go('/home');
+        }
+      }
     } on FirebaseAuthException catch (e) {
       debugPrint('[GoogleSignIn] FirebaseAuthException: code=${e.code}, message=${e.message}');
       if (context.mounted) {

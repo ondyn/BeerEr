@@ -25,6 +25,10 @@ abstract class KegSession with _$KegSession {
     String? joinLink,
     // Beer detail fields sourced from BeerWeb.cz
     String? brewery,
+    String? breweryAddress,
+    String? breweryRegion,
+    String? breweryYearFounded,
+    String? breweryWebsite,
     String? malt,
     String? fermentation,
     String? beerType,

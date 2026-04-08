@@ -1,6 +1,7 @@
 import 'package:beerer/l10n/app_localizations.dart';
 import 'package:beerer/models/models.dart';
 import 'package:beerer/providers/providers.dart';
+import 'package:beerer/screens/keg/fullscreen_chart_screen.dart';
 import 'package:beerer/theme/beer_theme.dart';
 import 'package:beerer/utils/stats_calculator.dart';
 import 'package:beerer/utils/time_formatter.dart';
@@ -9,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 /// Screen displaying detailed keg and beer information.
 class KegInfoScreen extends ConsumerWidget {
@@ -87,6 +89,32 @@ class _KegInfoBody extends ConsumerWidget {
           16 + MediaQuery.paddingOf(context).bottom,
         ),
         children: [
+          // Brewery section (only when brewery info is available)
+          if (_hasBreweryInfo(session)) ...[  
+            _buildSectionHeader(context, AppLocalizations.of(context)!.brewery),
+            const SizedBox(height: 8),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (session.brewery != null) ...
+                      _breweryRow(context, null, session.brewery!),
+                    if (session.breweryAddress != null) ...
+                      _breweryRow(context, AppLocalizations.of(context)!.breweryAddress, session.breweryAddress!),
+                    if (session.breweryRegion != null) ...
+                      _breweryRow(context, AppLocalizations.of(context)!.breweryRegion, session.breweryRegion!),
+                    if (session.breweryYearFounded != null) ...
+                      _breweryRow(context, AppLocalizations.of(context)!.breweryYearFounded, session.breweryYearFounded!),
+                    if (session.breweryWebsite != null)
+                      _buildWebsiteRow(context, session.breweryWebsite!),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
           // Beer Information Section
           _buildSectionHeader(context, AppLocalizations.of(context)!.beerInformation),
           const SizedBox(height: 8),
@@ -100,29 +128,31 @@ class _KegInfoBody extends ConsumerWidget {
                   const Divider(height: 16),
                   _buildInfoRow(context, AppLocalizations.of(context)!.alcoholPercent,
                       '${session.alcoholPercent.toStringAsFixed(1)}%'),
-                  const Divider(height: 16),
-                  if (session.brewery != null)
-                    _buildInfoRow(context, AppLocalizations.of(context)!.brewery, session.brewery!),
-                  if (session.brewery != null) const Divider(height: 16),
-                  if (session.malt != null)
+                  if (session.malt != null) ...[
+                    const Divider(height: 16),
                     _buildInfoRow(context, AppLocalizations.of(context)!.malt, session.malt!),
-                  if (session.malt != null) const Divider(height: 16),
-                  if (session.fermentation != null)
+                  ],
+                  if (session.fermentation != null) ...[
+                    const Divider(height: 16),
                     _buildInfoRow(
                         context, AppLocalizations.of(context)!.fermentation, session.fermentation!),
-                  if (session.fermentation != null)
+                  ],
+                  if (session.beerType != null) ...[
                     const Divider(height: 16),
-                  if (session.beerType != null)
                     _buildInfoRow(context, AppLocalizations.of(context)!.beerType, session.beerType!),
-                  if (session.beerType != null) const Divider(height: 16),
-                  if (session.beerGroup != null)
+                  ],
+                  if (session.beerGroup != null) ...[
+                    const Divider(height: 16),
                     _buildInfoRow(context, AppLocalizations.of(context)!.beerGroup, session.beerGroup!),
-                  if (session.beerGroup != null) const Divider(height: 16),
-                  if (session.beerStyle != null)
+                  ],
+                  if (session.beerStyle != null) ...[
+                    const Divider(height: 16),
                     _buildInfoRow(context, AppLocalizations.of(context)!.beerStyle, session.beerStyle!),
-                  if (session.beerStyle != null) const Divider(height: 16),
-                  if (session.degreePlato != null)
+                  ],
+                  if (session.degreePlato != null) ...[
+                    const Divider(height: 16),
                     _buildInfoRow(context, AppLocalizations.of(context)!.degreePlato, session.degreePlato!),
+                  ],
                 ],
               ),
             ),
@@ -226,23 +256,47 @@ class _KegInfoBody extends ConsumerWidget {
           ],
           // Charts section (only shown when session has been started)
           if (session.startTime != null && pours.isNotEmpty) ...[
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: KegVolumeChart(
-                  session: session,
-                  pours: pours,
-                  prefs: prefs,
+            GestureDetector(
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => FullscreenChartScreen(
+                    session: session,
+                    pours: pours,
+                    chartType: 'volume',
+                    prefs: prefs,
+                  ),
+                ),
+              ),
+              child: Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: KegVolumeChart(
+                    session: session,
+                    pours: pours,
+                    prefs: prefs,
+                  ),
                 ),
               ),
             ),
             const SizedBox(height: 12),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: PourRateChart(
-                  session: session,
-                  pours: pours,
+            GestureDetector(
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => FullscreenChartScreen(
+                    session: session,
+                    pours: pours,
+                    chartType: 'rate',
+                    prefs: prefs,
+                  ),
+                ),
+              ),
+              child: Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: PourRateChart(
+                    session: session,
+                    pours: pours,
+                  ),
                 ),
               ),
             ),
@@ -250,6 +304,65 @@ class _KegInfoBody extends ConsumerWidget {
           ],
         ],
       ),
+    );
+  }
+
+  bool _hasBreweryInfo(KegSession session) =>
+      session.brewery != null ||
+      session.breweryAddress != null ||
+      session.breweryRegion != null ||
+      session.breweryYearFounded != null ||
+      session.breweryWebsite != null;
+
+  /// Returns a divider + info row pair, or just an info row if [label] is null.
+  List<Widget> _breweryRow(BuildContext context, String? label, String value) {
+    final isFirst = label == null;
+    return [
+      if (!isFirst) const Divider(height: 16),
+      _buildInfoRow(context, label ?? '', value),
+    ];
+  }
+
+  Widget _buildWebsiteRow(BuildContext context, String url) {
+    final l = AppLocalizations.of(context)!;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Divider(height: 16),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              width: 120,
+              child: Text(
+                l.breweryWebsite,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: BeerColors.onSurfaceSecondary,
+                      fontWeight: FontWeight.w500,
+                    ),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: GestureDetector(
+                onTap: () => launchUrl(
+                  Uri.parse(url),
+                  mode: LaunchMode.externalApplication,
+                ),
+                child: Text(
+                  url,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: BeerColors.primaryAmber,
+                        decoration: TextDecoration.underline,
+                        decorationColor: BeerColors.primaryAmber,
+                      ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 

@@ -1619,7 +1619,7 @@ class _UnifiedParticipantRow extends StatelessWidget {
                     onPressed: onPour,
                     style: FilledButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 6),
+                          horizontal: 10, vertical: 14),
                       minimumSize: Size.zero,
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),

@@ -385,14 +385,28 @@ class _JointAccountSheetState extends ConsumerState<JointAccountSheet> {
     String uid,
   ) async {
     final repo = ref.read(jointAccountRepositoryProvider);
-    if (account.creatorId == uid) {
-      // Creator deletes the whole account.
-      await repo.deleteAccount(account.id);
-    } else {
-      // Member just leaves.
-      await repo.removeMember(account.id, uid);
+    try {
+      if (account.creatorId == uid) {
+        // Creator deletes the whole account.
+        await repo.deleteAccount(account.id);
+      } else {
+        // Member just leaves.
+        await repo.removeMember(account.id, uid);
+      }
+      if (mounted) Navigator.of(context).pop();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              content: Text(
+                AppLocalizations.of(context)!.errorWithMessage(e.toString()),
+              ),
+            ),
+          );
+      }
     }
-    if (mounted) Navigator.of(context).pop();
   }
 
   void _showAddMemberPicker(
@@ -403,21 +417,12 @@ class _JointAccountSheetState extends ConsumerState<JointAccountSheet> {
         .where((id) => !account.memberUserIds.contains(id))
         .toList();
 
-    if (eligibleIds.isEmpty) {
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-            SnackBar(
-            content: Text(AppLocalizations.of(context)!.allParticipantsInGroup),
-          ),
-        );
-      return;
-    }
-
     showModalBottomSheet<void>(
       context: context,
       builder: (_) => _MemberPickerSheet(
         eligibleIds: eligibleIds,
+        sessionId: widget.sessionId,
+        existingMemberIds: account.memberUserIds,
         onSelect: (userId) async {
           final repo = ref.read(jointAccountRepositoryProvider);
           final messenger = ScaffoldMessenger.of(context);
@@ -446,19 +451,26 @@ class _JointAccountSheetState extends ConsumerState<JointAccountSheet> {
   }
 }
 
-/// Simple picker sheet listing eligible participants to add.
+/// Simple picker sheet listing eligible participants (and guests) to add.
 class _MemberPickerSheet extends ConsumerWidget {
   const _MemberPickerSheet({
     required this.eligibleIds,
+    required this.sessionId,
+    required this.existingMemberIds,
     required this.onSelect,
   });
 
   final List<String> eligibleIds;
+  final String sessionId;
+  final List<String> existingMemberIds;
   final Future<void> Function(String userId) onSelect;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final usersAsync = ref.watch(watchUsersProvider(eligibleIds));
+    final usersAsync = eligibleIds.isNotEmpty
+        ? ref.watch(watchUsersProvider(eligibleIds))
+        : const AsyncValue<List<AppUser>>.data([]);
+    final guestsAsync = ref.watch(watchManualUsersProvider(sessionId));
 
     return Padding(
       padding: EdgeInsets.only(
@@ -477,26 +489,60 @@ class _MemberPickerSheet extends ConsumerWidget {
           ),
           const SizedBox(height: 12),
           usersAsync.when(
-            data: (users) => Column(
-              children: [
-                for (final user in users)
-                  ListTile(
-                    leading: CircleAvatar(
-                      radius: 16,
-                      backgroundColor: BeerColors.surfaceVariant,
-                      child: Text(
-                        user.displayName[0].toUpperCase(),
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                    ),
-                    title: Text(user.displayName),
-                    onTap: () async {
-                      await onSelect(user.id);
-                      if (context.mounted) Navigator.of(context).pop();
-                    },
+            data: (users) {
+              final guestList = guestsAsync.asData?.value ?? [];
+              final eligibleGuests = guestList
+                  .where((g) => !existingMemberIds.contains(g.id))
+                  .toList();
+
+              if (users.isEmpty && eligibleGuests.isEmpty) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: Text(
+                    AppLocalizations.of(context)!.allParticipantsInGroup,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: BeerColors.onSurfaceSecondary,
+                        ),
                   ),
-              ],
-            ),
+                );
+              }
+
+              return Column(
+                children: [
+                  for (final user in users)
+                    ListTile(
+                      leading: CircleAvatar(
+                        radius: 16,
+                        backgroundColor: BeerColors.surfaceVariant,
+                        child: Text(
+                          user.displayName[0].toUpperCase(),
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                      ),
+                      title: Text(user.displayName),
+                      onTap: () async {
+                        await onSelect(user.id);
+                        if (context.mounted) Navigator.of(context).pop();
+                      },
+                    ),
+                  for (final guest in eligibleGuests)
+                    ListTile(
+                      leading: CircleAvatar(
+                        radius: 16,
+                        backgroundColor: BeerColors.surfaceVariant,
+                        child: const Icon(Icons.person_outline, size: 16),
+                      ),
+                      title: Text(guest.nickname),
+                      subtitle: Text(AppLocalizations.of(context)!.guest),
+                      onTap: () async {
+                        await onSelect(guest.id);
+                        if (context.mounted) Navigator.of(context).pop();
+                      },
+                    ),
+                ],
+              );
+            },
             loading: () => const Center(
               child: CircularProgressIndicator(strokeWidth: 2),
             ),

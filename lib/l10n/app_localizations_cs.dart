@@ -272,6 +272,18 @@ class AppLocalizationsCs extends AppLocalizations {
   String get profileDetails => 'Údaje profilu';
 
   @override
+  String get completeProfile => 'Doplňte svůj profil';
+
+  @override
+  String get completeProfileSubtitle => 'Přidejte pár údajů pro přesné statistiky a odhad hladiny alkoholu.';
+
+  @override
+  String get skip => 'Přeskočit';
+
+  @override
+  String get pleaseEnterNickname => 'Zadejte prosím přezdívku';
+
+  @override
   String get nickname => 'Přezdívka';
 
   @override
@@ -321,6 +333,12 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get showBacEstimate => 'Zobrazit odhad BAC';
+
+  @override
+  String get showPersonalInfoToOthers => 'Zobrazit osobní údaje ostatním';
+
+  @override
+  String get personalInfo => 'Osobní údaje';
 
   @override
   String get setWeightForBac => 'Pro výpočet BAC nastavte váhu v profilu';
@@ -458,7 +476,7 @@ class AppLocalizationsCs extends AppLocalizations {
   String get sessionNotFound => 'Akce nenalezena';
 
   @override
-  String get searchBeerOnBeerWeb => 'Hledat pivo na BeerWeb…';
+  String get searchBeer => 'Hledat pivo…';
 
   @override
   String get egKozel => 'např. Kozel';
@@ -1067,6 +1085,18 @@ class AppLocalizationsCs extends AppLocalizations {
   String pricePerBeer(String beerSize) {
     return 'Cena za $beerSize';
   }
+
+  @override
+  String get breweryAddress => 'Adresa';
+
+  @override
+  String get breweryRegion => 'Region';
+
+  @override
+  String get breweryYearFounded => 'Rok založení';
+
+  @override
+  String get breweryWebsite => 'Web';
 
   @override
   String get elapsedTime => 'Uplynulý čas';

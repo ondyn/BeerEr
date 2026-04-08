@@ -191,7 +191,44 @@ service cloud.firestore {
                     && isParticipant(resource.data.session_id);
 
       allow delete: if isSignedIn()
-                    && isSessionCreator(resource.data.session_id);
+                    && (
+                      isSessionCreator(resource.data.session_id)
+                      || resource.data.creator_id == uid()
+                    );
+    }
+
+    // ---------------------------------------------------------------
+    // Beer database
+    //
+    // • READ:  any authenticated user (search during keg creation).
+    // • WRITE: only users listed in the beerDbEditors collection
+    //          (one doc per editor uid).
+    // ---------------------------------------------------------------
+
+    /// Returns true when the authenticated user is a beer DB editor.
+    function isBeerDbEditor() {
+      return exists(/databases/$(database)/documents/beerDbEditors/$(uid()));
+    }
+
+    match /breweries/{breweryId} {
+      allow read:  if isSignedIn();
+      allow write: if isSignedIn() && isBeerDbEditor();
+    }
+
+    match /beers/{beerId} {
+      allow read:  if isSignedIn();
+      allow write: if isSignedIn() && isBeerDbEditor();
+    }
+
+    // ---------------------------------------------------------------
+    // beerDbEditors/{userId}
+    //
+    // Whitelist of users allowed to edit breweries/beers.
+    // Only manageable via Firebase Console or Admin SDK.
+    // ---------------------------------------------------------------
+    match /beerDbEditors/{userId} {
+      allow read:  if isSignedIn() && uid() == userId;
+      allow write: if false;
     }
 
     // ---------------------------------------------------------------

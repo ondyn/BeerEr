@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:beerer/l10n/app_localizations.dart';
 import 'package:beerer/models/models.dart';
@@ -7,11 +6,11 @@ import 'package:beerer/providers/providers.dart';
 import 'package:beerer/repositories/keg_repository.dart';
 import 'package:beerer/theme/beer_theme.dart';
 import 'package:beerer/utils/format_preferences.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:http/http.dart' as http;
 
 /// Create keg session — two-step form.
 class CreateKegScreen extends ConsumerStatefulWidget {
@@ -27,9 +26,9 @@ class _CreateKegScreenState extends ConsumerState<CreateKegScreen> {
   final _formKey2 = GlobalKey<FormState>();
 
   // Step 1 fields
-  final _beerWebSearchController = TextEditingController();
+  final _beerSearchController = TextEditingController();
   final _beerNameController = TextEditingController();
-  // Optional beer-detail fields sourced from BeerWeb.cz
+  // Optional beer-detail fields
   final _alcoholController = TextEditingController();
   final _breweryController = TextEditingController();
   final _maltController = TextEditingController();
@@ -38,9 +37,14 @@ class _CreateKegScreenState extends ConsumerState<CreateKegScreen> {
   final _beerGroupController = TextEditingController();
   final _beerStyleController = TextEditingController();
   final _degreePlatoController = TextEditingController();
-  List<_BeerWebResult> _beerWebResults = [];
-  bool _beerWebSearching = false;
+  List<_BeerSearchResult> _beerSearchResults = [];
+  bool _beerSearching = false;
   Timer? _debounce;
+  // Brewery details fetched when a beer is selected
+  String? _breweryAddress;
+  String? _breweryRegion;
+  String? _breweryYearFounded;
+  String? _breweryWebsite;
 
   // Step 2 fields
   final _volumeController = TextEditingController(text: '30');
@@ -54,7 +58,7 @@ class _CreateKegScreenState extends ConsumerState<CreateKegScreen> {
   @override
   void dispose() {
     _debounce?.cancel();
-    _beerWebSearchController.dispose();
+    _beerSearchController.dispose();
     _beerNameController.dispose();
     _alcoholController.dispose();
     _breweryController.dispose();
@@ -69,234 +73,171 @@ class _CreateKegScreenState extends ConsumerState<CreateKegScreen> {
     super.dispose();
   }
 
-  void _onBeerWebSearchChanged(String query) {
+  void _onBeerSearchChanged(String query) {
     _debounce?.cancel();
-    if (query.trim().length < 3) {
-      setState(() => _beerWebResults = []);
+    final trimmed = query.trim();
+    if (trimmed.length < 3) {
+      setState(() => _beerSearchResults = []);
       return;
     }
-    _debounce = Timer(const Duration(milliseconds: 400), () {
-      _searchBeerWeb(query.trim());
-    });
+    // Immediate search at exactly 3 chars; longer debounce for 4+ chars.
+    if (trimmed.length == 3) {
+      _searchBeers(trimmed);
+    } else {
+      _debounce = Timer(const Duration(milliseconds: 600), () {
+        _searchBeers(trimmed);
+      });
+    }
   }
 
-  Future<void> _searchBeerWeb(String query) async {
-    setState(() => _beerWebSearching = true);
+  /// Strips diacritics/accents from [input] using Unicode NFD decomposition.
+  static String _removeDiacritics(String input) {
+    // Decompose to NFD, then strip combining marks (U+0300..U+036F).
+    final nfd = input.replaceAllMapped(
+      RegExp(r'[\u00C0-\u024F]'),
+      (m) {
+        // Normalize the single char via a lookup of common Latin accented chars.
+        return m.group(0)!;
+      },
+    );
+    // Use a comprehensive approach: normalize and strip combining characters.
+    return nfd
+        .replaceAll(RegExp('[\u0300-\u036f]'), '')
+        .replaceAllMapped(RegExp(r'[àáâãäå]'), (_) => 'a')
+        .replaceAllMapped(RegExp(r'[èéêë]'), (_) => 'e')
+        .replaceAllMapped(RegExp(r'[ìíîï]'), (_) => 'i')
+        .replaceAllMapped(RegExp(r'[òóôõö]'), (_) => 'o')
+        .replaceAllMapped(RegExp(r'[ùúûü]'), (_) => 'u')
+        .replaceAllMapped(RegExp(r'[ýÿ]'), (_) => 'y')
+        .replaceAllMapped(RegExp(r'[ñ]'), (_) => 'n')
+        .replaceAllMapped(RegExp(r'[čć]'), (_) => 'c')
+        .replaceAllMapped(RegExp(r'[řŕ]'), (_) => 'r')
+        .replaceAllMapped(RegExp(r'[šś]'), (_) => 's')
+        .replaceAllMapped(RegExp(r'[žź]'), (_) => 'z')
+        .replaceAllMapped(RegExp(r'[ťṫ]'), (_) => 't')
+        .replaceAllMapped(RegExp(r'[ďḋ]'), (_) => 'd')
+        .replaceAllMapped(RegExp(r'[ňṅ]'), (_) => 'n')
+        .replaceAllMapped(RegExp(r'[ůű]'), (_) => 'u')
+        .replaceAllMapped(RegExp(r'[ě]'), (_) => 'e')
+        .replaceAllMapped(RegExp(r'[ľĺ]'), (_) => 'l')
+        .replaceAllMapped(RegExp(r'[ä]'), (_) => 'a')
+        .replaceAllMapped(RegExp(r'[ö]'), (_) => 'o')
+        .replaceAllMapped(RegExp(r'[ü]'), (_) => 'u');
+  }
+
+  Future<void> _searchBeers(String query) async {
+    setState(() => _beerSearching = true);
     try {
-      final uri = Uri.parse(
-        'https://beerweb.cz/api/Search?term=${Uri.encodeComponent(query)}',
-      );
-      final response = await http.get(uri);
-      if (response.statusCode == 200) {
-        final results = _parseBeerWebResponse(response.body);
-        setState(() => _beerWebResults = results);
-      } else {
-        setState(() => _beerWebResults = []);
+      // Normalize: lowercase, remove diacritics, split into words.
+      final normalized = _removeDiacritics(query.toLowerCase());
+      final words = normalized
+          .split(RegExp(r'[\s\W]+'))
+          .where((w) => w.length >= 2)
+          .toList();
+      if (words.isEmpty) {
+        if (mounted) setState(() => _beerSearchResults = []);
+        return;
       }
+
+      // Use the longest word for the Firestore array-contains query
+      // (most selective). Remaining words are filtered client-side.
+      final queryWord = words.reduce(
+        (a, b) => a.length >= b.length ? a : b,
+      );
+
+      final snapshot = await FirebaseFirestore.instance
+          .collection('beers')
+          .where('search_terms', arrayContains: queryWord)
+          .limit(50)
+          .get();
+
+      // Client-side: filter results so ALL query words appear in the
+      // combined name + brewery (both normalized).
+      final results = <_BeerSearchResult>[];
+      for (final doc in snapshot.docs) {
+        final data = doc.data();
+        final nameLower = data['name_lower'] as String? ?? '';
+        final breweryLower = _removeDiacritics(
+          (data['brewery_name'] as String? ?? '').toLowerCase(),
+        );
+        final combined = '$nameLower $breweryLower';
+        final matches = words.every((w) => combined.contains(w));
+        if (matches) {
+          results.add(_BeerSearchResult(
+            name: data['name'] as String? ?? '',
+            breweryName: data['brewery_name'] as String? ?? '',
+            breweryId: data['brewery_id'] as String?,
+            alcoholPercent: (data['alcohol_percent'] as num?)?.toDouble(),
+            epm: data['epm'] as String?,
+            malt: data['malt'] as String?,
+            fermentation: data['fermentation'] as String?,
+            type: data['type'] as String?,
+            group: data['group'] as String?,
+            beerStyle: data['beer_style'] as String?,
+          ));
+        }
+      }
+
+      if (mounted) setState(() => _beerSearchResults = results);
     } catch (_) {
-      setState(() => _beerWebResults = []);
+      if (mounted) setState(() => _beerSearchResults = []);
     } finally {
-      setState(() => _beerWebSearching = false);
+      if (mounted) setState(() => _beerSearching = false);
     }
   }
 
-  /// Parses BeerWeb JSON (or XML fallback) and returns only beer items
-  /// whose Name ends with ", pivo".
-  List<_BeerWebResult> _parseBeerWebResponse(String body) {
-    final results = <_BeerWebResult>[];
-    try {
-      final list = jsonDecode(body) as List<dynamic>;
-      for (final item in list) {
-        final name = (item as Map<String, dynamic>)['Name'] as String? ?? '';
-        final url = item['Url'] as String? ?? '';
-        if (name.endsWith(', pivo')) {
-          results.add(_BeerWebResult(name: name, url: url));
-        }
-      }
-    } catch (_) {
-      // Fallback: try XML regex if server ever returns XML
-      final blockRe = RegExp(
-        r'<NameUrlViewModel>(.*?)</NameUrlViewModel>',
-        dotAll: true,
-      );
-      final nameRe = RegExp(r'<Name>(.*?)</Name>');
-      final urlRe = RegExp(r'<Url>(.*?)</Url>');
-      for (final block in blockRe.allMatches(body)) {
-        final content = block.group(1) ?? '';
-        final name = nameRe.firstMatch(content)?.group(1) ?? '';
-        final url = urlRe.firstMatch(content)?.group(1) ?? '';
-        if (name.endsWith(', pivo')) {
-          results.add(_BeerWebResult(name: name, url: url));
-        }
-      }
-    }
-    return results;
-  }
-
-  Future<void> _selectBeerWebResult(_BeerWebResult result) async {
-    // Strip the ", pivo" suffix for the beer name field
-    final cleanName = result.name.endsWith(', pivo')
-        ? result.name.substring(0, result.name.length - ', pivo'.length)
-        : result.name;
-
+  Future<void> _selectBeerSearchResult(_BeerSearchResult result) async {
     setState(() {
-      _beerNameController.text = cleanName;
-      _beerWebResults = [];
-      _beerWebSearchController.clear();
+      _beerNameController.text = result.name;
+      _beerSearchController.clear();
+      _beerSearchResults = [];
+      _breweryAddress = null;
+      _breweryRegion = null;
+      _breweryYearFounded = null;
+      _breweryWebsite = null;
+      if (result.alcoholPercent != null) {
+        _alcoholController.text = result.alcoholPercent.toString();
+      }
+      if (result.breweryName.isNotEmpty) {
+        _breweryController.text = result.breweryName;
+      }
+      if (result.malt != null) {
+        _maltController.text = result.malt!;
+      }
+      if (result.fermentation != null) {
+        _fermentationController.text = result.fermentation!;
+      }
+      if (result.type != null) {
+        _beerTypeController.text = result.type!;
+      }
+      if (result.group != null) {
+        _beerGroupController.text = result.group!;
+      }
+      if (result.beerStyle != null) {
+        _beerStyleController.text = result.beerStyle!;
+      }
+      if (result.epm != null) {
+        _degreePlatoController.text =
+            result.epm!.replaceAll('°', '').trim();
+      }
     });
-
-    // Fetch detail page and parse alcohol %
-    await _fetchAlcohol(result.url);
-  }
-
-  Future<void> _fetchAlcohol(String urlPath) async {
-    try {
-      final uri = Uri.parse('https://beerweb.cz$urlPath');
-      final response = await http.get(uri);
-      if (response.statusCode != 200) return;
-      final body = response.body;
-
-      // The BeerWeb detail page uses:
-      //   <span class="bold_text">LABEL: </span>\n                VALUE<br />
-      // or with a link:
-      //   <span class="bold_text">LABEL: </span>\n                <a …>VALUE</a><br />
-      // We match across newlines with dotAll and stop at '<' for plain values.
-      String? extract(String label) {
-        final re = RegExp(
-          r'<span[^>]*class="bold_text"[^>]*>\s*' +
-              RegExp.escape(label) +
-              r':\s*</span>\s*(?:<a[^>]*>([^<]+)</a>|([^<]+?)\s*<)',
-          caseSensitive: false,
-          dotAll: true,
-        );
-        final m = re.firstMatch(body);
-        if (m == null) return null;
-        return (m.group(1) ?? m.group(2))?.trim();
-      }
-
-      // Alcohol % — value looks like "6,2% vol.", strip non-numeric suffix
-      final rawAlcohol = extract('Alkohol');
-      if (rawAlcohol != null) {
-        // Value looks like "3,8% vol." — extract the leading decimal number only.
-        final numStr = rawAlcohol.replaceAll(',', '.');
-        final numMatch = RegExp(r'\d+\.?\d*').firstMatch(numStr);
-        final value = numMatch != null ? double.tryParse(numMatch.group(0)!) : null;
-        if (value != null && mounted) {
-          setState(() => _alcoholController.text = value.toString());
+    if (result.breweryId != null) {
+      try {
+        final doc = await FirebaseFirestore.instance
+            .collection('breweries')
+            .doc(result.breweryId)
+            .get();
+        if (doc.exists && mounted) {
+          final data = doc.data()!;
+          setState(() {
+            _breweryAddress = data['address'] as String?;
+            _breweryRegion = data['region'] as String?;
+            final yearFounded = data['year_founded'];
+            _breweryYearFounded = yearFounded?.toString();
+            _breweryWebsite = data['website'] as String?;
+          });
         }
-      }
-
-      // Brewery (Pivovar) — value is a link, e.g. <a …>Pivovar Kamenice nad Lipou</a>
-      final brewery = extract('Pivovar');
-      if (brewery != null && mounted) {
-        setState(() => _breweryController.text = brewery);
-      }
-
-      // Malt (Slad) — plain text, e.g. "ječný"
-      final malt = extract('Slad');
-      if (malt != null && mounted) {
-        setState(() => _maltController.text = malt);
-      }
-
-      // Fermentation (Kvašení) — plain text, e.g. "svrchní"
-      final fermentation = extract('Kvašení');
-      if (fermentation != null && mounted) {
-        setState(
-          () => _fermentationController.text =
-              _translateFermentation(fermentation),
-        );
-      }
-
-      // Type (Druh) — plain text, e.g. "světlé"
-      final beerType = extract('Druh');
-      if (beerType != null && mounted) {
-        setState(() => _beerTypeController.text = _translateType(beerType));
-      }
-
-      // Group (Skupina) — plain text, e.g. "plné"
-      final beerGroup = extract('Skupina');
-      if (beerGroup != null && mounted) {
-        setState(
-          () => _beerGroupController.text = _translateGroup(beerGroup),
-        );
-      }
-
-      // Beer style (Pivní styl) — value is a link, e.g. <a …>Pale Ale</a>
-      final beerStyle = extract('Pivní styl');
-      if (beerStyle != null && mounted) {
-        setState(() => _beerStyleController.text = beerStyle);
-      }
-
-      // Degree Plato (Stupňovitost/EPM) — plain text, e.g. "12°"
-      final degreePlato = extract('Stupňovitost/EPM');
-      if (degreePlato != null && mounted) {
-        // Keep only digits/decimal, strip the ° symbol
-        final cleaned = degreePlato
-            .replaceAll(RegExp(r'[^\d,.]'), '')
-            .replaceAll(',', '.');
-        setState(
-          () => _degreePlatoController.text =
-              cleaned.isNotEmpty ? cleaned : degreePlato,
-        );
-      }
-    } catch (_) {
-      // Non-critical — user can adjust manually
-    }
-  }
-
-  /// Translates Czech fermentation term to English.
-  String _translateFermentation(String czech) {
-    switch (czech.toLowerCase().trim()) {
-      case 'svrchní':
-        return 'Top-fermented';
-      case 'spodní':
-        return 'Bottom-fermented';
-      case 'spontánní':
-        return 'Spontaneous';
-      case 'smíšené':
-        return 'Mixed';
-      default:
-        return czech;
-    }
-  }
-
-  /// Translates Czech beer type (Druh) to English.
-  String _translateType(String czech) {
-    switch (czech.toLowerCase().trim()) {
-      case 'světlé':
-        return 'Pale';
-      case 'tmavé':
-        return 'Dark';
-      case 'polotmavé':
-        return 'Semi-dark';
-      case 'černé':
-        return 'Black';
-      case 'řezané':
-        return 'Mixed';
-      case 'nefiltrované':
-        return 'Unfiltered';
-      case 'ochucené':
-        return 'Flavoured';
-      default:
-        return czech;
-    }
-  }
-
-  /// Translates Czech beer group (Skupina) to English.
-  String _translateGroup(String czech) {
-    switch (czech.toLowerCase().trim()) {
-      case 'výčepní':
-        return 'Draft';
-      case 'plné':
-        return 'Full';
-      case 'speciální':
-        return 'Special';
-      case 'silné':
-        return 'Strong';
-      case 'lehké':
-        return 'Light';
-      default:
-        return czech;
+      } catch (_) {}
     }
   }
 
@@ -330,6 +271,10 @@ class _CreateKegScreenState extends ConsumerState<CreateKegScreen> {
         brewery: _breweryController.text.trim().isNotEmpty
             ? _breweryController.text.trim()
             : null,
+        breweryAddress: _breweryAddress,
+        breweryRegion: _breweryRegion,
+        breweryYearFounded: _breweryYearFounded,
+        breweryWebsite: _breweryWebsite,
         malt: _maltController.text.trim().isNotEmpty
             ? _maltController.text.trim()
             : null,
@@ -453,14 +398,14 @@ class _CreateKegScreenState extends ConsumerState<CreateKegScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // BeerWeb search
+            // Beer search
             TextField(
-              controller: _beerWebSearchController,
+              controller: _beerSearchController,
               decoration: InputDecoration(
                 prefixIcon: const Icon(Icons.search),
-                labelText: AppLocalizations.of(context)!.searchBeerOnBeerWeb,
+                labelText: AppLocalizations.of(context)!.searchBeer,
                 hintText: AppLocalizations.of(context)!.egKozel,
-                suffixIcon: _beerWebSearching
+                suffixIcon: _beerSearching
                     ? const Padding(
                         padding: EdgeInsets.all(12),
                         child: SizedBox(
@@ -469,29 +414,27 @@ class _CreateKegScreenState extends ConsumerState<CreateKegScreen> {
                           child: CircularProgressIndicator(strokeWidth: 2),
                         ),
                       )
-                    : _beerWebSearchController.text.isNotEmpty
+                    : _beerSearchController.text.isNotEmpty
                         ? IconButton(
                             icon: const Icon(Icons.clear),
                             onPressed: () {
-                              _beerWebSearchController.clear();
-                              setState(() => _beerWebResults = []);
+                              _beerSearchController.clear();
+                              setState(() => _beerSearchResults = []);
                             },
                           )
                         : null,
               ),
-              onChanged: _onBeerWebSearchChanged,
+              onChanged: _onBeerSearchChanged,
               textInputAction: TextInputAction.search,
             ),
-            if (_beerWebResults.isNotEmpty) ...[
+            if (_beerSearchResults.isNotEmpty) ...[
               const SizedBox(height: 4),
               Card(
                 margin: EdgeInsets.zero,
                 child: Column(
-                  children: _beerWebResults.take(7).map((result) {
-                    // Strip ", pivo" suffix for display
-                    final displayName = result.name.endsWith(', pivo')
-                        ? result.name.substring(
-                            0, result.name.length - ', pivo'.length)
+                  children: _beerSearchResults.take(7).map((result) {
+                    final display = result.breweryName.isNotEmpty
+                        ? '${result.name} (${result.breweryName})'
                         : result.name;
                     return ListTile(
                       dense: true,
@@ -499,8 +442,8 @@ class _CreateKegScreenState extends ConsumerState<CreateKegScreen> {
                         Icons.sports_bar,
                         color: BeerColors.primaryAmber,
                       ),
-                      title: Text(displayName),
-                      onTap: () => _selectBeerWebResult(result),
+                      title: Text(display),
+                      onTap: () => _selectBeerSearchResult(result),
                     );
                   }).toList(),
                 ),
@@ -770,9 +713,29 @@ class _CreateKegScreenState extends ConsumerState<CreateKegScreen> {
   }
 }
 
-/// Simple data class representing a beer result from beerweb.cz.
-class _BeerWebResult {
-  const _BeerWebResult({required this.name, required this.url});
+/// Data class for a beer search result from Firestore.
+class _BeerSearchResult {
+  const _BeerSearchResult({
+    required this.name,
+    required this.breweryName,
+    this.breweryId,
+    this.alcoholPercent,
+    this.epm,
+    this.malt,
+    this.fermentation,
+    this.type,
+    this.group,
+    this.beerStyle,
+  });
+
   final String name;
-  final String url;
+  final String breweryName;
+  final String? breweryId;
+  final double? alcoholPercent;
+  final String? epm;
+  final String? malt;
+  final String? fermentation;
+  final String? type;
+  final String? group;
+  final String? beerStyle;
 }

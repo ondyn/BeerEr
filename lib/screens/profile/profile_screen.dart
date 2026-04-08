@@ -148,8 +148,8 @@ class ProfileScreen extends ConsumerWidget {
             style: Theme.of(context).textTheme.bodySmall,
           ),
           const SizedBox(height: 32),
-          // Stats section
-          const _SectionHeader(title: 'Statistics'),
+          // Personal info section
+          _SectionHeader(title: AppLocalizations.of(context)!.personalInfo),
           const SizedBox(height: 8),
           _InfoRow(label: AppLocalizations.of(context)!.weight, value: '${user.weightKg} kg'),
           _InfoRow(label: AppLocalizations.of(context)!.age, value: '${user.age}'),
@@ -159,7 +159,7 @@ class ProfileScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 24),
           // Privacy settings
-          const _SectionHeader(title: 'Privacy settings'),
+          _SectionHeader(title: AppLocalizations.of(context)!.privacySettings),
           const SizedBox(height: 8),
           SwitchListTile(
             title: Text(AppLocalizations.of(context)!.showStatsToOthers),
@@ -195,6 +195,24 @@ class ProfileScreen extends ConsumerWidget {
               final updatedPrefs =
                   Map<String, dynamic>.from(user.preferences)
                     ..['show_bac'] = val;
+              await repo.createOrUpdateUser(
+                user.copyWith(preferences: updatedPrefs),
+              );
+            },
+            tileColor: BeerColors.surfaceVariant,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+          const SizedBox(height: 8),
+          SwitchListTile(
+            title: Text(AppLocalizations.of(context)!.showPersonalInfoToOthers),
+            value: user.preferences['show_personal_info'] as bool? ?? true,
+            onChanged: (val) async {
+              final repo = ref.read(userRepositoryProvider);
+              final updatedPrefs =
+                  Map<String, dynamic>.from(user.preferences)
+                    ..['show_personal_info'] = val;
               await repo.createOrUpdateUser(
                 user.copyWith(preferences: updatedPrefs),
               );

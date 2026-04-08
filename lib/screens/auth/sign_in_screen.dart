@@ -238,8 +238,14 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
         }
       }
 
-      debugPrint('[GoogleSignIn] Success — navigating to /home');
-      if (mounted) context.go('/home');
+      debugPrint('[GoogleSignIn] Success — navigating');
+      if (mounted) {
+        if (existingProfile == null) {
+          context.go('/auth/complete-profile');
+        } else {
+          context.go('/home');
+        }
+      }
     } on FirebaseAuthException catch (e) {
       debugPrint('[GoogleSignIn] FirebaseAuthException: code=${e.code}, message=${e.message}');
       if (mounted) {

@@ -3,6 +3,8 @@ import 'dart:math' as math;
 
 import 'package:beerer/l10n/app_localizations.dart';
 import 'package:beerer/models/models.dart';
+import 'package:beerer/providers/providers.dart';
+import 'package:beerer/screens/keg/fullscreen_chart_screen.dart';
 import 'package:beerer/theme/beer_theme.dart';
 import 'package:beerer/utils/bac_calculator.dart';
 import 'package:beerer/utils/format_preferences.dart';
@@ -11,6 +13,7 @@ import 'package:beerer/utils/time_formatter.dart';
 import 'package:beerer/widgets/avatar_icon.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Detail view for a single participant in a keg session.
 ///
@@ -21,7 +24,7 @@ import 'package:flutter/material.dart';
 ///
 /// When [onRemoveGuest] is provided the screen shows a "Remove from session"
 /// button (used when the keg creator views a guest's detail).
-class ParticipantDetailScreen extends StatefulWidget {
+class ParticipantDetailScreen extends ConsumerStatefulWidget {
   const ParticipantDetailScreen({
     super.key,
     required this.session,
@@ -37,6 +40,8 @@ class ParticipantDetailScreen extends StatefulWidget {
   final AppUser? user;
   final ManualUser? guest;
   final KegSession session;
+
+  /// Initial pours snapshot, used as fallback before the stream emits.
   final List<Pour> pours;
   final bool isMe;
   final FormatPreferences prefs;
@@ -48,15 +53,15 @@ class ParticipantDetailScreen extends StatefulWidget {
   final VoidCallback? onPourVolumeSelect;
 
   @override
-  State<ParticipantDetailScreen> createState() =>
+  ConsumerState<ParticipantDetailScreen> createState() =>
       _ParticipantDetailScreenState();
 }
 
-class _ParticipantDetailScreenState extends State<ParticipantDetailScreen> {
+class _ParticipantDetailScreenState
+    extends ConsumerState<ParticipantDetailScreen> {
   Timer? _ticker;
 
   KegSession get session => widget.session;
-  List<Pour> get pours => widget.pours;
   bool get isMe => widget.isMe;
   FormatPreferences get prefs => widget.prefs;
 
@@ -66,6 +71,20 @@ class _ParticipantDetailScreenState extends State<ParticipantDetailScreen> {
   int? get _avatarIcon => widget.user?.avatarIcon;
   double get _weightKg => widget.user?.weightKg ?? 0;
   String get _gender => widget.user?.gender ?? 'male';
+
+  /// Whether stats should be visible for this participant.
+  bool get _showStats =>
+      isMe || (widget.user?.preferences['show_stats'] as bool? ?? true);
+
+  /// Whether BAC info should be visible for this participant.
+  bool get _showBac =>
+      isMe || (widget.user?.preferences['show_bac'] as bool? ?? false);
+
+  /// Whether personal info (weight, age, gender) should be visible.
+  bool get _showPersonalInfo =>
+      isMe ||
+      _isGuest ||
+      (widget.user?.preferences['show_personal_info'] as bool? ?? true);
 
   @override
   void initState() {
@@ -83,22 +102,27 @@ class _ParticipantDetailScreenState extends State<ParticipantDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final userPours = pours
-        .where((p) => p.userId == _participantId && !p.undone)
-        .toList()
-      ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
+    // Watch live pours from provider; fall back to initial snapshot.
+    final poursAsync =
+        ref.watch(watchSessionPoursProvider(session.id));
+    final livePours = poursAsync.asData?.value ?? widget.pours;
 
-    final totalMl = StatsCalculator.userPouredMl(pours, _participantId);
-    final beerCount = StatsCalculator.beerCount(pours, _participantId);
+    final userPours = livePours
+        .where((Pour p) => p.userId == _participantId && !p.undone)
+        .toList()
+      ..sort((Pour a, Pour b) => a.timestamp.compareTo(b.timestamp));
+
+    final totalMl = StatsCalculator.userPouredMl(livePours, _participantId);
+    final beerCount = StatsCalculator.beerCount(livePours, _participantId);
     final pureAlcMl = StatsCalculator.userPureAlcoholMl(
-        pours, _participantId, session.alcoholPercent);
+        livePours, _participantId, session.alcoholPercent);
     final cost = StatsCalculator.userCost(
-      pours,
+      livePours,
       _participantId,
       session.kegPrice,
       session.volumeTotalMl,
     );
-    final ratio = StatsCalculator.userConsumptionRatio(pours, _participantId);
+    final ratio = StatsCalculator.userConsumptionRatio(livePours, _participantId);
 
     final sessionStart = session.startTime ?? userPours.firstOrNull?.timestamp;
     final sessionDuration = sessionStart != null
@@ -108,10 +132,13 @@ class _ParticipantDetailScreenState extends State<ParticipantDetailScreen> {
         StatsCalculator.averageRateMlPerHour(userPours, sessionDuration);
     final timeSinceLast = StatsCalculator.timeSinceLastPour(userPours);
 
-    // BAC (only if weight is set)
+    // BAC (only if weight is set and BAC is visible)
     double? bacValue;
     Duration? timeToZero;
-    if (_weightKg > 0 && userPours.isNotEmpty && sessionStart != null) {
+    if (_showBac &&
+        _weightKg > 0 &&
+        userPours.isNotEmpty &&
+        sessionStart != null) {
       final elapsed = DateTime.now().difference(sessionStart).inMinutes;
       bacValue = BacCalculator.estimateFromPours(
         pours: userPours,
@@ -148,23 +175,26 @@ class _ParticipantDetailScreenState extends State<ParticipantDetailScreen> {
           ],
           const SizedBox(height: 20),
 
-          // Stats card
-          _buildStatsCard(
-            context,
-            timeSinceLast: timeSinceLast,
-            totalMl: totalMl,
-            beerCount: beerCount,
-            pureAlcMl: pureAlcMl,
-            cost: cost,
-            ratio: ratio,
-            avgRate: avgRate,
-            bacValue: bacValue,
-            timeToZero: timeToZero,
-          ),
-          const SizedBox(height: 20),
+          // Stats card (hidden if user disabled stats visibility)
+          if (_showStats)
+            _buildStatsCard(
+              context,
+              timeSinceLast: timeSinceLast,
+              totalMl: totalMl,
+              beerCount: beerCount,
+              pureAlcMl: pureAlcMl,
+              cost: cost,
+              ratio: ratio,
+              avgRate: avgRate,
+              bacValue: bacValue,
+              timeToZero: timeToZero,
+            ),
+          if (_showStats) const SizedBox(height: 20),
 
-          // Volume chart
-          if (userPours.isNotEmpty && sessionStart != null) ...[
+          // Volume chart (hidden if user disabled stats visibility)
+          if (_showStats &&
+              userPours.isNotEmpty &&
+              sessionStart != null) ...[
             Text(
               AppLocalizations.of(context)!.consumptionOverTime,
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
@@ -173,19 +203,37 @@ class _ParticipantDetailScreenState extends State<ParticipantDetailScreen> {
                   ),
             ),
             const SizedBox(height: 8),
-            SizedBox(
-              height: 220,
-              child: _VolumeChart(
-                pours: userPours,
-                sessionStart: sessionStart,
-                prefs: prefs,
+            GestureDetector(
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => FullscreenChartScreen(
+                    session: session,
+                    pours: livePours,
+                    chartType: 'participant_volume',
+                    prefs: prefs,
+                    chartChild: _VolumeChart(
+                      pours: userPours,
+                      sessionStart: sessionStart,
+                      prefs: prefs,
+                    ),
+                  ),
+                ),
+              ),
+              child: SizedBox(
+                height: 220,
+                child: _VolumeChart(
+                  pours: userPours,
+                  sessionStart: sessionStart,
+                  prefs: prefs,
+                ),
               ),
             ),
             const SizedBox(height: 24),
           ],
 
-          // BAC chart
-          if (userPours.isNotEmpty &&
+          // BAC chart (hidden if user disabled BAC visibility)
+          if (_showBac &&
+              userPours.isNotEmpty &&
               _weightKg > 0 &&
               sessionStart != null) ...[
             Text(
@@ -196,14 +244,32 @@ class _ParticipantDetailScreenState extends State<ParticipantDetailScreen> {
                   ),
             ),
             const SizedBox(height: 8),
-            SizedBox(
-              height: 220,
-              child: _BacChart(
-                pours: userPours,
-                sessionStart: sessionStart,
-                alcoholPercent: session.alcoholPercent,
-                weightKg: _weightKg,
-                gender: _gender,
+            GestureDetector(
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => FullscreenChartScreen(
+                    session: session,
+                    pours: livePours,
+                    chartType: 'participant_bac',
+                    chartChild: _BacChart(
+                      pours: userPours,
+                      sessionStart: sessionStart,
+                      alcoholPercent: session.alcoholPercent,
+                      weightKg: _weightKg,
+                      gender: _gender,
+                    ),
+                  ),
+                ),
+              ),
+              child: SizedBox(
+                height: 220,
+                child: _BacChart(
+                  pours: userPours,
+                  sessionStart: sessionStart,
+                  alcoholPercent: session.alcoholPercent,
+                  weightKg: _weightKg,
+                  gender: _gender,
+                ),
               ),
             ),
             const SizedBox(height: 8),
@@ -281,7 +347,7 @@ class _ParticipantDetailScreenState extends State<ParticipantDetailScreen> {
                   ],
                 ],
               ),
-              if (_weightKg > 0)
+              if (_showPersonalInfo && _weightKg > 0)
                 Text(
                   '${_weightKg.toStringAsFixed(0)} kg · '
                   '${_gender == 'male' ? AppLocalizations.of(context)!.male : AppLocalizations.of(context)!.female}',
@@ -450,9 +516,11 @@ class _VolumeChart extends StatelessWidget {
 
     final maxY = (cumulative * 1.15).ceilToDouble();
     final maxX = spots.last.x;
+    final hourInterval = _hourInterval(maxX);
 
     return LineChart(
       LineChartData(
+        clipData: const FlClipData.all(),
         gridData: FlGridData(
           show: true,
           drawVerticalLine: false,
@@ -473,11 +541,21 @@ class _VolumeChart extends StatelessWidget {
             sideTitles: SideTitles(
               showTitles: true,
               reservedSize: 28,
-              interval: _interval(maxX, 5),
-              getTitlesWidget: (value, meta) => Text(
-                _formatRelativeMinutes(value.toInt(), maxX),
-                style: const TextStyle(fontSize: 10),
-              ),
+              interval: hourInterval,
+              getTitlesWidget: (value, meta) {
+                if ((value - meta.min).abs() < hourInterval * 0.3 &&
+                    value != meta.min) {
+                  return const SizedBox.shrink();
+                }
+                if ((value - meta.max).abs() < hourInterval * 0.3 &&
+                    value != meta.max) {
+                  return const SizedBox.shrink();
+                }
+                return Text(
+                  _formatAsClockTime(sessionStart, value.toInt()),
+                  style: const TextStyle(fontSize: 10),
+                );
+              },
             ),
           ),
           leftTitles: AxisTitles(
@@ -486,8 +564,8 @@ class _VolumeChart extends StatelessWidget {
               reservedSize: 48,
               interval: _interval(maxY, 4),
               getTitlesWidget: (value, meta) => Text(
-                '${value.toInt()} ml',
-                style: const TextStyle(fontSize: 10),
+                TimeFormatter.formatVolumeMl(value, prefs: prefs),
+                style: const TextStyle(fontSize: 9),
               ),
             ),
           ),
@@ -505,17 +583,17 @@ class _VolumeChart extends StatelessWidget {
             barWidth: 2.5,
             isStrokeCapRound: true,
             dotData: FlDotData(
-              show: true,
+              show: pours.length < 50,
               getDotPainter: (spot, percent, bar, index) =>
                   FlDotCirclePainter(
-                radius: 3,
+                radius: 2,
                 color: BeerColors.primaryAmber,
                 strokeWidth: 0,
               ),
             ),
             belowBarData: BarAreaData(
               show: true,
-              color: BeerColors.primaryAmber.withValues(alpha: 0.15),
+              color: BeerColors.primaryAmber.withValues(alpha: 0.12),
             ),
           ),
         ],
@@ -567,9 +645,11 @@ class _BacChart extends StatelessWidget {
     final maxBac = spots.fold(0.0, (double m, s) => math.max(m, s.y));
     final maxY = math.max(0.5, (maxBac * 1.3 * 10).ceilToDouble() / 10);
     final maxX = spots.last.x;
+    final hourInterval = _hourInterval(maxX);
 
     return LineChart(
       LineChartData(
+        clipData: const FlClipData.all(),
         gridData: FlGridData(
           show: true,
           drawVerticalLine: false,
@@ -590,11 +670,21 @@ class _BacChart extends StatelessWidget {
             sideTitles: SideTitles(
               showTitles: true,
               reservedSize: 28,
-              interval: _interval(maxX, 5),
-              getTitlesWidget: (value, meta) => Text(
-                _formatRelativeMinutes(value.toInt(), maxX),
-                style: const TextStyle(fontSize: 10),
-              ),
+              interval: hourInterval,
+              getTitlesWidget: (value, meta) {
+                if ((value - meta.min).abs() < hourInterval * 0.3 &&
+                    value != meta.min) {
+                  return const SizedBox.shrink();
+                }
+                if ((value - meta.max).abs() < hourInterval * 0.3 &&
+                    value != meta.max) {
+                  return const SizedBox.shrink();
+                }
+                return Text(
+                  _formatAsClockTime(sessionStart, value.toInt()),
+                  style: const TextStyle(fontSize: 10),
+                );
+              },
             ),
           ),
           leftTitles: AxisTitles(
@@ -676,16 +766,23 @@ double _interval(double range, int desiredTicks) {
   return math.max(1, (nice * magnitude).ceilToDouble());
 }
 
-/// Formats an X-axis value (minutes since session start) relative to "now".
+/// Returns an interval in minutes that aligns to round hours.
 ///
-/// [minuteValue] is the data point, [maxMinutes] is the current total
-/// elapsed minutes (i.e. "now"). The right edge shows "now", and earlier
-/// values show negative offsets like "-15m", "-1h", etc.
-String _formatRelativeMinutes(int minuteValue, double maxMinutes) {
-  final diff = minuteValue - maxMinutes.round();
-  if (diff.abs() <= 1) return 'now';
-  if (diff.abs() < 60) return '${diff}m';
-  final h = diff ~/ 60;
-  final m = diff.abs() % 60;
-  return m == 0 ? '${h}h' : '${h}h${m}m';
+/// Scales up for very long sessions so labels never overlap.
+double _hourInterval(double totalMinutes) {
+  if (totalMinutes <= 60) return 15;
+  if (totalMinutes <= 120) return 30;
+  if (totalMinutes <= 360) return 60;
+  if (totalMinutes <= 720) return 120;
+  if (totalMinutes <= 1440) return 240;
+  if (totalMinutes <= 2880) return 480;
+  return 720;
+}
+
+/// Formats a minute offset from [startTime] as a clock time (e.g. "14:00").
+String _formatAsClockTime(DateTime startTime, int minuteOffset) {
+  final time = startTime.add(Duration(minutes: minuteOffset));
+  final h = time.hour.toString().padLeft(2, '0');
+  final m = time.minute.toString().padLeft(2, '0');
+  return '$h:$m';
 }

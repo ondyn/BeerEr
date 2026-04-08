@@ -619,6 +619,30 @@ abstract class AppLocalizations {
   /// **'Profile details'**
   String get profileDetails;
 
+  /// No description provided for @completeProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete your profile'**
+  String get completeProfile;
+
+  /// No description provided for @completeProfileSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a few details for accurate stats and BAC estimation.'**
+  String get completeProfileSubtitle;
+
+  /// No description provided for @skip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get skip;
+
+  /// No description provided for @pleaseEnterNickname.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a nickname'**
+  String get pleaseEnterNickname;
+
   /// No description provided for @nickname.
   ///
   /// In en, this message translates to:
@@ -720,6 +744,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Show BAC estimate'**
   String get showBacEstimate;
+
+  /// No description provided for @showPersonalInfoToOthers.
+  ///
+  /// In en, this message translates to:
+  /// **'Show personal info to others'**
+  String get showPersonalInfoToOthers;
+
+  /// No description provided for @personalInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal info'**
+  String get personalInfo;
 
   /// No description provided for @setWeightForBac.
   ///
@@ -991,11 +1027,11 @@ abstract class AppLocalizations {
   /// **'Session not found'**
   String get sessionNotFound;
 
-  /// No description provided for @searchBeerOnBeerWeb.
+  /// No description provided for @searchBeer.
   ///
   /// In en, this message translates to:
-  /// **'Search beer on BeerWeb…'**
-  String get searchBeerOnBeerWeb;
+  /// **'Search beer…'**
+  String get searchBeer;
 
   /// No description provided for @egKozel.
   ///
@@ -2100,6 +2136,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Price per {beerSize}'**
   String pricePerBeer(String beerSize);
+
+  /// No description provided for @breweryAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Address'**
+  String get breweryAddress;
+
+  /// No description provided for @breweryRegion.
+  ///
+  /// In en, this message translates to:
+  /// **'Region'**
+  String get breweryRegion;
+
+  /// No description provided for @breweryYearFounded.
+  ///
+  /// In en, this message translates to:
+  /// **'Year founded'**
+  String get breweryYearFounded;
+
+  /// No description provided for @breweryWebsite.
+  ///
+  /// In en, this message translates to:
+  /// **'Website'**
+  String get breweryWebsite;
 
   /// No description provided for @elapsedTime.
   ///
