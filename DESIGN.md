@@ -10,7 +10,7 @@
 
 - Uses Firebase (Firestore) as the real-time database, available for Android and iOS.
 - Users create an account (email/password with mail verification, or social auth). Profile includes nickname, weight, age, male/female.
-- Any user can set up a new keg party — defining volume of keg, beer name, price, alcohol content, predefined beer volumes (e.g. 0.5 l, 0.3 l, …). The keg start time is set when the creator clicks "Tap a Keg" in keg details. Beer list is fetched from the Untappd API; free-text entry is also supported.
+- Any user can set up a new keg party — defining volume of keg, beer name, price, alcohol content, predefined beer volumes (e.g. 0.5 l, 0.3 l, …). The keg start time is set when the creator clicks "Tap a Keg" in keg details. Beer search uses BeerWeb data and free-text entry is also supported.
 - After creating a keg and tapping it, the creator shares a join link (WhatsApp, message, mail, QR code) for others.
 - After joining, users set a session nickname (pre-filled from profile) and visibility preferences. Each pour logs the volume; the last used volume is remembered.
 - **Statistics** (always visible): time drinking current beer, time since last beer, average drinking rate, BAC estimate (Widmark formula, device-only), keg volume remaining, predicted empty time, cost so far.
@@ -20,7 +20,7 @@
 - **Keg done** — any user can declare the keg empty; session is read-only after that (except for the creator).
 - History of past keg sessions is available.
 - Users can join **joint accounts/bills** (e.g. family). Statistics are aggregated per account. After keg is done, costs per account are shown.
-- After keg is done, the session creator can export costs to **Settle Up** via API.
+- After keg is done, the session creator can review and adjust bill splits inside the app.
 - Theme: warm amber/dark "beer" style.
 - All actions sync to Firestore in real time; all clients receive live updates.
 
@@ -34,8 +34,7 @@
 | Backend / Database | Firebase Firestore (real-time, offline-persistent) |
 | Serverless Logic | Firebase Cloud Functions (Node.js/TypeScript) |
 | Push Notifications | Firebase Cloud Messaging (FCM) |
-| Beer Data | Untappd API (via Cloud Function, key never exposed client-side) |
-| Cost Settlement | Settle Up API (`https://api.settleup.io/`) |
+| Beer Data | BeerWeb.cz API |
 | Auth | Firebase Auth — email/password + social providers |
 
 ---
@@ -43,7 +42,7 @@
 ## 4. Data Schema (High-Level)
 
 - **Users:** `user_id`, `nickname`, `weight_kg`, `age`, `gender`, `auth_provider`, `preferences`
-- **KegSessions:** `session_id`, `creator_id`, `beer_name`, `untappd_beer_id`, `volume_total_ml`, `volume_remaining_ml`, `price_per_liter`, `alcohol_percent`, `predefined_volumes_ml[]`, `start_time`, `status` (active / paused / done)
+- **KegSessions:** `session_id`, `creator_id`, `beer_name`, `volume_total_ml`, `volume_remaining_ml`, `price_per_liter`, `alcohol_percent`, `predefined_volumes_ml[]`, `start_time`, `status` (active / paused / done)
 - **Pours:** `pour_id`, `session_id`, `user_id`, `poured_by_id`, `volume_ml`, `timestamp`, `undone`
 - **JointAccounts:** `account_id`, `session_id`, `group_name`, `member_user_ids[]`
 
@@ -326,14 +325,14 @@ Single field (email) + "Send reset link" button. Confirmation message replaces f
 ┌─────────────────────────────┐
 │  ←  New Keg Session  1/2   │
 │                             │
-│  Search beer…               │  ← Untappd search field (live)
+│  Search beer…               │  ← Beer search field (live)
 │  ┌───────────────────────┐  │
 │  │  🔍  e.g. Pilsner     │  │
 │  └───────────────────────┘  │
 │                             │
 │  Results:                   │
 │  ┌───────────────────────┐  │
-│  │ [label art] Pilsner   │  │  ← tappable Untappd result
+│  │ [label art] Pilsner   │  │  ← tappable beer search result
 │  │            Urquell    │  │
 │  │            4.4 % ABV  │  │
 │  └───────────────────────┘  │
@@ -354,7 +353,7 @@ Single field (email) + "Send reset link" button. Confirmation message replaces f
 │                             │
 │  Alcohol content (%)        │
 │  ┌─────────────────────┐    │
-│  │  4.4  (pre-filled)  │    │  ← pre-filled from Untappd if selected
+│  │  4.4  (pre-filled)  │    │  ← pre-filled from beer data if available
 │  └─────────────────────┘    │
 │                             │
 │  ┌─────────────────────┐    │
@@ -501,7 +500,7 @@ Single field (email) + "Send reset link" button. Confirmation message replaces f
 │  └───────────────────────┘  │
 │                             │
 │  ┌─────────────────────┐    │
-│  │  Export to Settle Up│    │  ← creator only; amber button
+│  │  Review Bill        │    │  ← creator only; amber button
 │  └─────────────────────┘    │
 └─────────────────────────────┘
 ```
@@ -828,40 +827,6 @@ Tapping a card → Keg Session Detail in read-only/done state.
 
 ---
 
-### 7.20 Export to Settle Up Screen
-
-**Route:** `/keg/:sessionId/settle`  
-Accessible to session creator only after keg is done.
-
-```
-┌─────────────────────────────┐
-│  ←  Export to Settle Up     │
-│                             │
-│  Review the bill split      │
-│                             │
-│  ┌───────────────────────┐  │
-│  │  🏠 Novák family      │  │
-│  │  Jan + Eva            │  │
-│  │  Total: €14.00        │  │
-│  └───────────────────────┘  │
-│  ┌───────────────────────┐  │
-│  │  👤 Tomáš (solo)      │  │
-│  │  Total: €4.00         │  │
-│  └───────────────────────┘  │
-│                             │
-│  ┌─────────────────────┐    │
-│  │  Export to Settle Up│    │  ← amber button; calls Cloud Function
-│  └─────────────────────┘    │
-│                             │
-│  ℹ Settle Up will create a  │
-│    group with these amounts.│  ← info note
-└─────────────────────────────┘
-```
-- Loading overlay during Cloud Function call.
-- On success: confirmation card with link to the Settle Up group.
-
----
-
 ### 7.21 About Screen
 
 **Route:** `/about`
@@ -893,7 +858,7 @@ Splash
               ├── [Sheet] User Detail Card
               ├── [Sheet] Joint Account Management
               ├── Share Session
-              ├── [Creator] Export to Settle Up
+              ├── [Creator] Review Bill
               └── [Creator] Edit Session
 ```
 
@@ -944,8 +909,8 @@ Deep link `/join/:sessionId` → Auth check → Join Session → Keg Session Det
 | Session history | All past sessions accessible |
 | Push notifications (FCM) | Pour-for-me, BAC-zero, slowdown reminder, keg nearly empty |
 | Local notifications | flutter_local_notifications for BAC-zero scheduling |
-| BeerWeb / Untappd beer search | Via Cloud Function (key hidden server-side) |
-| Settle Up export | Disabled in UI (code kept); Cloud Function available |
+| Beer search | BeerWeb.cz search + manual entry |
+| Bill review | Creator can review and adjust the split inside the app |
 | i18n | English, Czech, German |
 | Profile edit | Nickname, weight, age, gender, avatar icon |
 | Privacy settings | Show stats to others, show BAC estimate (per session) |
@@ -981,7 +946,4 @@ Deep link `/join/:sessionId` → Auth check → Join Session → Keg Session Det
 | BAC value | **No** | Device-only computation | Never stored |
 | Pour volumes + timestamps | Yes | Firestore pours | Visible to session participants |
 | FCM device token | Yes | Firestore users | Used only for push notifications |
-| Untappd API key | Never in client | Firebase Function env config | — |
-| Settle Up credentials | Never in client | Firebase Function env config | — |
-
 See `web/privacy.html` for the full public privacy policy.

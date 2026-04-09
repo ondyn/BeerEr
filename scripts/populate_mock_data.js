@@ -197,7 +197,6 @@ const ACTIVE_SESSIONS = [
     data: {
       creator_id: MAIN_USER.uid,
       beer_name: 'Pilsner Urquell',
-      untappd_beer_id: null,
       volume_total_ml: 50000,         // 50 L keg
       volume_remaining_ml: 28500,     // ~43% consumed
       keg_price: 2890,                // CZK
@@ -225,7 +224,6 @@ const ACTIVE_SESSIONS = [
     data: {
       creator_id: USERS[2].uid,       // Martin created
       beer_name: 'Kozel Černý',
-      untappd_beer_id: null,
       volume_total_ml: 30000,
       volume_remaining_ml: 28500,
       keg_price: 1690,
@@ -252,7 +250,6 @@ const ACTIVE_SESSIONS = [
     data: {
       creator_id: USERS[4].uid,       // Kuba created
       beer_name: 'Bernard 12°',
-      untappd_beer_id: null,
       volume_total_ml: 50000,
       volume_remaining_ml: 35200,
       keg_price: 3150,
@@ -280,7 +277,6 @@ const ACTIVE_SESSIONS = [
     data: {
       creator_id: MAIN_USER.uid,
       beer_name: 'Staropramen Nefiltovaný',
-      untappd_beer_id: null,
       volume_total_ml: 30000,
       volume_remaining_ml: 30000,
       keg_price: 1850,
@@ -305,7 +301,6 @@ const ACTIVE_SESSIONS = [
     data: {
       creator_id: USERS[6].uid,       // Ondra created
       beer_name: 'Matuška California',
-      untappd_beer_id: null,
       volume_total_ml: 30000,
       volume_remaining_ml: 3200,       // almost empty!
       keg_price: 3900,
@@ -340,7 +335,6 @@ const DONE_SESSIONS = [
     data: {
       creator_id: MAIN_USER.uid,
       beer_name: 'Gambrinus 11°',
-      untappd_beer_id: null,
       volume_total_ml: 50000,
       volume_remaining_ml: 0,
       keg_price: 2290,
@@ -368,7 +362,6 @@ const DONE_SESSIONS = [
     data: {
       creator_id: USERS[1].uid,       // Petra hosted
       beer_name: 'Budvar Original',
-      untappd_beer_id: null,
       volume_total_ml: 30000,
       volume_remaining_ml: 1200,
       keg_price: 2190,
@@ -396,7 +389,6 @@ const DONE_SESSIONS = [
     data: {
       creator_id: USERS[4].uid,       // Kuba hosted
       beer_name: 'Svijany Máz 11°',
-      untappd_beer_id: null,
       volume_total_ml: 50000,
       volume_remaining_ml: 4500,
       keg_price: 2450,
@@ -425,7 +417,6 @@ const DONE_SESSIONS = [
     data: {
       creator_id: MAIN_USER.uid,
       beer_name: 'Radegast Ryze Hořká 12',
-      untappd_beer_id: null,
       volume_total_ml: 30000,
       volume_remaining_ml: 0,
       keg_price: 1790,
@@ -453,7 +444,6 @@ const DONE_SESSIONS = [
     data: {
       creator_id: USERS[6].uid,       // Ondra hosted
       beer_name: 'Krušovice 12°',
-      untappd_beer_id: null,
       volume_total_ml: 50000,
       volume_remaining_ml: 2800,
       keg_price: 2690,

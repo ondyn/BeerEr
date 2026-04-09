@@ -11,57 +11,70 @@ setGlobalOptions({ region: 'europe-west1' });
 
 const db = admin.firestore();
 
-// ---------------------------------------------------------------------------
-// Untappd beer search proxy
-// API key is stored in Cloud Function environment config — never in the client.
-// ---------------------------------------------------------------------------
-export const searchUntappd = onCall({ secrets: ['UNTAPPD_API_KEY'] }, async (request) => {
-  const query = request.data?.query as string | undefined;
-  if (!query || query.trim().length === 0) {
-    throw new HttpsError('invalid-argument', 'query must be a non-empty string');
+type SupportedLanguage = 'en' | 'cs' | 'de';
+
+type LocalisedCopy = {
+  pourForYouTitle: string;
+  pourForYouBody: (params: {
+    pouredByName: string;
+    volumeMl: number;
+    beerName: string;
+  }) => string;
+  kegDoneTitle: string;
+  kegDoneBody: (params: { beerName: string }) => string;
+  kegNearlyEmptyTitle: string;
+  kegNearlyEmptyBody: (params: { beerName: string; percentLeft: number }) => string;
+};
+
+const notificationCopy: Record<SupportedLanguage, LocalisedCopy> = {
+  en: {
+    pourForYouTitle: '🍻 Surprise pour incoming!',
+    pourForYouBody: ({ pouredByName, volumeMl, beerName }) =>
+      `${pouredByName} poured you ${volumeMl} ml of ${beerName}. Sip happens 😄`,
+    kegDoneTitle: '🏁 Keg defeated!',
+    kegDoneBody: ({ beerName }) =>
+      `${beerName} is officially empty. Time for stats, glory, and maybe water 💧`,
+    kegNearlyEmptyTitle: '🫗 Keg running on vibes!',
+    kegNearlyEmptyBody: ({ beerName, percentLeft }) =>
+      `Only ${percentLeft}% of ${beerName} left. Last-call reflexes activated!`,
+  },
+  cs: {
+    pourForYouTitle: '🍻 Přistál ti čep!',
+    pourForYouBody: ({ pouredByName, volumeMl, beerName }) =>
+      `${pouredByName} ti načepoval(a) ${volumeMl} ml ${beerName}. Pivo se samo nevypije 😄`,
+    kegDoneTitle: '🏁 Sud je poražen!',
+    kegDoneBody: ({ beerName }) =>
+      `${beerName} je oficiálně prázdný. Čas na statistiky, slávu a možná i vodu 💧`,
+    kegNearlyEmptyTitle: '🫗 Sud jede na výpary!',
+    kegNearlyEmptyBody: ({ beerName, percentLeft }) =>
+      `Zbývá už jen ${percentLeft}% z ${beerName}. Režim posledního kola aktivován!`,
+  },
+  de: {
+    pourForYouTitle: '🍻 Ueberraschungsbier fuer dich!',
+    pourForYouBody: ({ pouredByName, volumeMl, beerName }) =>
+      `${pouredByName} hat dir ${volumeMl} ml ${beerName} eingeschenkt. Prost auf Teamwork 😄`,
+    kegDoneTitle: '🏁 Fass bezwungen!',
+    kegDoneBody: ({ beerName }) =>
+      `${beerName} ist offiziell leer. Zeit fuer Stats, Ruhm und vielleicht Wasser 💧`,
+    kegNearlyEmptyTitle: '🫗 Fass auf Reserve!',
+    kegNearlyEmptyBody: ({ beerName, percentLeft }) =>
+      `Nur noch ${percentLeft}% von ${beerName} uebrig. Letzte-Runde-Reflexe an!`,
+  },
+};
+
+function normaliseLanguage(languageRaw: unknown): SupportedLanguage {
+  const language = typeof languageRaw === 'string' ? languageRaw.toLowerCase() : 'en';
+  if (language === 'cs' || language === 'de' || language === 'en') {
+    return language;
   }
-
-  const apiKey = process.env.UNTAPPD_API_KEY;
-  if (!apiKey) {
-    throw new HttpsError('internal', 'Untappd API key not configured');
-  }
-
-  const url = `https://api.untappd.com/v4/search/beer?q=${encodeURIComponent(query)}&access_token=${apiKey}`;
-  const res = await fetch(url);
-  if (!res.ok) {
-    throw new HttpsError('unavailable', `Untappd API error: ${res.status}`);
-  }
-
-  const json = await res.json() as { response?: { beers?: { items?: unknown[] } } };
-  return json.response?.beers?.items ?? [];
-});
-
-// ---------------------------------------------------------------------------
-// Settle Up export — called by the keg creator after keg is marked done.
-// ---------------------------------------------------------------------------
-export const exportToSettleUp = onCall(
-  { secrets: ['SETTLEUP_CLIENT_ID', 'SETTLEUP_CLIENT_SECRET'] },
-  async (request) => {
-    if (!request.auth) {
-      throw new HttpsError('unauthenticated', 'Must be signed in');
-    }
-
-    const { sessionId } = request.data as { sessionId: string };
-    if (!sessionId) {
-      throw new HttpsError('invalid-argument', 'sessionId is required');
-    }
-
-    // TODO: implement full Settle Up OAuth + debt creation flow
-    console.info(`[exportToSettleUp] session=${sessionId} user=${request.auth.uid}`);
-    return { success: true };
-  }
-);
+  return 'en';
+}
 
 // ---------------------------------------------------------------------------
 // FCM notification — triggered when a new pour is written for another user.
 //
-// Uses data-only messages so the client can suppress display when the app
-// is in the foreground.
+// Sends localized push notifications (notification + data payload) so they
+// are visible even when the app is backgrounded or terminated.
 // ---------------------------------------------------------------------------
 export const onPourCreated = onDocumentWritten('pours/{pourId}', async (event) => {
   const after = event.data?.after;
@@ -89,23 +102,45 @@ export const onPourCreated = onDocumentWritten('pours/{pourId}', async (event) =
   const notifyPourForMe = prefs?.notify_pour_for_me as boolean | undefined;
   if (notifyPourForMe === false) return;
 
+  const language = normaliseLanguage(prefs?.language);
+  const copy = notificationCopy[language];
+
   const pouredBySnap = await db.collection('users').doc(pour.poured_by_id).get();
   const pouredByName: string = pouredBySnap.data()?.nickname ?? 'Someone';
 
-  // Data-only message — the client decides whether to show a notification
-  // based on foreground/background state.
+  const sessionSnap = await db.collection('kegSessions').doc(pour.session_id).get();
+  const beerName: string = sessionSnap.data()?.beer_name ?? 'the keg';
+
+  const title = copy.pourForYouTitle;
+  const body = copy.pourForYouBody({
+    pouredByName,
+    volumeMl: pour.volume_ml,
+    beerName,
+  });
+
   await admin.messaging().send({
     token: fcmToken,
+    notification: {
+      title,
+      body,
+    },
     data: {
       type: 'pour_for_you',
-      title: '🍺 Cheers!',
-      body: `${pouredByName} poured you ${pour.volume_ml} ml`,
+      title,
+      body,
       session_id: pour.session_id,
     },
-    // Android: data-only messages are delivered silently.
-    // iOS: need content-available for background delivery.
+    android: {
+      priority: 'high',
+      notification: {
+        channelId: 'beerer_default',
+      },
+    },
     apns: {
-      payload: { aps: { 'content-available': 1 } },
+      payload: { aps: { sound: 'default' } },
+      headers: {
+        'apns-priority': '10',
+      },
     },
   });
 });
@@ -120,18 +155,44 @@ export const onKegStatusChanged = onDocumentUpdated('kegSessions/{sessionId}', a
     status?: string;
     beer_name?: string;
     participant_ids?: string[];
+    volume_remaining_ml?: number;
+    volume_total_ml?: number;
   } | undefined;
 
   if (!before || !after) return;
 
-  // Only fire when status transitions to 'done'
-  if (before.status === 'done' || after.status !== 'done') return;
+  const didTransitionToDone =
+    before.status !== 'done' && after.status === 'done';
+
+  const beforeTotal = beforeDataNumber(event.data?.before?.get('volume_total_ml'));
+  const beforeRemaining = beforeDataNumber(
+    event.data?.before?.get('volume_remaining_ml')
+  );
+  const afterTotal = beforeDataNumber(after.volume_total_ml);
+  const afterRemaining = beforeDataNumber(after.volume_remaining_ml);
+  const beforeRatio =
+    beforeTotal > 0 ? clamp01(beforeRemaining / beforeTotal) : null;
+  const afterRatio =
+    afterTotal > 0 ? clamp01(afterRemaining / afterTotal) : null;
+
+  const didCrossNearlyEmptyThreshold =
+    !didTransitionToDone &&
+    before.status === 'active' &&
+    after.status === 'active' &&
+    beforeRatio != null &&
+    afterRatio != null &&
+    beforeRatio > 0.1 &&
+    afterRatio <= 0.1 &&
+    afterRatio > 0;
+
+  if (!didTransitionToDone && !didCrossNearlyEmptyThreshold) return;
 
   const participantIds = after.participant_ids ?? [];
   if (participantIds.length === 0) return;
 
   const beerName = after.beer_name ?? 'The keg';
   const sessionId = event.params?.sessionId ?? '';
+  const percentLeft = afterRatio == null ? 0 : Math.max(0, Math.round(afterRatio * 100));
 
   // Fetch all participant user docs (Firestore whereIn limit: 30)
   const batches: string[][] = [];
@@ -154,20 +215,52 @@ export const onKegStatusChanged = onDocumentUpdated('kegSessions/{sessionId}', a
     const fcmToken = prefs?.fcm_token as string | undefined;
     if (!fcmToken) continue;
 
-    // Respect the user's preference (default: true)
-    const notifyKegDone = prefs?.notify_keg_done as boolean | undefined;
-    if (notifyKegDone === false) continue;
+    const language = normaliseLanguage(prefs?.language);
+    const copy = notificationCopy[language];
+
+    let title: string | null = null;
+    let body: string | null = null;
+
+    if (didTransitionToDone) {
+      const notifyKegDone = prefs?.notify_keg_done as boolean | undefined;
+      if (notifyKegDone === false) continue;
+      title = copy.kegDoneTitle;
+      body = copy.kegDoneBody({ beerName });
+    } else if (didCrossNearlyEmptyThreshold) {
+      const notifyNearlyEmpty = prefs?.notify_keg_nearly_empty as boolean | undefined;
+      if (notifyNearlyEmpty === false) continue;
+      title = copy.kegNearlyEmptyTitle;
+      body = copy.kegNearlyEmptyBody({
+        beerName,
+        percentLeft,
+      });
+    }
+
+    if (title == null || body == null) continue;
 
     messages.push({
       token: fcmToken,
+      notification: {
+        title,
+        body,
+      },
       data: {
-        type: 'keg_done',
-        title: '🎉 Keg empty!',
-        body: `${beerName} is done. Check the final stats!`,
+        type: didTransitionToDone ? 'keg_done' : 'keg_nearly_empty',
+        title,
+        body,
         session_id: sessionId,
       },
+      android: {
+        priority: 'high',
+        notification: {
+          channelId: 'beerer_default',
+        },
+      },
       apns: {
-        payload: { aps: { 'content-available': 1 } },
+        payload: { aps: { sound: 'default' } },
+        headers: {
+          'apns-priority': '10',
+        },
       },
     });
   }
@@ -177,6 +270,14 @@ export const onKegStatusChanged = onDocumentUpdated('kegSessions/{sessionId}', a
     await admin.messaging().sendEach(messages);
   }
 });
+
+function beforeDataNumber(value: unknown): number {
+  return typeof value === 'number' ? value : 0;
+}
+
+function clamp01(value: number): number {
+  return Math.max(0, Math.min(1, value));
+}
 
 // ---------------------------------------------------------------------------
 // Account deletion — callable by the authenticated user.

@@ -11,7 +11,6 @@ abstract class KegSession with _$KegSession {
     required String id,
     required String creatorId,
     required String beerName,
-    String? untappdBeerId,
     required double volumeTotalMl,
     required double volumeRemainingMl,
     required double kegPrice,

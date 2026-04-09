@@ -20,10 +20,9 @@
 | Backend / Database | Cloud Firestore | `cloud_firestore ^6.1.3` — real-time snapshots, offline persistence |
 | Auth | Firebase Auth | `firebase_auth ^6.2.0` — email/password with email verification |
 | Serverless | Firebase Cloud Functions v2 | TypeScript, Node 20, region `europe-west1` |
-| Push notifications | FCM + flutter_local_notifications | Data-only messages; background handler in top-level function |
+| Serverless | Firebase Cloud Functions v2 | TypeScript, Node 22, region `europe-west1` |
+| Push notifications | FCM + flutter_local_notifications | Localized push payloads + local reminders; background handler for data-only fallback |
 | Beer search | BeerWeb.cz API | Client-side `http` calls to `https://beerweb.cz/api/Search` (XML → parsed) |
-| Beer search (alt) | Untappd API | Via Cloud Function `searchUntappd`; API key in secrets |
-| Cost settlement | Settle Up API | Via Cloud Function `exportToSettleUp`; OAuth in secrets (stub) |
 | Charts | fl_chart | `^1.2.0` — BAC timeline charts |
 | QR / sharing | qr_flutter, mobile_scanner, share_plus | Deep links: `beerer://join/{sessionId}` |
 | Deep links | app_links | `^7.0.0` — handles `beerer://join/` URI scheme |
@@ -56,7 +55,7 @@ main.dart  →  app.dart  →  router.dart  →  screens/
 3. **Repository pattern** — Each Firestore collection has a dedicated repository class (`UserRepository`, `KegRepository`, `PourRepository`, `JointAccountRepository`). Repositories accept `FirebaseFirestore` via constructor injection for testability.
 4. **Provider-based DI** — Repositories are exposed as `@riverpod` providers (e.g. `kegRepositoryProvider`). Integration tests override these with `FakeFirebaseFirestore` instances.
 5. **Firebase offline persistence** — Rely entirely on Firestore's built-in offline queue. Do NOT build custom sync.
-6. **Secrets stay server-side** — API keys for Untappd and Settle Up live in Cloud Function secrets (`onCall({ secrets: [...] })`), never in Flutter code.
+6. **Secrets stay server-side** — Any future backend credentials must live in Cloud Function secrets or another server-side configuration layer, never in Flutter code.
 7. **Privacy by design** — BAC is calculated on-device only (`BacCalculator`), never stored in Firestore. Weight/age/gender are stored in the user's own doc; visibility is opt-in via preferences.
 8. **Profile auto-creation** — After sign-in, the app ensures a Firestore profile exists. The `watchCurrentUser` provider auto-creates a minimal profile (nickname from Firebase Auth `displayName` → email local part → `'Beerer user'`) if the doc is missing.
 
@@ -94,7 +93,6 @@ users/{userId}
 kegSessions/{sessionId}
   creator_id: string
   beer_name: string
-  untappd_beer_id: string?
   volume_total_ml: number
   volume_remaining_ml: number
   keg_price: number
@@ -204,13 +202,11 @@ Defined in `firestore.rules`. Key patterns:
 
 ## Cloud Functions (TypeScript)
 
-Located in `functions/src/index.ts`. Region: `europe-west1`. Node 20.
+Located in `functions/src/index.ts`. Region: `europe-west1`. Node 22.
 
 | Function | Trigger | Purpose |
 |----------|---------|---------|
-| `searchUntappd` | `onCall` | Proxies Untappd beer search; keeps API key server-side |
-| `exportToSettleUp` | `onCall` | Exports session costs to Settle Up (stub) |
-| `onPourCreated` | `onDocumentWritten('pours/{pourId}')` | Sends FCM data-only notification when someone pours for another user |
+| `onPourCreated` | `onDocumentWritten('pours/{pourId}')` | Sends localized FCM notification when someone pours for another user |
 | `onKegStatusChanged` | `onDocumentUpdated('kegSessions/{sessionId}')` | Sends FCM notification to all participants when keg status → `done` |
 
 ### Cloud Functions development
@@ -223,13 +219,6 @@ npm run lint         # eslint
 npm run serve        # build + firebase emulators
 firebase deploy --only functions
 ```
-
-Secrets are configured via Firebase Functions secrets:
-- `UNTAPPD_API_KEY`
-- `SETTLEUP_CLIENT_ID`
-- `SETTLEUP_CLIENT_SECRET`
-
----
 
 ## Development Environment
 
@@ -331,7 +320,7 @@ flutterfire configure
 - `NotificationService` singleton initialised in `main()`.
 - FCM token saved to `users/{uid}/preferences/fcm_token` in Firestore.
 - Background handler is a top-level `@pragma('vm:entry-point')` function.
-- All FCM messages are data-only; client decides display based on foreground/background.
+- FCM notifications use localized notification payloads for background/terminated delivery; app still suppresses foreground display.
 - Notification preferences (`notify_pour_for_me`, `notify_keg_done`, etc.) respected server-side.
 
 ### TypeScript (Cloud Functions)
@@ -408,8 +397,6 @@ Map<String, dynamic> firestoreDoc(String id, Map<String, dynamic> data) {
 | API | Usage | Auth | Called from |
 |-----|-------|------|-----------|
 | BeerWeb.cz | Beer search during keg creation (`/api/Search?term=`) | None (public) | Flutter client (`http` package) |
-| Untappd | Beer search (alternative) | API key in Cloud Function secret | Cloud Function `searchUntappd` |
-| Settle Up | Cost export after keg done | OAuth in Cloud Function secrets | Cloud Function `exportToSettleUp` (stub) |
 
 ---
 
@@ -425,7 +412,7 @@ Map<String, dynamic> firestoreDoc(String id, Map<String, dynamic> data) {
 - **Never** commit `firebase_options.dart`, `google-services.json`, or `GoogleService-Info.plist`.
 - **Never** use `print()` — the `avoid_print` lint rule is enabled. Use `debugPrint()` or `logger` for dev logging.
 - **Never** use heredoc / here-document syntax (e.g. `cat > file << 'EOF'`) in terminal commands — it causes terminal disconnection with long content. Use a Python script or the `create_file` tool instead.
-- **Never** use Firebase Cloud Functions from Flutter client code. All logic should run client-side or via direct Firestore operations. Notifications should use Firestore-triggered mechanisms or local notifications only. The `cloud_functions` package dependency is deprecated and should be removed.
+- Firebase Cloud Functions are allowed and recommended for server-side logic that needs secrets, trusted writes, or backend integrations. Keep API keys/secrets in Functions secrets and never embed them in Flutter source code.
 
 ---
 
@@ -444,10 +431,10 @@ BeerEr/
 ├── android/                      # Android host app
 ├── ios/                          # iOS host app
 ├── functions/                    # Firebase Cloud Functions (TypeScript)
-│   ├── src/index.ts              # searchUntappd, exportToSettleUp, onPourCreated, onKegStatusChanged
+│   ├── src/index.ts              # onPourCreated, onKegStatusChanged, account lifecycle callables
 │   ├── tsconfig.json             # strict, ES2020, CommonJS
 │   ├── eslint.config.mjs
-│   └── package.json              # Node 20, firebase-admin ^13, firebase-functions ^6
+│   └── package.json              # Node 22, firebase-admin ^13, firebase-functions ^6
 ├── lib/
 │   ├── main.dart                 # Entry: Firebase.initializeApp, NotificationService.init, ProviderScope, deep link handling
 │   ├── app.dart                  # BeerErApp — MaterialApp.router with theme, locale, l10n delegates

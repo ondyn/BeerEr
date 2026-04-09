@@ -259,7 +259,6 @@ class _CreateKegScreenState extends ConsumerState<CreateKegScreen> {
         id: '',
         creatorId: user.uid,
         beerName: _beerNameController.text.trim(),
-        untappdBeerId: null,
         volumeTotalMl: volumeLitres * 1000,
         volumeRemainingMl: volumeLitres * 1000,
         kegPrice: double.parse(

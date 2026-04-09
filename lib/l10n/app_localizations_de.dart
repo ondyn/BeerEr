@@ -458,19 +458,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get linkCopied => 'Link kopiert!';
 
   @override
-  String get exportToSettleUp => 'Nach Settle Up exportieren';
-
-  @override
   String get reviewBillSplit => 'Kostenaufteilung prüfen';
 
   @override
   String get noJointAccountsFound => 'Keine gemeinsamen Konten gefunden. Einzelkosten werden exportiert.';
-
-  @override
-  String get settleUpInfo => 'ℹ Settle Up erstellt eine Gruppe mit diesen Beträgen.';
-
-  @override
-  String get exportedSuccessfully => 'Erfolgreich nach Settle Up exportiert!';
 
   @override
   String get sessionNotFound => 'Sitzung nicht gefunden';
@@ -926,11 +917,6 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String totalWithAmount(String amount) {
     return 'Gesamt: $amount';
-  }
-
-  @override
-  String exportFailed(String error) {
-    return 'Export fehlgeschlagen: $error';
   }
 
   @override

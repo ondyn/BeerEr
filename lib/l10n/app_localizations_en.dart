@@ -215,7 +215,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get registerLink => 'Register ›';
 
   @override
-  String get alreadyHaveOne => 'Already have one? ';
+  String get alreadyHaveOne => 'Already have an account? ';
 
   @override
   String get signInLink => 'Sign in ›';
@@ -458,19 +458,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get linkCopied => 'Link copied!';
 
   @override
-  String get exportToSettleUp => 'Export to Settle Up';
-
-  @override
   String get reviewBillSplit => 'Review the bill split';
 
   @override
   String get noJointAccountsFound => 'No joint accounts found. Individual costs will be exported.';
-
-  @override
-  String get settleUpInfo => 'ℹ Settle Up will create a group with these amounts.';
-
-  @override
-  String get exportedSuccessfully => 'Exported to Settle Up successfully!';
 
   @override
   String get sessionNotFound => 'Session not found';
@@ -926,11 +917,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String totalWithAmount(String amount) {
     return 'Total: $amount';
-  }
-
-  @override
-  String exportFailed(String error) {
-    return 'Export failed: $error';
   }
 
   @override

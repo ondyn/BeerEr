@@ -458,19 +458,10 @@ class AppLocalizationsCs extends AppLocalizations {
   String get linkCopied => 'Odkaz zkopírován!';
 
   @override
-  String get exportToSettleUp => 'Exportovat do Settle Up';
-
-  @override
   String get reviewBillSplit => 'Přehled rozúčtování';
 
   @override
   String get noJointAccountsFound => 'Nenalezeny žádné společné účty. Budou exportovány individuální náklady.';
-
-  @override
-  String get settleUpInfo => 'ℹ Settle Up vytvoří skupinu s těmito částkami.';
-
-  @override
-  String get exportedSuccessfully => 'Úspěšně exportováno do Settle Up!';
 
   @override
   String get sessionNotFound => 'Akce nenalezena';
@@ -926,11 +917,6 @@ class AppLocalizationsCs extends AppLocalizations {
   @override
   String totalWithAmount(String amount) {
     return 'Celkem: $amount';
-  }
-
-  @override
-  String exportFailed(String error) {
-    return 'Export se nezdařil: $error';
   }
 
   @override

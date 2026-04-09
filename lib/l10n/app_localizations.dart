@@ -508,7 +508,7 @@ abstract class AppLocalizations {
   /// No description provided for @alreadyHaveOne.
   ///
   /// In en, this message translates to:
-  /// **'Already have one? '**
+  /// **'Already have an account? '**
   String get alreadyHaveOne;
 
   /// No description provided for @signInLink.
@@ -991,12 +991,6 @@ abstract class AppLocalizations {
   /// **'Link copied!'**
   String get linkCopied;
 
-  /// No description provided for @exportToSettleUp.
-  ///
-  /// In en, this message translates to:
-  /// **'Export to Settle Up'**
-  String get exportToSettleUp;
-
   /// No description provided for @reviewBillSplit.
   ///
   /// In en, this message translates to:
@@ -1008,18 +1002,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No joint accounts found. Individual costs will be exported.'**
   String get noJointAccountsFound;
-
-  /// No description provided for @settleUpInfo.
-  ///
-  /// In en, this message translates to:
-  /// **'ℹ Settle Up will create a group with these amounts.'**
-  String get settleUpInfo;
-
-  /// No description provided for @exportedSuccessfully.
-  ///
-  /// In en, this message translates to:
-  /// **'Exported to Settle Up successfully!'**
-  String get exportedSuccessfully;
 
   /// No description provided for @sessionNotFound.
   ///
@@ -1908,12 +1890,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Total: {amount}'**
   String totalWithAmount(String amount);
-
-  /// No description provided for @exportFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Export failed: {error}'**
-  String exportFailed(String error);
 
   /// No description provided for @newKegSessionStep.
   ///

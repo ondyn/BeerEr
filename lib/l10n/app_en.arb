@@ -67,9 +67,9 @@
   "passwordsDoNotMatch": "Passwords do not match",
   "forgotPassword": "Forgot password?",
   "noAccount": "No account? ",
-  "registerLink": "Register ›",
-  "alreadyHaveOne": "Already have one? ",
-  "signInLink": "Sign in ›",
+  "registerLink": "Register \u203a",
+  "alreadyHaveOne": "Already have an account? ",
+  "signInLink": "Sign in \u203a",
   "signInFailed": "Sign in failed. Please try again.",
   "signInWithGoogle": "Sign in with Google",
   "or": "or",
@@ -151,11 +151,8 @@
   "copyLink": "Copy link",
   "shareLink": "Share link",
   "linkCopied": "Link copied!",
-  "exportToSettleUp": "Export to Settle Up",
   "reviewBillSplit": "Review the bill split",
   "noJointAccountsFound": "No joint accounts found. Individual costs will be exported.",
-  "settleUpInfo": "ℹ Settle Up will create a group with these amounts.",
-  "exportedSuccessfully": "Exported to Settle Up successfully!",
   "sessionNotFound": "Session not found",
   "searchBeer": "Search beer…",
   "egKozel": "e.g. Kozel",
@@ -350,14 +347,6 @@
   "@totalWithAmount": {
     "placeholders": {
       "amount": {
-        "type": "String"
-      }
-    }
-  },
-  "exportFailed": "Export failed: {error}",
-  "@exportFailed": {
-    "placeholders": {
-      "error": {
         "type": "String"
       }
     }

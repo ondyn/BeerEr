@@ -6,6 +6,8 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart'
     show TargetPlatform, defaultTargetPlatform, kIsWeb;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
 
 /// Top-level handler for background FCM data-only messages.
 ///
@@ -13,9 +15,20 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 /// it in a separate isolate.
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  // Data-only messages don't produce a system notification automatically.
-  // Show one via flutter_local_notifications so the user sees it.
+  // When the server already provides notification payload, the OS shows it.
+  // We only render a local notification for data-only messages.
+  if (message.notification != null) return;
+
   final plugin = FlutterLocalNotificationsPlugin();
+  const androidInit = AndroidInitializationSettings('@drawable/ic_notification');
+  const darwinInit = DarwinInitializationSettings();
+  await plugin.initialize(
+    settings: const InitializationSettings(
+      android: androidInit,
+      iOS: darwinInit,
+      macOS: darwinInit,
+    ),
+  );
 
   const androidChannel = AndroidNotificationChannel(
     'beerer_default',
@@ -56,6 +69,7 @@ class NotificationService {
   final FirebaseMessaging _fcm = FirebaseMessaging.instance;
   final FlutterLocalNotificationsPlugin _local =
       FlutterLocalNotificationsPlugin();
+  bool _timeZonesInitialised = false;
 
   /// Android notification channel for beer-related pushes.
   static const _androidChannel = AndroidNotificationChannel(
@@ -98,6 +112,11 @@ class NotificationService {
       ),
       onDidReceiveNotificationResponse: _onNotificationTapped,
     );
+
+    if (!_timeZonesInitialised) {
+      tz.initializeTimeZones();
+      _timeZonesInitialised = true;
+    }
 
     // 4. Create the Android notification channel.
     if (!kIsWeb &&
@@ -146,8 +165,9 @@ class NotificationService {
   void _handleForegroundMessage(RemoteMessage message) {
     // `onMessage` only fires when the app is in the foreground.
     // Per requirement: suppress notifications while the app is active.
-    // Data-only messages that arrive when the app is NOT active are handled
-    // by [firebaseMessagingBackgroundHandler] which shows a local notification.
+    // Background/terminated notifications are displayed by the OS from FCM
+    // notification payload. Data-only fallbacks are handled by
+    // [firebaseMessagingBackgroundHandler].
     //
     // So here we intentionally do nothing.
   }
@@ -194,25 +214,25 @@ class NotificationService {
 
     if (timeToZero == null || timeToZero.inSeconds <= 0) return;
 
-    _bacZeroTimer = Timer(timeToZero, () async {
-      await _local.show(
-        id: _bacZeroNotificationId,
-        title: title,
-        body: body,
-        notificationDetails: NotificationDetails(
-          android: AndroidNotificationDetails(
-            _androidChannel.id,
-            _androidChannel.name,
-            channelDescription: _androidChannel.description,
-            importance: Importance.high,
-            priority: Priority.high,
-            icon: '@drawable/ic_notification',
-          ),
-          iOS: const DarwinNotificationDetails(),
+    // Persisted schedule so it can fire even when the app is killed.
+    await _local.zonedSchedule(
+      id: _bacZeroNotificationId,
+      title: title,
+      body: body,
+      scheduledDate: tz.TZDateTime.now(tz.local).add(timeToZero),
+      notificationDetails: NotificationDetails(
+        android: AndroidNotificationDetails(
+          _androidChannel.id,
+          _androidChannel.name,
+          channelDescription: _androidChannel.description,
+          importance: Importance.high,
+          priority: Priority.high,
+          icon: '@drawable/ic_notification',
         ),
-      );
-      _bacZeroTimer = null;
-    });
+        iOS: const DarwinNotificationDetails(),
+      ),
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+    );
   }
 
   /// Cancels a previously scheduled BAC-zero notification.

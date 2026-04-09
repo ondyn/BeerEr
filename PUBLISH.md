@@ -269,7 +269,7 @@ See live statistics: how much beer is left, who's drinking what, average drinkin
 Share a join link or QR code with friends. Everyone can log their own pours or pour for others — with push notifications to keep everyone in the loop.
 
 💰 SPLIT COSTS
-At the end of the party, see exactly what everyone owes. Create joint accounts for families or groups and export costs to settle up easily.
+At the end of the party, see exactly what everyone owes. Create joint accounts for families or groups and review the bill split clearly inside the app.
 
 🔒 PRIVACY FIRST
 BAC estimates are calculated on your device only — never stored on any server. Weight, age, and BAC visibility are fully opt-in.
@@ -414,7 +414,7 @@ This is one of the most important and detailed sections. You must declare what d
 ### 10.9 Financial Features
 
 - **Does your app provide financial features?** → **No**
-  - The "Tip via Revolut" link is an external URL and not an in-app payment. Settle Up export is also external.
+   - The "Tip via Revolut" link is an external URL and not an in-app payment.
 
 ### 10.10 Government Apps
 

@@ -597,13 +597,6 @@ class _KegDetailBodyState extends ConsumerState<_KegDetailBody> {
             icon: const Icon(Icons.edit_note),
             label: Text(AppLocalizations.of(context)!.reviewBill),
           ),
-          // Step 14: Settle Up export disabled — keep code, hide UI.
-          // if (false)
-          //   FilledButton(
-          //     onPressed: () =>
-          //         context.go('/keg/${session.id}/settle'),
-          //     child: const Text('Export to Settle Up'),
-          //   ),
           const SizedBox(height: 12),
         ],
         // Tip the developer

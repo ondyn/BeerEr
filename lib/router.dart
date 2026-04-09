@@ -136,14 +136,6 @@ GoRouter router(Ref ref) {
                   sessionId: sessionId);
             },
           ),
-          // Step 14: Settle Up route disabled.
-          // GoRoute(
-          //   path: 'settle',
-          //   builder: (context, state) {
-          //     final sessionId = state.pathParameters['sessionId']!;
-          //     return SettleUpScreen(sessionId: sessionId);
-          //   },
-          // ),
           GoRoute(
             path: 'review',
             builder: (context, state) {

@@ -128,7 +128,7 @@ GET https://beerweb.cz/api/Search?term={query}
 - Call this from a **Firebase Cloud Function** (avoids CORS, keeps requests server-side)
 - Parse the XML response and return a JSON list of `{ name, url, type }` to the Flutter app
 - Use the `Url` field to derive the slug and link back to BeerWeb details
-- This replaces or supplements the Untappd API for Czech/Slovak brewery data
+- This serves as the beer search source for Czech/Slovak brewery data in Beerer
 
 **Example Cloud Function shape:**
 ```ts
