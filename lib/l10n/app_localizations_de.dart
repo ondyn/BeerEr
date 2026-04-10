@@ -677,6 +677,18 @@ class AppLocalizationsDe extends AppLocalizations {
   String get participantsLabel => 'Teilnehmer';
 
   @override
+  String get sortBy => 'Sortieren nach';
+
+  @override
+  String get sortDefault => 'Standard';
+
+  @override
+  String get sortConsumption => 'Verbrauch';
+
+  @override
+  String get sortUsername => 'Name';
+
+  @override
   String get myTotal => 'Mein Gesamt';
 
   @override

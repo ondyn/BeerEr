@@ -15,21 +15,22 @@ class KegVolumeChart extends StatelessWidget {
     required this.session,
     required this.pours,
     required this.prefs,
+    this.chartEndTime,
   });
 
   final KegSession session;
   final List<Pour> pours;
   final FormatPreferences prefs;
+  final DateTime? chartEndTime;
 
   @override
   Widget build(BuildContext context) {
     final startTime = session.startTime;
     if (startTime == null) return const SizedBox.shrink();
 
-    final activePours = pours
-        .where((p) => !p.undone && p.sessionId == session.id)
-        .toList()
-      ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
+    final activePours =
+        pours.where((p) => !p.undone && p.sessionId == session.id).toList()
+          ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
 
     if (activePours.isEmpty) return const SizedBox.shrink();
 
@@ -39,15 +40,24 @@ class KegVolumeChart extends StatelessWidget {
     spots.add(FlSpot(0, remaining));
 
     for (final pour in activePours) {
-      final minutes =
-          pour.timestamp.difference(startTime).inMinutes.toDouble();
+      final minutes = pour.timestamp.difference(startTime).inMinutes.toDouble();
       remaining -= pour.volumeMl;
       spots.add(FlSpot(math.max(0, minutes), math.max(0, remaining)));
     }
 
-    // Extend to now
-    final nowMinutes =
-        DateTime.now().difference(startTime).inMinutes.toDouble();
+    final effectiveEndTime =
+        chartEndTime ??
+        (session.status == KegStatus.done
+            ? session.endTime ??
+                  activePours.lastOrNull?.timestamp ??
+                  DateTime.now()
+            : DateTime.now());
+
+    // Extend to effective end time
+    final nowMinutes = effectiveEndTime
+        .difference(startTime)
+        .inMinutes
+        .toDouble();
     if (nowMinutes > spots.last.x + 1) {
       spots.add(FlSpot(nowMinutes, remaining));
     }
@@ -62,8 +72,8 @@ class KegVolumeChart extends StatelessWidget {
         Text(
           AppLocalizations.of(context)!.kegVolumeChart,
           style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                color: BeerColors.onSurfaceSecondary,
-              ),
+            color: BeerColors.onSurfaceSecondary,
+          ),
         ),
         const SizedBox(height: 8),
         SizedBox(
@@ -103,7 +113,7 @@ class KegVolumeChart extends StatelessWidget {
                         return const SizedBox.shrink();
                       }
                       return Text(
-                        _formatAsClockTime(startTime, value.toInt()),
+                        _formatAsClockTime(startTime, value.toInt(), maxX),
                         style: const TextStyle(fontSize: 10),
                       );
                     },
@@ -137,10 +147,10 @@ class KegVolumeChart extends StatelessWidget {
                     show: activePours.length < 50,
                     getDotPainter: (spot, percent, bar, index) =>
                         FlDotCirclePainter(
-                      radius: 2,
-                      color: BeerColors.primaryAmber,
-                      strokeWidth: 0,
-                    ),
+                          radius: 2,
+                          color: BeerColors.primaryAmber,
+                          strokeWidth: 0,
+                        ),
                   ),
                   belowBarData: BarAreaData(
                     show: true,
@@ -162,24 +172,31 @@ class PourRateChart extends StatelessWidget {
     super.key,
     required this.session,
     required this.pours,
+    this.chartEndTime,
   });
 
   final KegSession session;
   final List<Pour> pours;
+  final DateTime? chartEndTime;
 
   @override
   Widget build(BuildContext context) {
     final startTime = session.startTime;
     if (startTime == null) return const SizedBox.shrink();
 
-    final activePours = pours
-        .where((p) => !p.undone && p.sessionId == session.id)
-        .toList()
-      ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
+    final activePours =
+        pours.where((p) => !p.undone && p.sessionId == session.id).toList()
+          ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
 
     if (activePours.length < 2) return const SizedBox.shrink();
 
-    final now = DateTime.now();
+    final now =
+        chartEndTime ??
+        (session.status == KegStatus.done
+            ? session.endTime ??
+                  activePours.lastOrNull?.timestamp ??
+                  DateTime.now()
+            : DateTime.now());
     final totalMinutes = now.difference(startTime).inMinutes;
     if (totalMinutes <= 0) return const SizedBox.shrink();
 
@@ -192,9 +209,11 @@ class PourRateChart extends StatelessWidget {
       final windowStart = startTime.add(Duration(minutes: m - windowMinutes));
       final windowEnd = startTime.add(Duration(minutes: m));
       final windowPours = activePours
-          .where((p) =>
-              p.timestamp.isAfter(windowStart) &&
-              !p.timestamp.isAfter(windowEnd))
+          .where(
+            (p) =>
+                p.timestamp.isAfter(windowStart) &&
+                !p.timestamp.isAfter(windowEnd),
+          )
           .length;
       final rate = windowPours * (60.0 / windowMinutes);
       spots.add(FlSpot(m.toDouble(), rate));
@@ -213,8 +232,8 @@ class PourRateChart extends StatelessWidget {
         Text(
           AppLocalizations.of(context)!.pourRateChart,
           style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                color: BeerColors.onSurfaceSecondary,
-              ),
+            color: BeerColors.onSurfaceSecondary,
+          ),
         ),
         const SizedBox(height: 8),
         SizedBox(
@@ -254,7 +273,7 @@ class PourRateChart extends StatelessWidget {
                         return const SizedBox.shrink();
                       }
                       return Text(
-                        _formatAsClockTime(startTime, value.toInt()),
+                        _formatAsClockTime(startTime, value.toInt(), maxX),
                         style: const TextStyle(fontSize: 10),
                       );
                     },
@@ -328,12 +347,26 @@ double _hourInterval(double totalMinutes) {
   if (totalMinutes <= 720) return 120;
   if (totalMinutes <= 1440) return 240;
   if (totalMinutes <= 2880) return 480;
-  return 720;
+  if (totalMinutes <= 5760) return 720;
+  if (totalMinutes <= 10080) return 1440;
+  return 2880;
 }
 
 /// Formats a minute offset from [startTime] as a clock time (e.g. "14:00").
-String _formatAsClockTime(DateTime startTime, int minuteOffset) {
+String _formatAsClockTime(
+  DateTime startTime,
+  int minuteOffset,
+  double totalMinutes,
+) {
   final time = startTime.add(Duration(minutes: minuteOffset));
+  if (totalMinutes > 2880) {
+    return '${time.day}.${time.month}.';
+  }
+  if (totalMinutes > 1440) {
+    final h = time.hour.toString().padLeft(2, '0');
+    final m = time.minute.toString().padLeft(2, '0');
+    return '${time.day}.${time.month} $h:$m';
+  }
   final h = time.hour.toString().padLeft(2, '0');
   final m = time.minute.toString().padLeft(2, '0');
   return '$h:$m';

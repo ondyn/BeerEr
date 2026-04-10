@@ -396,8 +396,18 @@ class _KegDetailBodyState extends ConsumerState<_KegDetailBody> {
       uid,
       session.kegPrice,
     );
+    final endReference =
+        session.endTime ??
+        pours.where((p) => !p.undone).map((p) => p.timestamp).fold<DateTime?>(
+          null,
+          (max, ts) {
+            if (max == null || ts.isAfter(max)) return ts;
+            return max;
+          },
+        ) ??
+        DateTime.now();
     final elapsed = session.startTime != null
-        ? DateTime.now().difference(session.startTime!)
+        ? endReference.difference(session.startTime!)
         : Duration.zero;
     final participantIds = participantIdsAsync.value ?? [];
     final prefs = ref
@@ -428,6 +438,11 @@ class _KegDetailBodyState extends ConsumerState<_KegDetailBody> {
     // Watch guest (manual) users
     final manualUsersAsync = ref.watch(watchManualUsersProvider(session.id));
     final manualUsers = manualUsersAsync.asData?.value ?? [];
+    final totalConsumers = <String>{
+      ...participantIds,
+      ...manualUsers.map((g) => g.id),
+      ...pours.where((p) => !p.undone).map((p) => p.userId),
+    }.length;
 
     return ListView(
       key: const PageStorageKey('done_body_list'),
@@ -489,7 +504,7 @@ class _KegDetailBodyState extends ConsumerState<_KegDetailBody> {
                 StatTile(
                   icon: Icons.people,
                   label: AppLocalizations.of(context)!.participantsLabel,
-                  value: '${participantIds.length}',
+                  value: '$totalConsumers',
                 ),
                 StatTile(
                   icon: Icons.attach_money,
@@ -1152,6 +1167,7 @@ class _ParticipantsSectionState extends ConsumerState<_ParticipantsSection> {
   /// so that `ref.watch(watchUsersProvider(_cachedIds))` always hits the
   /// same provider instance for the same participant set.
   List<String> _cachedIds = const [];
+  _ParticipantSortMode _sortMode = _ParticipantSortMode.defaultOrder;
 
   List<String> _resolveIds() {
     final newIds = widget.participantIdsAsync.value ?? [];
@@ -1178,21 +1194,69 @@ class _ParticipantsSectionState extends ConsumerState<_ParticipantsSection> {
     final manualUsers = manualUsersAsync.asData?.value ?? [];
 
     // Build a userId → groupName lookup.
-    final Map<String, String> userGroupNames = {};
-    for (final a in accounts) {
-      for (final uid in a.memberUserIds) {
-        userGroupNames[uid] = a.groupName;
+    final userGroupNames = <String, String>{};
+    for (final account in accounts) {
+      for (final uid in account.memberUserIds) {
+        userGroupNames[uid] = account.groupName;
       }
     }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          AppLocalizations.of(context)!.participantsLabel,
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-            color: BeerColors.onSurfaceSecondary,
-          ),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                AppLocalizations.of(context)!.participantsLabel,
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  color: BeerColors.onSurfaceSecondary,
+                ),
+              ),
+            ),
+            PopupMenuButton<_ParticipantSortMode>(
+              initialValue: _sortMode,
+              tooltip: AppLocalizations.of(context)!.sortBy,
+              onSelected: (value) {
+                if (_sortMode == value) return;
+                setState(() => _sortMode = value);
+              },
+              itemBuilder: (ctx) {
+                final l10n = AppLocalizations.of(ctx)!;
+                return [
+                  PopupMenuItem(
+                    value: _ParticipantSortMode.defaultOrder,
+                    child: Text(l10n.sortDefault),
+                  ),
+                  PopupMenuItem(
+                    value: _ParticipantSortMode.consumption,
+                    child: Text(l10n.sortConsumption),
+                  ),
+                  PopupMenuItem(
+                    value: _ParticipantSortMode.username,
+                    child: Text(l10n.sortUsername),
+                  ),
+                ];
+              },
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.sort,
+                    size: 18,
+                    color: BeerColors.onSurfaceSecondary,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    _sortLabel(context, _sortMode),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: BeerColors.onSurfaceSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 8),
         usersAsync.when(
@@ -1204,8 +1268,7 @@ class _ParticipantsSectionState extends ConsumerState<_ParticipantsSection> {
                 .withCurrency(widget.session.currency);
             final currentUid = FirebaseAuth.instance.currentUser?.uid;
 
-            // -- Compute rankings (by volume drunk, descending) ----------
-            // Combine registered users + guests into one ranked list.
+            // Compute rank from combined registered + guest participants.
             final allIds = <String>[
               ...users.map((u) => u.id),
               ...manualUsers.map((g) => g.id),
@@ -1214,7 +1277,6 @@ class _ParticipantsSectionState extends ConsumerState<_ParticipantsSection> {
               for (final id in allIds)
                 id: StatsCalculator.userPouredMl(widget.pours, id),
             };
-            // Sort ids by volume descending to assign rank.
             final sortedIds = [...allIds]
               ..sort((a, b) => volumeById[b]!.compareTo(volumeById[a]!));
             final rankOf = <String, int>{};
@@ -1222,37 +1284,56 @@ class _ParticipantsSectionState extends ConsumerState<_ParticipantsSection> {
               rankOf[sortedIds[i]] = i + 1;
             }
 
-            // -- Sort users: logged-in user first, then by rank ----------
-            final sortedUsers = [...users]
-              ..sort((a, b) {
-                if (a.id == currentUid) return -1;
-                if (b.id == currentUid) return 1;
-                return (rankOf[a.id] ?? 99).compareTo(rankOf[b.id] ?? 99);
-              });
-            final sortedGuests = [...manualUsers]
-              ..sort((a, b) {
-                return (rankOf[a.id] ?? 99).compareTo(rankOf[b.id] ?? 99);
-              });
-
-            // Build a unified ordered key list for the animated column.
-            // Current user is always first (pinned at top).
-            final orderedKeys = <String>[
-              for (final user in sortedUsers) 'participant_${user.id}',
-              for (final guest in sortedGuests) 'guest_${guest.id}',
+            final entries = <_ParticipantEntry>[
+              for (final user in users)
+                _ParticipantEntry(
+                  key: 'participant_${user.id}',
+                  id: user.id,
+                  displayName: user.displayName,
+                ),
+              for (final guest in manualUsers)
+                _ParticipantEntry(
+                  key: 'guest_${guest.id}',
+                  id: guest.id,
+                  displayName: guest.nickname,
+                ),
             ];
 
-            // Build lookup maps for quick access by key.
+            final sortedEntries = [...entries]
+              ..sort((a, b) {
+                final rankCompare = (rankOf[a.id] ?? 99).compareTo(
+                  rankOf[b.id] ?? 99,
+                );
+                final nameCompare = a.displayName.toLowerCase().compareTo(
+                  b.displayName.toLowerCase(),
+                );
+                switch (_sortMode) {
+                  case _ParticipantSortMode.defaultOrder:
+                    if (a.id == currentUid && b.id != currentUid) return -1;
+                    if (b.id == currentUid && a.id != currentUid) return 1;
+                    if (rankCompare != 0) return rankCompare;
+                    return nameCompare;
+                  case _ParticipantSortMode.consumption:
+                    if (rankCompare != 0) return rankCompare;
+                    return nameCompare;
+                  case _ParticipantSortMode.username:
+                    return nameCompare;
+                }
+              });
+
+            final orderedKeys = <String>[
+              for (final entry in sortedEntries) entry.key,
+            ];
             final userByKey = <String, AppUser>{
-              for (final user in sortedUsers) 'participant_${user.id}': user,
+              for (final user in users) 'participant_${user.id}': user,
             };
             final guestByKey = <String, ManualUser>{
-              for (final guest in sortedGuests) 'guest_${guest.id}': guest,
+              for (final guest in manualUsers) 'guest_${guest.id}': guest,
             };
 
             return AnimatedReorderableColumn(
               itemKeys: orderedKeys,
               itemBuilder: (key) {
-                // Registered user row
                 if (userByKey.containsKey(key)) {
                   final user = userByKey[key]!;
                   return _UnifiedParticipantRow(
@@ -1355,7 +1436,7 @@ class _ParticipantsSectionState extends ConsumerState<_ParticipantsSection> {
                     },
                   );
                 }
-                // Guest row
+
                 final guest = guestByKey[key]!;
                 return _UnifiedParticipantRow(
                   key: ValueKey(key),
@@ -1416,6 +1497,18 @@ class _ParticipantsSectionState extends ConsumerState<_ParticipantsSection> {
     );
   }
 
+  String _sortLabel(BuildContext context, _ParticipantSortMode mode) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (mode) {
+      case _ParticipantSortMode.defaultOrder:
+        return l10n.sortDefault;
+      case _ParticipantSortMode.consumption:
+        return l10n.sortConsumption;
+      case _ParticipantSortMode.username:
+        return l10n.sortUsername;
+    }
+  }
+
   Future<void> _removeGuest(
     BuildContext context,
     WidgetRef ref,
@@ -1448,6 +1541,20 @@ class _ParticipantsSectionState extends ConsumerState<_ParticipantsSection> {
     // Pop the guest detail screen that initiated this action.
     if (context.mounted) Navigator.of(context).pop();
   }
+}
+
+enum _ParticipantSortMode { defaultOrder, consumption, username }
+
+class _ParticipantEntry {
+  const _ParticipantEntry({
+    required this.key,
+    required this.id,
+    required this.displayName,
+  });
+
+  final String key;
+  final String id;
+  final String displayName;
 }
 
 /// Unified participant row for both registered users and guests.
@@ -1525,7 +1632,8 @@ class _UnifiedParticipantRow extends StatelessWidget {
       decimalPlaces: 0,
     );
     final timerText = lastPourTime != null
-        ? '${TimeFormatter.formatDuration(lastPourTime!)} ${AppLocalizations.of(context)!.ago}'
+        // ? '${TimeFormatter.formatDuration(lastPourTime!)} ${AppLocalizations.of(context)!.ago}'
+        ? TimeFormatter.formatDuration(lastPourTime!)
         : null;
 
     return Card(

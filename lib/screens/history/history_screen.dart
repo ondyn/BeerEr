@@ -45,12 +45,9 @@ class HistoryScreen extends ConsumerWidget {
                   const SizedBox(height: 16),
                   Text(
                     AppLocalizations.of(context)!.noPastSessions,
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium
-                        ?.copyWith(
-                          color: BeerColors.onSurfaceSecondary,
-                        ),
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: BeerColors.onSurfaceSecondary,
+                    ),
                   ),
                 ],
               ),
@@ -59,7 +56,9 @@ class HistoryScreen extends ConsumerWidget {
 
           return ListView.builder(
             padding: EdgeInsets.fromLTRB(
-              16, 16, 16,
+              16,
+              16,
+              16,
               16 + MediaQuery.paddingOf(context).bottom,
             ),
             itemCount: sessions.length,
@@ -74,11 +73,11 @@ class HistoryScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(
-          child: CircularProgressIndicator(
-            color: BeerColors.primaryAmber,
-          ),
+          child: CircularProgressIndicator(color: BeerColors.primaryAmber),
         ),
-        error: (e, _) => Center(child: Text(AppLocalizations.of(context)!.error(e.toString()))),
+        error: (e, _) => Center(
+          child: Text(AppLocalizations.of(context)!.error(e.toString())),
+        ),
       ),
     );
   }
@@ -98,10 +97,22 @@ class _HistorySessionCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final participantIdsAsync =
-        ref.watch(watchParticipantIdsProvider(session.id));
-    final participantCount =
-        participantIdsAsync.asData?.value.length ?? 0;
+    final participantIdsAsync = ref.watch(
+      watchParticipantIdsProvider(session.id),
+    );
+    final manualUsersAsync = ref.watch(watchManualUsersProvider(session.id));
+    final poursAsync = ref.watch(watchSessionPoursProvider(session.id));
+
+    final participantIds = participantIdsAsync.asData?.value ?? const [];
+    final manualUsers = manualUsersAsync.asData?.value ?? const <ManualUser>[];
+    final pours = poursAsync.asData?.value ?? const <Pour>[];
+
+    final consumerIds = <String>{
+      ...participantIds,
+      ...manualUsers.map((u) => u.id),
+      ...pours.where((p) => !p.undone).map((p) => p.userId),
+    };
+    final participantCount = consumerIds.length;
 
     return SessionCard(
       session: session,

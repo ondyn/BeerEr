@@ -36,9 +36,11 @@ class KegRepository {
     return _sessions
         .where('status', isEqualTo: 'active')
         .snapshots()
-        .map((qs) => qs.docs
-            .map((d) => KegSession.fromJson(firestoreDoc(d.id, d.data())))
-            .toList());
+        .map(
+          (qs) => qs.docs
+              .map((d) => KegSession.fromJson(firestoreDoc(d.id, d.data())))
+              .toList(),
+        );
   }
 
   /// Watches all sessions where [userId] participates (including creator).
@@ -47,17 +49,17 @@ class KegRepository {
         .where('participant_ids', arrayContains: userId)
         .snapshots()
         .map((qs) {
-      final sessions = qs.docs
-          .map((d) => KegSession.fromJson(firestoreDoc(d.id, d.data())))
-          .toList();
-      // Sort client-side to avoid needing a composite index.
-      sessions.sort((a, b) {
-        final aTime = a.startTime ?? DateTime(2000);
-        final bTime = b.startTime ?? DateTime(2000);
-        return bTime.compareTo(aTime); // descending
-      });
-      return sessions;
-    });
+          final sessions = qs.docs
+              .map((d) => KegSession.fromJson(firestoreDoc(d.id, d.data())))
+              .toList();
+          // Sort client-side to avoid needing a composite index.
+          sessions.sort((a, b) {
+            final aTime = a.startTime ?? DateTime(2000);
+            final bTime = b.startTime ?? DateTime(2000);
+            return bTime.compareTo(aTime); // descending
+          });
+          return sessions;
+        });
   }
 
   /// Watches done sessions for history (only those the user participates in).
@@ -67,16 +69,16 @@ class KegRepository {
         .where('participant_ids', arrayContains: uid)
         .snapshots()
         .map((qs) {
-      final sessions = qs.docs
-          .map((d) => KegSession.fromJson(firestoreDoc(d.id, d.data())))
-          .toList();
-      sessions.sort((a, b) {
-        final aTime = a.startTime ?? DateTime(2000);
-        final bTime = b.startTime ?? DateTime(2000);
-        return bTime.compareTo(aTime);
-      });
-      return sessions;
-    });
+          final sessions = qs.docs
+              .map((d) => KegSession.fromJson(firestoreDoc(d.id, d.data())))
+              .toList();
+          sessions.sort((a, b) {
+            final aTime = a.startTime ?? DateTime(2000);
+            final bTime = b.startTime ?? DateTime(2000);
+            return bTime.compareTo(aTime);
+          });
+          return sessions;
+        });
   }
 
   /// Gets a session by ID (one-time read).
@@ -105,7 +107,8 @@ class KegRepository {
     return await _db.runTransaction<Pour>((tx) async {
       final sessionSnap = await tx.get(_sessions.doc(pour.sessionId));
       final keg = KegSession.fromJson(
-          firestoreDoc(sessionSnap.id, sessionSnap.data()!));
+        firestoreDoc(sessionSnap.id, sessionSnap.data()!),
+      );
 
       if (keg.status != KegStatus.active) {
         throw StateError('Cannot pour while keg is ${keg.status.name}.');
@@ -132,7 +135,8 @@ class KegRepository {
     await _db.runTransaction((tx) async {
       final sessionSnap = await tx.get(_sessions.doc(pour.sessionId));
       final keg = KegSession.fromJson(
-          firestoreDoc(sessionSnap.id, sessionSnap.data()!));
+        firestoreDoc(sessionSnap.id, sessionSnap.data()!),
+      );
 
       tx.update(_pours.doc(pour.id), {'undone': true});
       tx.update(_sessions.doc(pour.sessionId), {
@@ -159,7 +163,11 @@ class KegRepository {
   }
 
   Future<void> updateStatus(String sessionId, KegStatus status) async {
-    await _sessions.doc(sessionId).update({'status': status.name});
+    final data = <String, dynamic>{'status': status.name};
+    if (status == KegStatus.done) {
+      data['end_time'] = FieldValue.serverTimestamp();
+    }
+    await _sessions.doc(sessionId).update(data);
   }
 
   /// Taps the keg — sets start_time and status to active.
@@ -172,7 +180,9 @@ class KegRepository {
 
   /// Updates session details (used by creator).
   Future<void> updateSession(
-      String sessionId, Map<String, dynamic> data) async {
+    String sessionId,
+    Map<String, dynamic> data,
+  ) async {
     await _sessions.doc(sessionId).update(data);
   }
 
@@ -195,12 +205,16 @@ class KegRepository {
   /// participant_ids haven't changed — even if the session document was
   /// updated for unrelated fields like `volume_remaining_ml`.
   Stream<List<String>> watchParticipantIds(String sessionId) {
-    return _sessions.doc(sessionId).snapshots().map((snap) {
-      if (!snap.exists) return <String>[];
-      final data = snap.data()!;
-      final ids = data['participant_ids'] as List<dynamic>?;
-      return ids?.cast<String>() ?? <String>[];
-    }).distinct(listEquals);
+    return _sessions
+        .doc(sessionId)
+        .snapshots()
+        .map((snap) {
+          if (!snap.exists) return <String>[];
+          final data = snap.data()!;
+          final ids = data['participant_ids'] as List<dynamic>?;
+          return ids?.cast<String>() ?? <String>[];
+        })
+        .distinct(listEquals);
   }
 
   Stream<List<Pour>> watchPours(String sessionId) {
@@ -209,9 +223,11 @@ class KegRepository {
         .where('undone', isEqualTo: false)
         .orderBy('timestamp', descending: true)
         .snapshots()
-        .map((qs) => qs.docs
-            .map((d) => Pour.fromJson(firestoreDoc(d.id, d.data())))
-            .toList());
+        .map(
+          (qs) => qs.docs
+              .map((d) => Pour.fromJson(firestoreDoc(d.id, d.data())))
+              .toList(),
+        );
   }
 
   // ---------------------------------------------------------------------------
@@ -223,8 +239,7 @@ class KegRepository {
       _sessions.doc(sessionId).collection('manualUsers');
 
   /// Creates a guest participant in the session.
-  Future<ManualUser> addManualUser(
-      String sessionId, String nickname) async {
+  Future<ManualUser> addManualUser(String sessionId, String nickname) async {
     final ref = _manualUsers(sessionId).doc();
     final guest = ManualUser(
       id: ref.id,
@@ -280,9 +295,11 @@ class KegRepository {
 
   /// Watches all manual users for a session.
   Stream<List<ManualUser>> watchManualUsers(String sessionId) {
-    return _manualUsers(sessionId).snapshots().map((qs) => qs.docs
-        .map((d) => ManualUser.fromJson(firestoreDoc(d.id, d.data())))
-        .toList());
+    return _manualUsers(sessionId).snapshots().map(
+      (qs) => qs.docs
+          .map((d) => ManualUser.fromJson(firestoreDoc(d.id, d.data())))
+          .toList(),
+    );
   }
 
   /// Merges a manual user into a real user:

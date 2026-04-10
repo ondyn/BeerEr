@@ -2,6 +2,11 @@
 
 ## now
 
+- [x] home/history cards participant count includes all consumers ✅ Updated card count logic to use unique union of: `participant_ids` + session `manualUsers` + non-undone `pours.user_id` (covers authenticated users, guests, and deleted users present only in pours).
+- [x] finished keg participant detail should not show live BAC/time ✅ Added `end_time` on session finish and froze done-session detail calculations/charts to that timestamp; disabled "Since last", "Est. BAC", and "Est. time to drive" for done sessions.
+- [x] long-session chart x-axis overlap (e.g. 8 days) ✅ Extended hour interval scaling for very long ranges and switched long-range labels to date-based labels to avoid overlap/readability issues.
+- [x] participant list sorting in Participants header row ✅ Added inline sort menu in the Participants header with 3 modes: Default (you first, then consumption rank), Consumption rank, Username.
+
 - [x] sign-in/create account screen - add language/localization switch. ✅ Added `preAuthLocaleProvider` (Riverpod notifier) + SharedPreferences persistence via `loadLocalLanguage()`/`saveLocalLanguage()`. Language picker on welcome screen (🇬🇧/🇨🇿/🇩🇪 flags). Settings language switch also saves locally. Firestore preference takes precedence after sign-in.
 - [ ] kiosk mode - rights as a keg session owner, but not showing user specific menu - nickname, profile, not in participants list. This mode will be turned on eg. on tablet which will stay next to keg to be available to record taps for every user. Think how to activate this kiosk mode. Probably during joining the session. **⚠️ NEEDS CLARIFICATION — see notes below.**
 - [x] sign-in via Google provider ✅ Full `google_sign_in` implementation on both welcome and sign-in screens. Firestore profile auto-created with `auth_provider: 'google'`. ⚠️ Requires manual Firebase Console config: enable Google sign-in provider, add SHA-1 (Android), add reversed client ID to iOS URL schemes.
@@ -68,7 +73,7 @@
 8. Verify deploy output for function names and region `europe-west1`.
 9. (Optional) Tail logs after deploy: `firebase functions:log --only onPourCreated,onKegStatusChanged`
 10. For local verification before deploy, run emulator: `npm run serve`
-- [ ] Optimize for small resolutions devices: 2340 × 1080 Samsung A16, 1640 x 720 Redmi A5
+- [x] Optimize for small resolutions devices: 2340 × 1080 Samsung A16, 1640 x 720 Redmi A5
 - [x] Pour button in participant list shows the volume with two decimal places, but this is not nice, if last digits are zeros. Show it without decimals if it's whole number, with one decimal if it's .5, and with two decimals only if needed (e.g. 0.75). This applies to pour buttons in participant list. ✅ Added `TimeFormatter.formatCompactLitres()` and switched participant-list pour buttons to use it, preserving the user's decimal separator while trimming unnecessary trailing zeros.
 
 ### Kiosk mode — needs clarification

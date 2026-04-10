@@ -17,7 +17,9 @@ abstract class KegSession with _$KegSession {
     required double alcoholPercent,
     @Default([]) List<double> predefinedVolumesMl,
     DateTime? startTime,
+    DateTime? endTime,
     @Default(KegStatus.created) KegStatus status,
+
     /// Deep link stored in Firestore so it can be retrieved without recalculation.
     /// Format: beerer://join/[sessionId]
     /// Serialised as join_link in Firestore.
@@ -34,10 +36,12 @@ abstract class KegSession with _$KegSession {
     String? beerGroup,
     String? beerStyle,
     String? degreePlato,
+
     /// Per-participant last used pour volume (ml). Keyed by user ID.
     /// Updated after each pour so the next pour for that user defaults to
     /// their most recent volume.
     @Default({}) Map<String, dynamic> lastVolumesMl,
+
     /// Currency symbol used for this keg session's cost display.
     @Default('€') String currency,
   }) = _KegSession;

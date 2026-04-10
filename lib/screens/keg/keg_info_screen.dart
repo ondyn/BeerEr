@@ -27,7 +27,9 @@ class KegInfoScreen extends ConsumerWidget {
         if (session == null) {
           return Scaffold(
             appBar: AppBar(),
-            body: Center(child: Text(AppLocalizations.of(context)!.sessionNotFound)),
+            body: Center(
+              child: Text(AppLocalizations.of(context)!.sessionNotFound),
+            ),
           );
         }
         return _KegInfoBody(session: session);
@@ -35,14 +37,16 @@ class KegInfoScreen extends ConsumerWidget {
       loading: () => Scaffold(
         appBar: AppBar(),
         body: const Center(
-          child: CircularProgressIndicator(
-            color: BeerColors.primaryAmber,
-          ),
+          child: CircularProgressIndicator(color: BeerColors.primaryAmber),
         ),
       ),
       error: (e, _) => Scaffold(
         appBar: AppBar(),
-        body: Center(child: Text(AppLocalizations.of(context)!.errorWithMessage(e.toString()))),
+        body: Center(
+          child: Text(
+            AppLocalizations.of(context)!.errorWithMessage(e.toString()),
+          ),
+        ),
       ),
     );
   }
@@ -55,7 +59,8 @@ class _KegInfoBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final prefs = ref.watch(formatPreferencesProvider)
+    final prefs = ref
+        .watch(formatPreferencesProvider)
         .withCurrency(session.currency);
     final poursAsync = ref.watch(watchSessionPoursProvider(session.id));
     final pours = poursAsync.asData?.value ?? [];
@@ -63,8 +68,10 @@ class _KegInfoBody extends ConsumerWidget {
     // Computed stats
     final totalPouredMl = StatsCalculator.totalPouredMl(pours);
     final volumeRemainingMl = session.volumeRemainingMl;
-    final alcoholConsumedMl =
-        StatsCalculator.pureAlcoholMl(pours, session.alcoholPercent);
+    final alcoholConsumedMl = StatsCalculator.pureAlcoholMl(
+      pours,
+      session.alcoholPercent,
+    );
     final alcoholRemainingMl = StatsCalculator.pureAlcoholRemainingMl(
       volumeRemainingMl,
       session.alcoholPercent,
@@ -74,8 +81,19 @@ class _KegInfoBody extends ConsumerWidget {
       session.volumeTotalMl,
       unit: prefs.volumeUnit,
     );
+    final endReference = session.status == KegStatus.done
+        ? session.endTime ??
+              pours
+                  .where((p) => !p.undone)
+                  .map((p) => p.timestamp)
+                  .fold<DateTime?>(null, (max, ts) {
+                    if (max == null || ts.isAfter(max)) return ts;
+                    return max;
+                  }) ??
+              DateTime.now()
+        : DateTime.now();
     final elapsed = session.startTime != null
-        ? DateTime.now().difference(session.startTime!)
+        ? endReference.difference(session.startTime!)
         : null;
 
     return Scaffold(
@@ -85,12 +103,14 @@ class _KegInfoBody extends ConsumerWidget {
       ),
       body: ListView(
         padding: EdgeInsets.fromLTRB(
-          16, 16, 16,
+          16,
+          16,
+          16,
           16 + MediaQuery.paddingOf(context).bottom,
         ),
         children: [
           // Brewery section (only when brewery info is available)
-          if (_hasBreweryInfo(session)) ...[  
+          if (_hasBreweryInfo(session)) ...[
             _buildSectionHeader(context, AppLocalizations.of(context)!.brewery),
             const SizedBox(height: 8),
             Card(
@@ -99,14 +119,26 @@ class _KegInfoBody extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (session.brewery != null) ...
-                      _breweryRow(context, null, session.brewery!),
-                    if (session.breweryAddress != null) ...
-                      _breweryRow(context, AppLocalizations.of(context)!.breweryAddress, session.breweryAddress!),
-                    if (session.breweryRegion != null) ...
-                      _breweryRow(context, AppLocalizations.of(context)!.breweryRegion, session.breweryRegion!),
-                    if (session.breweryYearFounded != null) ...
-                      _breweryRow(context, AppLocalizations.of(context)!.breweryYearFounded, session.breweryYearFounded!),
+                    if (session.brewery != null)
+                      ..._breweryRow(context, null, session.brewery!),
+                    if (session.breweryAddress != null)
+                      ..._breweryRow(
+                        context,
+                        AppLocalizations.of(context)!.breweryAddress,
+                        session.breweryAddress!,
+                      ),
+                    if (session.breweryRegion != null)
+                      ..._breweryRow(
+                        context,
+                        AppLocalizations.of(context)!.breweryRegion,
+                        session.breweryRegion!,
+                      ),
+                    if (session.breweryYearFounded != null)
+                      ..._breweryRow(
+                        context,
+                        AppLocalizations.of(context)!.breweryYearFounded,
+                        session.breweryYearFounded!,
+                      ),
                     if (session.breweryWebsite != null)
                       _buildWebsiteRow(context, session.breweryWebsite!),
                   ],
@@ -116,7 +148,10 @@ class _KegInfoBody extends ConsumerWidget {
             const SizedBox(height: 16),
           ],
           // Beer Information Section
-          _buildSectionHeader(context, AppLocalizations.of(context)!.beerInformation),
+          _buildSectionHeader(
+            context,
+            AppLocalizations.of(context)!.beerInformation,
+          ),
           const SizedBox(height: 8),
           Card(
             child: Padding(
@@ -124,34 +159,64 @@ class _KegInfoBody extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildInfoRow(context, AppLocalizations.of(context)!.beerName, session.beerName),
+                  _buildInfoRow(
+                    context,
+                    AppLocalizations.of(context)!.beerName,
+                    session.beerName,
+                  ),
                   const Divider(height: 16),
-                  _buildInfoRow(context, AppLocalizations.of(context)!.alcoholPercent,
-                      '${session.alcoholPercent.toStringAsFixed(1)}%'),
+                  _buildInfoRow(
+                    context,
+                    AppLocalizations.of(context)!.alcoholPercent,
+                    '${session.alcoholPercent.toStringAsFixed(1)}%',
+                  ),
                   if (session.malt != null) ...[
                     const Divider(height: 16),
-                    _buildInfoRow(context, AppLocalizations.of(context)!.malt, session.malt!),
+                    _buildInfoRow(
+                      context,
+                      AppLocalizations.of(context)!.malt,
+                      session.malt!,
+                    ),
                   ],
                   if (session.fermentation != null) ...[
                     const Divider(height: 16),
                     _buildInfoRow(
-                        context, AppLocalizations.of(context)!.fermentation, session.fermentation!),
+                      context,
+                      AppLocalizations.of(context)!.fermentation,
+                      session.fermentation!,
+                    ),
                   ],
                   if (session.beerType != null) ...[
                     const Divider(height: 16),
-                    _buildInfoRow(context, AppLocalizations.of(context)!.beerType, session.beerType!),
+                    _buildInfoRow(
+                      context,
+                      AppLocalizations.of(context)!.beerType,
+                      session.beerType!,
+                    ),
                   ],
                   if (session.beerGroup != null) ...[
                     const Divider(height: 16),
-                    _buildInfoRow(context, AppLocalizations.of(context)!.beerGroup, session.beerGroup!),
+                    _buildInfoRow(
+                      context,
+                      AppLocalizations.of(context)!.beerGroup,
+                      session.beerGroup!,
+                    ),
                   ],
                   if (session.beerStyle != null) ...[
                     const Divider(height: 16),
-                    _buildInfoRow(context, AppLocalizations.of(context)!.beerStyle, session.beerStyle!),
+                    _buildInfoRow(
+                      context,
+                      AppLocalizations.of(context)!.beerStyle,
+                      session.beerStyle!,
+                    ),
                   ],
                   if (session.degreePlato != null) ...[
                     const Divider(height: 16),
-                    _buildInfoRow(context, AppLocalizations.of(context)!.degreePlato, session.degreePlato!),
+                    _buildInfoRow(
+                      context,
+                      AppLocalizations.of(context)!.degreePlato,
+                      session.degreePlato!,
+                    ),
                   ],
                 ],
               ),
@@ -159,7 +224,10 @@ class _KegInfoBody extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
           // Keg Information Section
-          _buildSectionHeader(context, AppLocalizations.of(context)!.kegInformation),
+          _buildSectionHeader(
+            context,
+            AppLocalizations.of(context)!.kegInformation,
+          ),
           const SizedBox(height: 8),
           Card(
             child: Padding(
@@ -170,13 +238,19 @@ class _KegInfoBody extends ConsumerWidget {
                   _buildInfoRow(
                     context,
                     AppLocalizations.of(context)!.totalVolume,
-                    TimeFormatter.formatVolumeMl(session.volumeTotalMl, prefs: prefs),
+                    TimeFormatter.formatVolumeMl(
+                      session.volumeTotalMl,
+                      prefs: prefs,
+                    ),
                   ),
                   const Divider(height: 16),
                   _buildInfoRow(
                     context,
                     AppLocalizations.of(context)!.price,
-                    TimeFormatter.formatCurrency(session.kegPrice, prefs: prefs),
+                    TimeFormatter.formatCurrency(
+                      session.kegPrice,
+                      prefs: prefs,
+                    ),
                   ),
                   const Divider(height: 16),
                   _buildInfoRow(
@@ -199,7 +273,10 @@ class _KegInfoBody extends ConsumerWidget {
           const SizedBox(height: 24),
           // Session Statistics Section
           if (session.startTime != null) ...[
-            _buildSectionHeader(context, AppLocalizations.of(context)!.sessionStatistics),
+            _buildSectionHeader(
+              context,
+              AppLocalizations.of(context)!.sessionStatistics,
+            ),
             const SizedBox(height: 8),
             Card(
               child: Padding(
@@ -216,19 +293,28 @@ class _KegInfoBody extends ConsumerWidget {
                     _buildInfoRow(
                       context,
                       AppLocalizations.of(context)!.volumeRemaining2,
-                      TimeFormatter.formatVolumeMl(volumeRemainingMl, prefs: prefs),
+                      TimeFormatter.formatVolumeMl(
+                        volumeRemainingMl,
+                        prefs: prefs,
+                      ),
                     ),
                     const Divider(height: 16),
                     _buildInfoRow(
                       context,
                       AppLocalizations.of(context)!.alcoholConsumed,
-                      TimeFormatter.formatAlcoholMl(alcoholConsumedMl, prefs: prefs),
+                      TimeFormatter.formatAlcoholMl(
+                        alcoholConsumedMl,
+                        prefs: prefs,
+                      ),
                     ),
                     const Divider(height: 16),
                     _buildInfoRow(
                       context,
                       AppLocalizations.of(context)!.alcoholRemaining,
-                      TimeFormatter.formatAlcoholMl(alcoholRemainingMl, prefs: prefs),
+                      TimeFormatter.formatAlcoholMl(
+                        alcoholRemainingMl,
+                        prefs: prefs,
+                      ),
                     ),
                     if (beerPrice != null) ...[
                       const Divider(height: 16),
@@ -293,10 +379,7 @@ class _KegInfoBody extends ConsumerWidget {
               child: Card(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
-                  child: PourRateChart(
-                    session: session,
-                    pours: pours,
-                  ),
+                  child: PourRateChart(session: session, pours: pours),
                 ),
               ),
             ),
@@ -337,9 +420,9 @@ class _KegInfoBody extends ConsumerWidget {
               child: Text(
                 l.breweryWebsite,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: BeerColors.onSurfaceSecondary,
-                      fontWeight: FontWeight.w500,
-                    ),
+                  color: BeerColors.onSurfaceSecondary,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
             const SizedBox(width: 16),
@@ -352,11 +435,11 @@ class _KegInfoBody extends ConsumerWidget {
                 child: Text(
                   url,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: BeerColors.primaryAmber,
-                        decoration: TextDecoration.underline,
-                        decorationColor: BeerColors.primaryAmber,
-                      ),
+                    fontWeight: FontWeight.w600,
+                    color: BeerColors.primaryAmber,
+                    decoration: TextDecoration.underline,
+                    decorationColor: BeerColors.primaryAmber,
+                  ),
                 ),
               ),
             ),
@@ -370,9 +453,9 @@ class _KegInfoBody extends ConsumerWidget {
     return Text(
       title,
       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            color: BeerColors.primaryAmber,
-            fontWeight: FontWeight.bold,
-          ),
+        color: BeerColors.primaryAmber,
+        fontWeight: FontWeight.bold,
+      ),
     );
   }
 
@@ -385,18 +468,18 @@ class _KegInfoBody extends ConsumerWidget {
           child: Text(
             label,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: BeerColors.onSurfaceSecondary,
-                  fontWeight: FontWeight.w500,
-                ),
+              color: BeerColors.onSurfaceSecondary,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ),
         const SizedBox(width: 16),
         Expanded(
           child: Text(
             value,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
         ),
       ],

@@ -677,6 +677,18 @@ class AppLocalizationsCs extends AppLocalizations {
   String get participantsLabel => 'Účastníci';
 
   @override
+  String get sortBy => 'Seřadit podle';
+
+  @override
+  String get sortDefault => 'Výchozí';
+
+  @override
+  String get sortConsumption => 'Spotřeba';
+
+  @override
+  String get sortUsername => 'Jméno';
+
+  @override
   String get myTotal => 'Můj celkem';
 
   @override

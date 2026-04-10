@@ -1429,6 +1429,30 @@ abstract class AppLocalizations {
   /// **'Participants'**
   String get participantsLabel;
 
+  /// No description provided for @sortBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort by'**
+  String get sortBy;
+
+  /// No description provided for @sortDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Default'**
+  String get sortDefault;
+
+  /// No description provided for @sortConsumption.
+  ///
+  /// In en, this message translates to:
+  /// **'Consumption'**
+  String get sortConsumption;
+
+  /// No description provided for @sortUsername.
+  ///
+  /// In en, this message translates to:
+  /// **'Username'**
+  String get sortUsername;
+
   /// No description provided for @myTotal.
   ///
   /// In en, this message translates to:

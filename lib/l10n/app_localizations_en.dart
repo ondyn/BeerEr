@@ -677,6 +677,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get participantsLabel => 'Participants';
 
   @override
+  String get sortBy => 'Sort by';
+
+  @override
+  String get sortDefault => 'Default';
+
+  @override
+  String get sortConsumption => 'Consumption';
+
+  @override
+  String get sortUsername => 'Username';
+
+  @override
   String get myTotal => 'My total';
 
   @override

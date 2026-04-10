@@ -61,19 +61,13 @@ class HomeScreen extends ConsumerWidget {
                         const SizedBox(height: 16),
                         Text(
                           AppLocalizations.of(context)!.noKegSessionsYet,
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleMedium
-                              ?.copyWith(
-                                color: BeerColors.onSurfaceSecondary,
-                              ),
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(color: BeerColors.onSurfaceSecondary),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           AppLocalizations.of(context)!.tapPlusToCreate,
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall,
+                          style: Theme.of(context).textTheme.bodySmall,
                         ),
                       ],
                     ),
@@ -81,10 +75,12 @@ class HomeScreen extends ConsumerWidget {
                 }
 
                 final active = sessions
-                    .where((s) =>
-                        s.status.name == 'created' ||
-                        s.status.name == 'active' ||
-                        s.status.name == 'paused')
+                    .where(
+                      (s) =>
+                          s.status.name == 'created' ||
+                          s.status.name == 'active' ||
+                          s.status.name == 'paused',
+                    )
                     .toList();
 
                 if (active.isEmpty) {
@@ -100,19 +96,13 @@ class HomeScreen extends ConsumerWidget {
                         const SizedBox(height: 16),
                         Text(
                           AppLocalizations.of(context)!.noActiveKegSessions,
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleMedium
-                              ?.copyWith(
-                                color: BeerColors.onSurfaceSecondary,
-                              ),
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(color: BeerColors.onSurfaceSecondary),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           AppLocalizations.of(context)!.tapPlusToCreateNew,
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall,
+                          style: Theme.of(context).textTheme.bodySmall,
                         ),
                       ],
                     ),
@@ -134,8 +124,7 @@ class HomeScreen extends ConsumerWidget {
                           session: session,
                           isOwner: session.creatorId == currentUserId,
                           highlighted: true,
-                          onTap: () =>
-                              context.push('/keg/${session.id}'),
+                          onTap: () => context.push('/keg/${session.id}'),
                         ),
                       ),
                   ],
@@ -220,9 +209,7 @@ void _showJoinDialog(BuildContext context) {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              AppLocalizations.of(ctx)!.pasteInviteLinkOrId,
-            ),
+            Text(AppLocalizations.of(ctx)!.pasteInviteLinkOrId),
             const SizedBox(height: 12),
             TextField(
               controller: controller,
@@ -246,9 +233,7 @@ void _showJoinDialog(BuildContext context) {
               child: OutlinedButton.icon(
                 onPressed: () async {
                   final sessionId = await Navigator.of(ctx).push<String>(
-                    MaterialPageRoute(
-                      builder: (_) => const QrScannerScreen(),
-                    ),
+                    MaterialPageRoute(builder: (_) => const QrScannerScreen()),
                   );
                   if (sessionId != null && ctx.mounted) {
                     Navigator.pop(ctx);
@@ -328,9 +313,7 @@ class _BeerErDrawer extends ConsumerWidget {
         padding: EdgeInsets.zero,
         children: [
           DrawerHeader(
-            decoration: const BoxDecoration(
-              color: BeerColors.surfaceVariant,
-            ),
+            decoration: const BoxDecoration(color: BeerColors.surfaceVariant),
             child: GestureDetector(
               onTap: () {
                 Navigator.pop(context);
@@ -425,10 +408,22 @@ class _SessionCardWithCount extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final participantIdsAsync =
-        ref.watch(watchParticipantIdsProvider(session.id));
-    final participantCount =
-        participantIdsAsync.asData?.value.length ?? 0;
+    final participantIdsAsync = ref.watch(
+      watchParticipantIdsProvider(session.id),
+    );
+    final manualUsersAsync = ref.watch(watchManualUsersProvider(session.id));
+    final poursAsync = ref.watch(watchSessionPoursProvider(session.id));
+
+    final participantIds = participantIdsAsync.asData?.value ?? const [];
+    final manualUsers = manualUsersAsync.asData?.value ?? const <ManualUser>[];
+    final pours = poursAsync.asData?.value ?? const <Pour>[];
+
+    final consumerIds = <String>{
+      ...participantIds,
+      ...manualUsers.map((u) => u.id),
+      ...pours.where((p) => !p.undone).map((p) => p.userId),
+    };
+    final participantCount = consumerIds.length;
 
     return SessionCard(
       session: session,
