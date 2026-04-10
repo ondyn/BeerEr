@@ -333,14 +333,13 @@ class ProfileScreen extends ConsumerWidget {
             Row(
               children: [
                 Expanded(
-                    child: OutlinedButton(
+                  child: OutlinedButton(
                     onPressed: () => Navigator.pop(ctx),
                     child: Text(AppLocalizations.of(ctx)!.cancel),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  flex: 2,
                   child: FilledButton(
                     onPressed: () async {
                       final userRepo = ref.read(userRepositoryProvider);

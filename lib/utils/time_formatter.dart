@@ -73,6 +73,33 @@ class TimeFormatter {
     }
   }
 
+  /// Formats a volume in the user's preferred unit with up to two decimals.
+  ///
+  /// Trailing zeroes are removed, so examples render as `1 l`, `1.5 l`,
+  /// `0.75 l`, `1 pt`, or `16.91 fl oz`.
+  static String formatCompactVolume(double ml, {FormatPreferences? prefs}) {
+    final p = prefs ?? const FormatPreferences();
+
+    return switch (p.volumeUnit) {
+      VolumeUnit.litres => '${_formatTrimmedDecimal(ml / 1000, p)} l',
+      VolumeUnit.pints => '${_formatTrimmedDecimal(ml / 568.261, p)} pt',
+      VolumeUnit.usFlOz => '${_formatTrimmedDecimal(ml / 29.5735, p)} fl oz',
+    };
+  }
+
+  static String _formatTrimmedDecimal(double value, FormatPreferences prefs) {
+    final fixed = value.toStringAsFixed(2);
+    final trimmed = fixed.contains('.')
+        ? fixed
+              .replaceFirst(RegExp(r'0+$'), '')
+              .replaceFirst(RegExp(r'\.$'), '')
+        : fixed;
+    if (prefs.decimalSeparator == DecimalSeparator.comma) {
+      return trimmed.replaceAll('.', ',');
+    }
+    return trimmed;
+  }
+
   /// Formats a percentage (0.0–100.0) for display.
   static String formatPercent(double percent) {
     return '${percent.toStringAsFixed(0)}%';

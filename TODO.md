@@ -69,6 +69,7 @@
 9. (Optional) Tail logs after deploy: `firebase functions:log --only onPourCreated,onKegStatusChanged`
 10. For local verification before deploy, run emulator: `npm run serve`
 - [ ] Optimize for small resolutions devices: 2340 × 1080 Samsung A16, 1640 x 720 Redmi A5
+- [x] Pour button in participant list shows the volume with two decimal places, but this is not nice, if last digits are zeros. Show it without decimals if it's whole number, with one decimal if it's .5, and with two decimals only if needed (e.g. 0.75). This applies to pour buttons in participant list. ✅ Added `TimeFormatter.formatCompactLitres()` and switched participant-list pour buttons to use it, preserving the user's decimal separator while trimming unnecessary trailing zeros.
 
 ### Kiosk mode — needs clarification
 

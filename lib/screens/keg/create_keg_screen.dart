@@ -688,7 +688,6 @@ class _CreateKegScreenState extends ConsumerState<CreateKegScreen> {
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  flex: 2,
                   child: FilledButton(
                     onPressed: _isCreating ? null : _createSession,
                     child: _isCreating

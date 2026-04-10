@@ -42,6 +42,22 @@ abstract class AppUser with _$AppUser {
     return id.length > 6 ? id.substring(0, 6) : id;
   }
 
+  static Map<String, dynamic> _normaliseJson(Map<String, dynamic> json) {
+    return <String, dynamic>{
+      ...json,
+      'id': json['id'] is String ? json['id'] : '',
+      'nickname': json['nickname'] is String ? json['nickname'] : '',
+      'email': json['email'] is String ? json['email'] : '',
+      'gender': json['gender'] is String ? json['gender'] : 'male',
+      'auth_provider':
+          json['auth_provider'] is String ? json['auth_provider'] : 'email',
+      'preferences': json['preferences'] is Map<String, dynamic>
+          ? json['preferences']
+          : <String, dynamic>{},
+      'deleted_at': json['deleted_at'] is String ? json['deleted_at'] : null,
+    };
+  }
+
   factory AppUser.fromJson(Map<String, dynamic> json) =>
-      _$AppUserFromJson(json);
+      _$AppUserFromJson(_normaliseJson(json));
 }

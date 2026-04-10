@@ -4,7 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart'
-    show TargetPlatform, defaultTargetPlatform, kIsWeb;
+  show TargetPlatform, debugPrint, defaultTargetPlatform, kIsWeb;
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
@@ -70,6 +71,8 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin _local =
       FlutterLocalNotificationsPlugin();
   bool _timeZonesInitialised = false;
+  StreamSubscription<User?>? _authSubscription;
+  String? _lastSyncedUid;
 
   /// Android notification channel for beer-related pushes.
   static const _androidChannel = AndroidNotificationChannel(
@@ -137,6 +140,28 @@ class NotificationService {
     // 7. Save / refresh the FCM token.
     await _saveToken();
     _fcm.onTokenRefresh.listen((_) => _saveToken());
+
+    _authSubscription ??=
+        FirebaseAuth.instance.authStateChanges().listen((user) async {
+      final previousUid = _lastSyncedUid;
+      final currentUid = user?.uid;
+      if (previousUid != null && previousUid != currentUid) {
+        await _clearTokenForUser(previousUid);
+      }
+
+      if (user == null) {
+        _lastSyncedUid = null;
+        return;
+      }
+
+      _lastSyncedUid = currentUid;
+      await _saveToken();
+    });
+  }
+
+  Future<void> dispose() async {
+    await _authSubscription?.cancel();
+    _authSubscription = null;
   }
 
   // --------------------------------------------------------------------------
@@ -153,6 +178,15 @@ class NotificationService {
     await FirebaseFirestore.instance.collection('users').doc(uid).set(
       {
         'preferences': {'fcm_token': token},
+      },
+      SetOptions(merge: true),
+    );
+  }
+
+  Future<void> _clearTokenForUser(String uid) async {
+    await FirebaseFirestore.instance.collection('users').doc(uid).set(
+      {
+        'preferences': {'fcm_token': FieldValue.delete()},
       },
       SetOptions(merge: true),
     );
@@ -214,25 +248,48 @@ class NotificationService {
 
     if (timeToZero == null || timeToZero.inSeconds <= 0) return;
 
-    // Persisted schedule so it can fire even when the app is killed.
-    await _local.zonedSchedule(
-      id: _bacZeroNotificationId,
-      title: title,
-      body: body,
-      scheduledDate: tz.TZDateTime.now(tz.local).add(timeToZero),
-      notificationDetails: NotificationDetails(
-        android: AndroidNotificationDetails(
-          _androidChannel.id,
-          _androidChannel.name,
-          channelDescription: _androidChannel.description,
-          importance: Importance.high,
-          priority: Priority.high,
-          icon: '@drawable/ic_notification',
-        ),
-        iOS: const DarwinNotificationDetails(),
+    final scheduledDate = tz.TZDateTime.now(tz.local).add(timeToZero);
+    final details = NotificationDetails(
+      android: AndroidNotificationDetails(
+        _androidChannel.id,
+        _androidChannel.name,
+        channelDescription: _androidChannel.description,
+        importance: Importance.high,
+        priority: Priority.high,
+        icon: '@drawable/ic_notification',
       ),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      iOS: const DarwinNotificationDetails(),
     );
+
+    try {
+      // Persisted schedule so it can fire even when the app is killed.
+      await _local.zonedSchedule(
+        id: _bacZeroNotificationId,
+        title: title,
+        body: body,
+        scheduledDate: scheduledDate,
+        notificationDetails: details,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      );
+    } on PlatformException catch (error) {
+      if (defaultTargetPlatform != TargetPlatform.android ||
+          error.code != 'exact_alarms_not_permitted') {
+        rethrow;
+      }
+
+      debugPrint(
+        '[Notifications] Exact alarms not permitted; falling back to inexact scheduling for BAC zero reminder.',
+      );
+
+      await _local.zonedSchedule(
+        id: _bacZeroNotificationId,
+        title: title,
+        body: body,
+        scheduledDate: scheduledDate,
+        notificationDetails: details,
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      );
+    }
   }
 
   /// Cancels a previously scheduled BAC-zero notification.

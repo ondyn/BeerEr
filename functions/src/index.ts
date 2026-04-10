@@ -70,6 +70,34 @@ function normaliseLanguage(languageRaw: unknown): SupportedLanguage {
   return 'en';
 }
 
+function messagingErrorCode(error: unknown): string {
+  if (typeof error !== 'object' || error == null || !('code' in error)) {
+    return 'unknown';
+  }
+
+  const { code } = error as { code?: unknown };
+  return typeof code === 'string' ? code : 'unknown';
+}
+
+function isInvalidRegistrationTokenError(error: unknown): boolean {
+  const code = messagingErrorCode(error);
+  return (
+    code === 'messaging/invalid-registration-token' ||
+    code === 'messaging/registration-token-not-registered'
+  );
+}
+
+async function clearStoredFcmToken(userId: string): Promise<void> {
+  await db.collection('users').doc(userId).set(
+    {
+      preferences: {
+        fcm_token: admin.firestore.FieldValue.delete(),
+      },
+    },
+    { merge: true }
+  );
+}
+
 // ---------------------------------------------------------------------------
 // FCM notification — triggered when a new pour is written for another user.
 //
@@ -96,11 +124,25 @@ export const onPourCreated = onDocumentWritten('pours/{pourId}', async (event) =
   const userData = userSnap.data();
   const prefs = userData?.preferences as Record<string, unknown> | undefined;
   const fcmToken = prefs?.fcm_token as string | undefined;
-  if (!fcmToken) return;
+  if (!fcmToken) {
+    console.info('onPourCreated: recipient has no stored FCM token', {
+      userId: pour.user_id,
+      pourId: event.params?.pourId ?? null,
+      sessionId: pour.session_id,
+    });
+    return;
+  }
 
   // Respect the user's notification preference (default: true)
   const notifyPourForMe = prefs?.notify_pour_for_me as boolean | undefined;
-  if (notifyPourForMe === false) return;
+  if (notifyPourForMe === false) {
+    console.info('onPourCreated: recipient disabled pour notifications', {
+      userId: pour.user_id,
+      pourId: event.params?.pourId ?? null,
+      sessionId: pour.session_id,
+    });
+    return;
+  }
 
   const language = normaliseLanguage(prefs?.language);
   const copy = notificationCopy[language];
@@ -118,31 +160,53 @@ export const onPourCreated = onDocumentWritten('pours/{pourId}', async (event) =
     beerName,
   });
 
-  await admin.messaging().send({
-    token: fcmToken,
-    notification: {
-      title,
-      body,
-    },
-    data: {
-      type: 'pour_for_you',
-      title,
-      body,
-      session_id: pour.session_id,
-    },
-    android: {
-      priority: 'high',
+  try {
+    const messageId = await admin.messaging().send({
+      token: fcmToken,
       notification: {
-        channelId: 'beerer_default',
+        title,
+        body,
       },
-    },
-    apns: {
-      payload: { aps: { sound: 'default' } },
-      headers: {
-        'apns-priority': '10',
+      data: {
+        type: 'pour_for_you',
+        title,
+        body,
+        session_id: pour.session_id,
       },
-    },
-  });
+      android: {
+        priority: 'high',
+        notification: {
+          channelId: 'beerer_default',
+        },
+      },
+      apns: {
+        payload: { aps: { sound: 'default' } },
+        headers: {
+          'apns-priority': '10',
+        },
+      },
+    });
+
+    console.info('onPourCreated: push sent', {
+      userId: pour.user_id,
+      pourId: event.params?.pourId ?? null,
+      sessionId: pour.session_id,
+      messageId,
+    });
+  } catch (error) {
+    console.error('onPourCreated: push send failed', {
+      userId: pour.user_id,
+      pourId: event.params?.pourId ?? null,
+      sessionId: pour.session_id,
+      error,
+    });
+
+    if (isInvalidRegistrationTokenError(error)) {
+      await clearStoredFcmToken(pour.user_id);
+    }
+
+    throw error;
+  }
 });
 
 // ---------------------------------------------------------------------------
@@ -209,11 +273,21 @@ export const onKegStatusChanged = onDocumentUpdated('kegSessions/{sessionId}', a
     allDocs.push(...snap.docs);
   }
 
-  const messages: admin.messaging.Message[] = [];
+  const recipients: Array<{
+    userId: string;
+    token: string;
+    message: admin.messaging.Message;
+  }> = [];
+  let skippedMissingToken = 0;
+  let skippedByPreference = 0;
+
   for (const doc of allDocs) {
     const prefs = doc.data()?.preferences as Record<string, unknown> | undefined;
     const fcmToken = prefs?.fcm_token as string | undefined;
-    if (!fcmToken) continue;
+    if (!fcmToken) {
+      skippedMissingToken += 1;
+      continue;
+    }
 
     const language = normaliseLanguage(prefs?.language);
     const copy = notificationCopy[language];
@@ -223,12 +297,18 @@ export const onKegStatusChanged = onDocumentUpdated('kegSessions/{sessionId}', a
 
     if (didTransitionToDone) {
       const notifyKegDone = prefs?.notify_keg_done as boolean | undefined;
-      if (notifyKegDone === false) continue;
+      if (notifyKegDone === false) {
+        skippedByPreference += 1;
+        continue;
+      }
       title = copy.kegDoneTitle;
       body = copy.kegDoneBody({ beerName });
     } else if (didCrossNearlyEmptyThreshold) {
       const notifyNearlyEmpty = prefs?.notify_keg_nearly_empty as boolean | undefined;
-      if (notifyNearlyEmpty === false) continue;
+      if (notifyNearlyEmpty === false) {
+        skippedByPreference += 1;
+        continue;
+      }
       title = copy.kegNearlyEmptyTitle;
       body = copy.kegNearlyEmptyBody({
         beerName,
@@ -238,37 +318,79 @@ export const onKegStatusChanged = onDocumentUpdated('kegSessions/{sessionId}', a
 
     if (title == null || body == null) continue;
 
-    messages.push({
+    recipients.push({
+      userId: doc.id,
       token: fcmToken,
-      notification: {
-        title,
-        body,
-      },
-      data: {
-        type: didTransitionToDone ? 'keg_done' : 'keg_nearly_empty',
-        title,
-        body,
-        session_id: sessionId,
-      },
-      android: {
-        priority: 'high',
+      message: {
+        token: fcmToken,
         notification: {
-          channelId: 'beerer_default',
+          title,
+          body,
         },
-      },
-      apns: {
-        payload: { aps: { sound: 'default' } },
-        headers: {
-          'apns-priority': '10',
+        data: {
+          type: didTransitionToDone ? 'keg_done' : 'keg_nearly_empty',
+          title,
+          body,
+          session_id: sessionId,
+        },
+        android: {
+          priority: 'high',
+          notification: {
+            channelId: 'beerer_default',
+          },
+        },
+        apns: {
+          payload: { aps: { sound: 'default' } },
+          headers: {
+            'apns-priority': '10',
+          },
         },
       },
     });
   }
 
-  if (messages.length > 0) {
-    // sendEach handles up to 500 messages
-    await admin.messaging().sendEach(messages);
-  }
+  console.info('onKegStatusChanged: evaluated recipients', {
+    sessionId,
+    type: didTransitionToDone ? 'keg_done' : 'keg_nearly_empty',
+    participantCount: participantIds.length,
+    queuedCount: recipients.length,
+    skippedMissingToken,
+    skippedByPreference,
+  });
+
+  if (recipients.length === 0) return;
+
+  // sendEach handles up to 500 messages
+  const response = await admin.messaging().sendEach(
+    recipients.map((recipient) => recipient.message)
+  );
+
+  const staleTokenUsers: string[] = [];
+  response.responses.forEach((sendResponse, index) => {
+    if (sendResponse.success) return;
+
+    const recipient = recipients[index];
+    console.error('onKegStatusChanged: push send failed', {
+      sessionId,
+      type: didTransitionToDone ? 'keg_done' : 'keg_nearly_empty',
+      userId: recipient.userId,
+      error: sendResponse.error,
+    });
+
+    if (isInvalidRegistrationTokenError(sendResponse.error)) {
+      staleTokenUsers.push(recipient.userId);
+    }
+  });
+
+  await Promise.all(staleTokenUsers.map((userId) => clearStoredFcmToken(userId)));
+
+  console.info('onKegStatusChanged: send complete', {
+    sessionId,
+    type: didTransitionToDone ? 'keg_done' : 'keg_nearly_empty',
+    successCount: response.successCount,
+    failureCount: response.failureCount,
+    clearedTokenCount: staleTokenUsers.length,
+  });
 });
 
 function beforeDataNumber(value: unknown): number {

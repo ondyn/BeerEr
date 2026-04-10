@@ -10,16 +10,20 @@ void main() {
       });
 
       test('seconds only', () {
-        expect(TimeFormatter.formatDuration(const Duration(seconds: 45)), '45s');
+        expect(
+          TimeFormatter.formatDuration(const Duration(seconds: 45)),
+          '45s',
+        );
         expect(TimeFormatter.formatDuration(const Duration(seconds: 1)), '1s');
-        expect(TimeFormatter.formatDuration(const Duration(seconds: 59)), '59s');
+        expect(
+          TimeFormatter.formatDuration(const Duration(seconds: 59)),
+          '59s',
+        );
       });
 
       test('minutes and seconds', () {
         expect(
-          TimeFormatter.formatDuration(
-            const Duration(minutes: 3, seconds: 5),
-          ),
+          TimeFormatter.formatDuration(const Duration(minutes: 3, seconds: 5)),
           '3m 05s',
         );
         expect(
@@ -32,15 +36,11 @@ void main() {
 
       test('hours and minutes', () {
         expect(
-          TimeFormatter.formatDuration(
-            const Duration(hours: 2, minutes: 4),
-          ),
+          TimeFormatter.formatDuration(const Duration(hours: 2, minutes: 4)),
           '2h 04m',
         );
         expect(
-          TimeFormatter.formatDuration(
-            const Duration(hours: 1, minutes: 0),
-          ),
+          TimeFormatter.formatDuration(const Duration(hours: 1, minutes: 0)),
           '1h 00m',
         );
       });
@@ -55,21 +55,12 @@ void main() {
 
     group('negative durations (clock-skew guard)', () {
       test('small negative — returns 0s', () {
-        expect(
-          TimeFormatter.formatDuration(const Duration(seconds: -1)),
-          '0s',
-        );
+        expect(TimeFormatter.formatDuration(const Duration(seconds: -1)), '0s');
       });
 
       test('large negative — returns 0s', () {
-        expect(
-          TimeFormatter.formatDuration(const Duration(minutes: -5)),
-          '0s',
-        );
-        expect(
-          TimeFormatter.formatDuration(const Duration(hours: -2)),
-          '0s',
-        );
+        expect(TimeFormatter.formatDuration(const Duration(minutes: -5)), '0s');
+        expect(TimeFormatter.formatDuration(const Duration(hours: -2)), '0s');
       });
 
       test('Duration(-1ms) — returns 0s', () {
@@ -88,27 +79,17 @@ void main() {
       });
 
       test('seconds only', () {
-        expect(
-          TimeFormatter.formatTimer(const Duration(seconds: 7)),
-          '00:07',
-        );
-        expect(
-          TimeFormatter.formatTimer(const Duration(seconds: 59)),
-          '00:59',
-        );
+        expect(TimeFormatter.formatTimer(const Duration(seconds: 7)), '00:07');
+        expect(TimeFormatter.formatTimer(const Duration(seconds: 59)), '00:59');
       });
 
       test('minutes and seconds', () {
         expect(
-          TimeFormatter.formatTimer(
-            const Duration(minutes: 3, seconds: 5),
-          ),
+          TimeFormatter.formatTimer(const Duration(minutes: 3, seconds: 5)),
           '03:05',
         );
         expect(
-          TimeFormatter.formatTimer(
-            const Duration(minutes: 59, seconds: 59),
-          ),
+          TimeFormatter.formatTimer(const Duration(minutes: 59, seconds: 59)),
           '59:59',
         );
       });
@@ -131,10 +112,7 @@ void main() {
 
     group('negative durations (clock-skew guard)', () {
       test('small negative — returns 00:00', () {
-        expect(
-          TimeFormatter.formatTimer(const Duration(seconds: -5)),
-          '00:00',
-        );
+        expect(TimeFormatter.formatTimer(const Duration(seconds: -5)), '00:00');
       });
 
       test('large negative — returns 00:00', () {
@@ -142,10 +120,7 @@ void main() {
           TimeFormatter.formatTimer(const Duration(minutes: -10)),
           '00:00',
         );
-        expect(
-          TimeFormatter.formatTimer(const Duration(hours: -1)),
-          '00:00',
-        );
+        expect(TimeFormatter.formatTimer(const Duration(hours: -1)), '00:00');
       });
     });
   });
@@ -178,6 +153,45 @@ void main() {
     });
   });
 
+  group('TimeFormatter.formatCompactVolume', () {
+    test('omits trailing zeroes for whole and half litres', () {
+      expect(TimeFormatter.formatCompactVolume(1000), '1 l');
+      expect(TimeFormatter.formatCompactVolume(1500), '1.5 l');
+    });
+
+    test('keeps two decimals when needed', () {
+      expect(TimeFormatter.formatCompactVolume(750), '0.75 l');
+      expect(TimeFormatter.formatCompactVolume(1250), '1.25 l');
+    });
+
+    test('respects comma decimal separator', () {
+      const prefs = FormatPreferences(decimalSeparator: DecimalSeparator.comma);
+      expect(TimeFormatter.formatCompactVolume(1500, prefs: prefs), '1,5 l');
+      expect(TimeFormatter.formatCompactVolume(750, prefs: prefs), '0,75 l');
+    });
+
+    test('uses user-selected pints unit', () {
+      const prefs = FormatPreferences(volumeUnit: VolumeUnit.pints);
+      expect(TimeFormatter.formatCompactVolume(568.261, prefs: prefs), '1 pt');
+      expect(
+        TimeFormatter.formatCompactVolume(852.3915, prefs: prefs),
+        '1.5 pt',
+      );
+    });
+
+    test('uses user-selected US fl oz unit', () {
+      const prefs = FormatPreferences(volumeUnit: VolumeUnit.usFlOz);
+      expect(
+        TimeFormatter.formatCompactVolume(29.5735, prefs: prefs),
+        '1 fl oz',
+      );
+      expect(
+        TimeFormatter.formatCompactVolume(500, prefs: prefs),
+        '16.91 fl oz',
+      );
+    });
+  });
+
   group('TimeFormatter.formatPercent', () {
     test('rounds to nearest integer', () {
       expect(TimeFormatter.formatPercent(42.6), '43%');
@@ -206,10 +220,7 @@ void main() {
     });
 
     test('custom symbol', () {
-      expect(
-        TimeFormatter.formatCurrency(9.99, symbol: '€'),
-        '9.99 €',
-      );
+      expect(TimeFormatter.formatCurrency(9.99, symbol: '€'), '9.99 €');
     });
 
     test('zero decimal places', () {

@@ -36,8 +36,9 @@ class KegDetailScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final sessionAsync = ref.watch(watchSessionProvider(sessionId));
     final poursAsync = ref.watch(watchSessionPoursProvider(sessionId));
-    final participantIdsAsync =
-        ref.watch(watchParticipantIdsProvider(sessionId));
+    final participantIdsAsync = ref.watch(
+      watchParticipantIdsProvider(sessionId),
+    );
 
     return sessionAsync.when(
       skipLoadingOnReload: true,
@@ -45,7 +46,9 @@ class KegDetailScreen extends ConsumerWidget {
         if (session == null) {
           return Scaffold(
             appBar: AppBar(),
-            body: Center(child: Text(AppLocalizations.of(context)!.sessionNotFound)),
+            body: Center(
+              child: Text(AppLocalizations.of(context)!.sessionNotFound),
+            ),
           );
         }
         return _KegDetailBody(
@@ -57,14 +60,16 @@ class KegDetailScreen extends ConsumerWidget {
       loading: () => Scaffold(
         appBar: AppBar(),
         body: const Center(
-          child: CircularProgressIndicator(
-            color: BeerColors.primaryAmber,
-          ),
+          child: CircularProgressIndicator(color: BeerColors.primaryAmber),
         ),
       ),
       error: (e, _) => Scaffold(
         appBar: AppBar(),
-        body: Center(child: Text(AppLocalizations.of(context)!.errorWithMessage(e.toString()))),
+        body: Center(
+          child: Text(
+            AppLocalizations.of(context)!.errorWithMessage(e.toString()),
+          ),
+        ),
       ),
     );
   }
@@ -123,41 +128,28 @@ class _KegDetailBodyState extends ConsumerState<_KegDetailBody> {
         title: Text(session.beerName),
         actions: [
           PopupMenuButton<String>(
-            onSelected: (value) =>
-                _handleAction(context, value),
+            onSelected: (value) => _handleAction(context, value),
             itemBuilder: (ctx) {
               final l10n = AppLocalizations.of(ctx)!;
               return [
-              PopupMenuItem(
-                value: 'info',
-                child: Text(l10n.kegInformation),
-              ),
-              PopupMenuItem(
-                value: 'share',
-                child: Text(l10n.shareJoinLink),
-              ),
-              if (session.status == KegStatus.active)
-                PopupMenuItem(
-                  value: 'pause',
-                  child: Text(l10n.untapUnfinishedKeg),
-                ),
-              if (session.status == KegStatus.paused)
-                PopupMenuItem(
-                  value: 'resume',
-                  child: Text(l10n.tapKegAgain),
-                ),
-              if (session.status != KegStatus.done &&
-                  session.status != KegStatus.created)
-                PopupMenuItem(
-                  value: 'done',
-                  child: Text(l10n.markKegAsDone),
-                ),
-              if (session.status == KegStatus.created && isCreator)
-                PopupMenuItem(
-                  value: 'delete',
-                  child: Text(l10n.deleteSessionQuestion),
-                ),
-            ];
+                PopupMenuItem(value: 'info', child: Text(l10n.kegInformation)),
+                PopupMenuItem(value: 'share', child: Text(l10n.shareJoinLink)),
+                if (session.status == KegStatus.active)
+                  PopupMenuItem(
+                    value: 'pause',
+                    child: Text(l10n.untapUnfinishedKeg),
+                  ),
+                if (session.status == KegStatus.paused)
+                  PopupMenuItem(value: 'resume', child: Text(l10n.tapKegAgain)),
+                if (session.status != KegStatus.done &&
+                    session.status != KegStatus.created)
+                  PopupMenuItem(value: 'done', child: Text(l10n.markKegAsDone)),
+                if (session.status == KegStatus.created && isCreator)
+                  PopupMenuItem(
+                    value: 'delete',
+                    child: Text(l10n.deleteSessionQuestion),
+                  ),
+              ];
             },
           ),
         ],
@@ -205,22 +197,22 @@ class _KegDetailBodyState extends ConsumerState<_KegDetailBody> {
       builder: (ctx) {
         final l10n = AppLocalizations.of(ctx)!;
         return AlertDialog(
-        title: Text(l10n.markKegAsDoneQuestion),
-        content: Text(l10n.sessionReadOnlyWarning),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.cancel),
-          ),
-          FilledButton(
-            onPressed: () {
-              repo.updateStatus(session.id, KegStatus.done);
-              Navigator.pop(ctx);
-            },
-            child: Text(l10n.kegDone),
-          ),
-        ],
-      );
+          title: Text(l10n.markKegAsDoneQuestion),
+          content: Text(l10n.sessionReadOnlyWarning),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(l10n.cancel),
+            ),
+            FilledButton(
+              onPressed: () {
+                repo.updateStatus(session.id, KegStatus.done);
+                Navigator.pop(ctx);
+              },
+              child: Text(l10n.kegDone),
+            ),
+          ],
+        );
       },
     );
   }
@@ -231,26 +223,24 @@ class _KegDetailBodyState extends ConsumerState<_KegDetailBody> {
       builder: (ctx) {
         final l10n = AppLocalizations.of(ctx)!;
         return AlertDialog(
-        title: Text(l10n.deleteSessionQuestion),
-        content: Text(l10n.deleteSessionWarning),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.cancel),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: BeerColors.error,
+          title: Text(l10n.deleteSessionQuestion),
+          content: Text(l10n.deleteSessionWarning),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(l10n.cancel),
             ),
-            onPressed: () async {
-              await repo.deleteSession(session.id);
-              if (ctx.mounted) Navigator.pop(ctx);
-              if (context.mounted) context.go('/home');
-            },
-            child: Text(l10n.delete),
-          ),
-        ],
-      );
+            FilledButton(
+              style: FilledButton.styleFrom(backgroundColor: BeerColors.error),
+              onPressed: () async {
+                await repo.deleteSession(session.id);
+                if (ctx.mounted) Navigator.pop(ctx);
+                if (context.mounted) context.go('/home');
+              },
+              child: Text(l10n.delete),
+            ),
+          ],
+        );
       },
     );
   }
@@ -258,7 +248,8 @@ class _KegDetailBodyState extends ConsumerState<_KegDetailBody> {
   Widget _buildCreatedBody(BuildContext context) {
     final isCreator =
         FirebaseAuth.instance.currentUser?.uid == session.creatorId;
-    final prefs = ref.watch(formatPreferencesProvider)
+    final prefs = ref
+        .watch(formatPreferencesProvider)
         .withCurrency(session.currency);
 
     return SingleChildScrollView(
@@ -293,8 +284,8 @@ class _KegDetailBodyState extends ConsumerState<_KegDetailBody> {
                       '  ·  ${session.alcoholPercent}%'
                       '  ·  ${TimeFormatter.formatCurrency(session.kegPrice, prefs: prefs)}',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: BeerColors.onSurfaceSecondary,
-                          ),
+                        color: BeerColors.onSurfaceSecondary,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     Text(
@@ -325,8 +316,7 @@ class _KegDetailBodyState extends ConsumerState<_KegDetailBody> {
             SizedBox(
               width: double.infinity,
               child: FilledButton.icon(
-                onPressed: () =>
-                    context.push('/keg/${session.id}/share'),
+                onPressed: () => context.push('/keg/${session.id}/share'),
                 icon: const Icon(Icons.qr_code),
                 label: Text(AppLocalizations.of(context)!.shareJoinLink),
                 style: FilledButton.styleFrom(
@@ -410,17 +400,16 @@ class _KegDetailBodyState extends ConsumerState<_KegDetailBody> {
         ? DateTime.now().difference(session.startTime!)
         : Duration.zero;
     final participantIds = participantIdsAsync.value ?? [];
-    final prefs = ref.watch(formatPreferencesProvider)
+    final prefs = ref
+        .watch(formatPreferencesProvider)
         .withCurrency(session.currency);
 
     // Watch participant profiles
-    final usersAsync =
-        ref.watch(watchUsersProvider(participantIds));
+    final usersAsync = ref.watch(watchUsersProvider(participantIds));
     final users = usersAsync.asData?.value ?? [];
 
     // Watch joint accounts
-    final accountsAsync =
-        ref.watch(watchSessionAccountsProvider(session.id));
+    final accountsAsync = ref.watch(watchSessionAccountsProvider(session.id));
     final accounts = accountsAsync.asData?.value ?? [];
 
     // Build userId → account lookup
@@ -432,18 +421,20 @@ class _KegDetailBodyState extends ConsumerState<_KegDetailBody> {
     }
 
     // Solo users (not in any group)
-    final soloUsers =
-        users.where((u) => !userAccountMap.containsKey(u.id)).toList();
+    final soloUsers = users
+        .where((u) => !userAccountMap.containsKey(u.id))
+        .toList();
 
     // Watch guest (manual) users
-    final manualUsersAsync =
-        ref.watch(watchManualUsersProvider(session.id));
+    final manualUsersAsync = ref.watch(watchManualUsersProvider(session.id));
     final manualUsers = manualUsersAsync.asData?.value ?? [];
 
     return ListView(
       key: const PageStorageKey('done_body_list'),
       padding: EdgeInsets.fromLTRB(
-        16, 16, 16,
+        16,
+        16,
+        16,
         16 + MediaQuery.paddingOf(context).bottom,
       ),
       children: [
@@ -453,10 +444,7 @@ class _KegDetailBodyState extends ConsumerState<_KegDetailBody> {
             padding: const EdgeInsets.all(24),
             child: Column(
               children: [
-                const Text(
-                  '🎉',
-                  style: TextStyle(fontSize: 48),
-                ),
+                const Text('🎉', style: TextStyle(fontSize: 48)),
                 const SizedBox(height: 8),
                 Text(
                   AppLocalizations.of(context)!.sessionComplete,
@@ -506,10 +494,7 @@ class _KegDetailBodyState extends ConsumerState<_KegDetailBody> {
                 StatTile(
                   icon: Icons.attach_money,
                   label: AppLocalizations.of(context)!.myTotal,
-                  value: TimeFormatter.formatCurrency(
-                    myCost,
-                    prefs: prefs,
-                  ),
+                  value: TimeFormatter.formatCurrency(myCost, prefs: prefs),
                 ),
                 StatTile(
                   icon: Icons.attach_money,
@@ -539,8 +524,8 @@ class _KegDetailBodyState extends ConsumerState<_KegDetailBody> {
                 Text(
                   AppLocalizations.of(context)!.basedOnActualConsumption,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: BeerColors.onSurfaceSecondary,
-                      ),
+                    color: BeerColors.onSurfaceSecondary,
+                  ),
                 ),
                 const Divider(height: 20),
                 // Group accounts first
@@ -592,8 +577,7 @@ class _KegDetailBodyState extends ConsumerState<_KegDetailBody> {
         const SizedBox(height: 12),
         if (isCreator) ...[
           FilledButton.icon(
-            onPressed: () =>
-                context.push('/keg/${session.id}/review'),
+            onPressed: () => context.push('/keg/${session.id}/review'),
             icon: const Icon(Icons.edit_note),
             label: Text(AppLocalizations.of(context)!.reviewBill),
           ),
@@ -606,10 +590,7 @@ class _KegDetailBodyState extends ConsumerState<_KegDetailBody> {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                const Text(
-                  '🍻',
-                  style: TextStyle(fontSize: 36),
-                ),
+                const Text('🍻', style: TextStyle(fontSize: 36)),
                 const SizedBox(height: 8),
                 Text(
                   AppLocalizations.of(context)!.enjoyUsingBeerer,
@@ -619,8 +600,8 @@ class _KegDetailBodyState extends ConsumerState<_KegDetailBody> {
                 Text(
                   AppLocalizations.of(context)!.buyDeveloperBeer,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: BeerColors.onSurfaceSecondary,
-                      ),
+                    color: BeerColors.onSurfaceSecondary,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 OutlinedButton.icon(
@@ -642,7 +623,8 @@ class _KegDetailBodyState extends ConsumerState<_KegDetailBody> {
   void _quickPour(BuildContext context) async {
     final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
     final lastVolume = session.lastVolumesMl[uid] as num?;
-    final volumeMl = lastVolume?.toDouble() ??
+    final volumeMl =
+        lastVolume?.toDouble() ??
         (session.predefinedVolumesMl.isNotEmpty
             ? session.predefinedVolumesMl.first
             : 500);
@@ -659,14 +641,22 @@ class _KegDetailBodyState extends ConsumerState<_KegDetailBody> {
     try {
       final created = await ref.read(kegRepositoryProvider).addPour(pour);
       if (context.mounted) {
-        _showPourSnackBar(context, AppLocalizations.of(context)!.pourLogged, created);
+        _showPourSnackBar(
+          context,
+          AppLocalizations.of(context)!.pourLogged,
+          created,
+        );
       }
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
           ..showSnackBar(
-            SnackBar(content: Text(AppLocalizations.of(context)!.pourFailed(e.toString()))),
+            SnackBar(
+              content: Text(
+                AppLocalizations.of(context)!.pourFailed(e.toString()),
+              ),
+            ),
           );
       }
     }
@@ -679,7 +669,8 @@ class _KegDetailBodyState extends ConsumerState<_KegDetailBody> {
   ) async {
     final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
     final lastVolume = session.lastVolumesMl[targetUserId] as num?;
-    final volumeMl = lastVolume?.toDouble() ??
+    final volumeMl =
+        lastVolume?.toDouble() ??
         (session.predefinedVolumesMl.isNotEmpty
             ? session.predefinedVolumesMl.first
             : 500);
@@ -707,7 +698,11 @@ class _KegDetailBodyState extends ConsumerState<_KegDetailBody> {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
           ..showSnackBar(
-            SnackBar(content: Text(AppLocalizations.of(context)!.pourFailed(e.toString()))),
+            SnackBar(
+              content: Text(
+                AppLocalizations.of(context)!.pourFailed(e.toString()),
+              ),
+            ),
           );
       }
     }
@@ -740,14 +735,22 @@ class _KegDetailBodyState extends ConsumerState<_KegDetailBody> {
     try {
       final created = await ref.read(kegRepositoryProvider).addPour(pour);
       if (context.mounted) {
-        _showPourSnackBar(context, AppLocalizations.of(context)!.pourLogged, created);
+        _showPourSnackBar(
+          context,
+          AppLocalizations.of(context)!.pourLogged,
+          created,
+        );
       }
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
           ..showSnackBar(
-            SnackBar(content: Text(AppLocalizations.of(context)!.pourFailed(e.toString()))),
+            SnackBar(
+              content: Text(
+                AppLocalizations.of(context)!.pourFailed(e.toString()),
+              ),
+            ),
           );
       }
     }
@@ -796,7 +799,11 @@ class _KegDetailBodyState extends ConsumerState<_KegDetailBody> {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
           ..showSnackBar(
-            SnackBar(content: Text(AppLocalizations.of(context)!.pourFailed(e.toString()))),
+            SnackBar(
+              content: Text(
+                AppLocalizations.of(context)!.pourFailed(e.toString()),
+              ),
+            ),
           );
       }
     }
@@ -921,13 +928,14 @@ class _ActiveBodyState extends ConsumerState<_ActiveBody> {
     final pours = widget.poursAsync.value ?? [];
     final currentUser = FirebaseAuth.instance.currentUser;
     final uid = currentUser?.uid ?? '';
-    final userPours =
-        pours.where((Pour p) => p.userId == uid).toList();
-    final fillPercent =
-        session.volumeRemainingMl / session.volumeTotalMl;
-    final predictedEmpty =
-        StatsCalculator.predictedTimeUntilEmpty(session, pours);
-    final prefs = ref.watch(formatPreferencesProvider)
+    final userPours = pours.where((Pour p) => p.userId == uid).toList();
+    final fillPercent = session.volumeRemainingMl / session.volumeTotalMl;
+    final predictedEmpty = StatsCalculator.predictedTimeUntilEmpty(
+      session,
+      pours,
+    );
+    final prefs = ref
+        .watch(formatPreferencesProvider)
         .withCurrency(session.currency);
     final beerPrice = StatsCalculator.pricePerReferenceBeer(
       session.kegPrice,
@@ -942,9 +950,7 @@ class _ActiveBodyState extends ConsumerState<_ActiveBody> {
         ? DateTime.now().difference(session.startTime!)
         : Duration.zero;
     double? myBac;
-    if (appUser != null &&
-        appUser.weightKg > 0 &&
-        session.startTime != null) {
+    if (appUser != null && appUser.weightKg > 0 && session.startTime != null) {
       myBac = BacCalculator.estimateFromPours(
         pours: userPours,
         abv: session.alcoholPercent,
@@ -989,7 +995,9 @@ class _ActiveBodyState extends ConsumerState<_ActiveBody> {
     return ListView(
       key: const PageStorageKey('active_body_list'),
       padding: EdgeInsets.fromLTRB(
-        16, 16, 16,
+        16,
+        16,
+        16,
         16 + MediaQuery.paddingOf(context).bottom,
       ),
       children: [
@@ -999,16 +1007,11 @@ class _ActiveBodyState extends ConsumerState<_ActiveBody> {
           child: InkWell(
             onTap: () => context.push('/keg/${session.id}/info'),
             child: Padding(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 16, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Row(
                 children: [
                   // Compact keg fill indicator
-                  KegFillBar(
-                    fillPercent: fillPercent,
-                    height: 80,
-                    width: 40,
-                  ),
+                  KegFillBar(fillPercent: fillPercent, height: 80, width: 40),
                   const SizedBox(width: 14),
                   // Main stats column
                   Expanded(
@@ -1025,17 +1028,13 @@ class _ActiveBodyState extends ConsumerState<_ActiveBody> {
                                 session.volumeRemainingMl,
                                 prefs: prefs,
                               ),
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleLarge
+                              style: Theme.of(context).textTheme.titleLarge
                                   ?.copyWith(fontWeight: FontWeight.bold),
                             ),
                             const SizedBox(width: 6),
                             Text(
                               AppLocalizations.of(context)!.remaining,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodySmall
+                              style: Theme.of(context).textTheme.bodySmall
                                   ?.copyWith(
                                     color: BeerColors.onSurfaceSecondary,
                                   ),
@@ -1169,11 +1168,13 @@ class _ParticipantsSectionState extends ConsumerState<_ParticipantsSection> {
     final isCreator = currentUid == widget.session.creatorId;
 
     final usersAsync = ref.watch(watchUsersProvider(ids));
-    final accountsAsync =
-        ref.watch(watchSessionAccountsProvider(widget.session.id));
+    final accountsAsync = ref.watch(
+      watchSessionAccountsProvider(widget.session.id),
+    );
     final accounts = accountsAsync.asData?.value ?? [];
-    final manualUsersAsync =
-        ref.watch(watchManualUsersProvider(widget.session.id));
+    final manualUsersAsync = ref.watch(
+      watchManualUsersProvider(widget.session.id),
+    );
     final manualUsers = manualUsersAsync.asData?.value ?? [];
 
     // Build a userId → groupName lookup.
@@ -1190,15 +1191,16 @@ class _ParticipantsSectionState extends ConsumerState<_ParticipantsSection> {
         Text(
           AppLocalizations.of(context)!.participantsLabel,
           style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                color: BeerColors.onSurfaceSecondary,
-              ),
+            color: BeerColors.onSurfaceSecondary,
+          ),
         ),
         const SizedBox(height: 8),
         usersAsync.when(
           skipLoadingOnReload: true,
           skipLoadingOnRefresh: true,
           data: (users) {
-            final prefs = ref.watch(formatPreferencesProvider)
+            final prefs = ref
+                .watch(formatPreferencesProvider)
                 .withCurrency(widget.session.currency);
             final currentUid = FirebaseAuth.instance.currentUser?.uid;
 
@@ -1221,12 +1223,14 @@ class _ParticipantsSectionState extends ConsumerState<_ParticipantsSection> {
             }
 
             // -- Sort users: logged-in user first, then by rank ----------
-            final sortedUsers = [...users]..sort((a, b) {
+            final sortedUsers = [...users]
+              ..sort((a, b) {
                 if (a.id == currentUid) return -1;
                 if (b.id == currentUid) return 1;
                 return (rankOf[a.id] ?? 99).compareTo(rankOf[b.id] ?? 99);
               });
-            final sortedGuests = [...manualUsers]..sort((a, b) {
+            final sortedGuests = [...manualUsers]
+              ..sort((a, b) {
                 return (rankOf[a.id] ?? 99).compareTo(rankOf[b.id] ?? 99);
               });
 
@@ -1253,7 +1257,8 @@ class _ParticipantsSectionState extends ConsumerState<_ParticipantsSection> {
                   final user = userByKey[key]!;
                   return _UnifiedParticipantRow(
                     key: ValueKey(key),
-                    displayName: user.displayName +
+                    displayName:
+                        user.displayName +
                         (user.id == currentUid
                             ? AppLocalizations.of(context)!.youSuffix
                             : ''),
@@ -1263,16 +1268,24 @@ class _ParticipantsSectionState extends ConsumerState<_ParticipantsSection> {
                     rank: rankOf[user.id] ?? 0,
                     beerCount: StatsCalculator.beerCount(widget.pours, user.id),
                     cost: StatsCalculator.userCost(
-                      widget.pours, user.id, widget.session.kegPrice, widget.session.volumeTotalMl,
+                      widget.pours,
+                      user.id,
+                      widget.session.kegPrice,
+                      widget.session.volumeTotalMl,
                     ),
                     lastPourTime: StatsCalculator.timeSinceLastPour(
-                      widget.pours.where((p) => p.userId == user.id && !p.undone).toList(),
+                      widget.pours
+                          .where((p) => p.userId == user.id && !p.undone)
+                          .toList(),
                     ),
                     groupName: userGroupNames[user.id],
                     prefs: prefs,
                     showPourButton: widget.session.status == KegStatus.active,
-                    lastVolumeMl: (widget.session.lastVolumesMl[user.id] as num?)?.toDouble(),
-                    defaultVolumeMl: widget.session.predefinedVolumesMl.isNotEmpty
+                    lastVolumeMl:
+                        (widget.session.lastVolumesMl[user.id] as num?)
+                            ?.toDouble(),
+                    defaultVolumeMl:
+                        widget.session.predefinedVolumesMl.isNotEmpty
                         ? widget.session.predefinedVolumesMl.first
                         : 500,
                     onTap: () {
@@ -1288,7 +1301,10 @@ class _ParticipantsSectionState extends ConsumerState<_ParticipantsSection> {
                               if (user.id == currentUid) {
                                 widget.onPourSelfVolumeSelect();
                               } else {
-                                widget.onPourForVolumeSelect(user.id, user.displayName);
+                                widget.onPourForVolumeSelect(
+                                  user.id,
+                                  user.displayName,
+                                );
                               }
                             },
                           ),
@@ -1305,8 +1321,9 @@ class _ParticipantsSectionState extends ConsumerState<_ParticipantsSection> {
                             ..showSnackBar(
                               SnackBar(
                                 content: Text(
-                                  AppLocalizations.of(context)!
-                                      .pourForDisabled(user.displayName),
+                                  AppLocalizations.of(
+                                    context,
+                                  )!.pourForDisabled(user.displayName),
                                 ),
                               ),
                             );
@@ -1325,8 +1342,9 @@ class _ParticipantsSectionState extends ConsumerState<_ParticipantsSection> {
                             ..showSnackBar(
                               SnackBar(
                                 content: Text(
-                                  AppLocalizations.of(context)!
-                                      .pourForDisabled(user.displayName),
+                                  AppLocalizations.of(
+                                    context,
+                                  )!.pourForDisabled(user.displayName),
                                 ),
                               ),
                             );
@@ -1347,14 +1365,20 @@ class _ParticipantsSectionState extends ConsumerState<_ParticipantsSection> {
                   rank: rankOf[guest.id] ?? 0,
                   beerCount: StatsCalculator.beerCount(widget.pours, guest.id),
                   cost: StatsCalculator.userCost(
-                    widget.pours, guest.id, widget.session.kegPrice, widget.session.volumeTotalMl,
+                    widget.pours,
+                    guest.id,
+                    widget.session.kegPrice,
+                    widget.session.volumeTotalMl,
                   ),
                   lastPourTime: StatsCalculator.timeSinceLastPour(
-                    widget.pours.where((p) => p.userId == guest.id && !p.undone).toList(),
+                    widget.pours
+                        .where((p) => p.userId == guest.id && !p.undone)
+                        .toList(),
                   ),
                   prefs: prefs,
                   showPourButton: widget.session.status == KegStatus.active,
-                  lastVolumeMl: (widget.session.lastVolumesMl[guest.id] as num?)?.toDouble(),
+                  lastVolumeMl: (widget.session.lastVolumesMl[guest.id] as num?)
+                      ?.toDouble(),
                   defaultVolumeMl: widget.session.predefinedVolumesMl.isNotEmpty
                       ? widget.session.predefinedVolumesMl.first
                       : 500,
@@ -1370,27 +1394,33 @@ class _ParticipantsSectionState extends ConsumerState<_ParticipantsSection> {
                           onRemoveGuest: isCreator
                               ? () => _removeGuest(context, ref, guest)
                               : null,
-                          onPourVolumeSelect: () =>
-                              widget.onPourForVolumeSelect(guest.id, guest.nickname),
+                          onPourVolumeSelect: () => widget
+                              .onPourForVolumeSelect(guest.id, guest.nickname),
                         ),
                       ),
                     );
                   },
                   onPour: () => widget.onQuickPourFor(guest.id, guest.nickname),
-                  onPourLongPress: () => widget.onPourForVolumeSelect(guest.id, guest.nickname),
+                  onPourLongPress: () =>
+                      widget.onPourForVolumeSelect(guest.id, guest.nickname),
                 );
               },
             );
           },
           loading: () => const SizedBox.shrink(),
-          error: (e, _) => Text(AppLocalizations.of(context)!.errorWithMessage(e.toString())),
+          error: (e, _) => Text(
+            AppLocalizations.of(context)!.errorWithMessage(e.toString()),
+          ),
         ),
       ],
     );
   }
 
   Future<void> _removeGuest(
-      BuildContext context, WidgetRef ref, ManualUser guest) async {
+    BuildContext context,
+    WidgetRef ref,
+    ManualUser guest,
+  ) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -1468,11 +1498,32 @@ class _UnifiedParticipantRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final smallStyle = Theme.of(context).textTheme.bodySmall;
+    final compactVolumeText = TimeFormatter.formatCompactVolume(
+      lastVolumeMl ?? defaultVolumeMl ?? 500,
+      prefs: prefs,
+    );
+    final firstSpace = compactVolumeText.indexOf(' ');
+    final volumeValueText = firstSpace > 0
+        ? compactVolumeText.substring(0, firstSpace)
+        : compactVolumeText;
+    final volumeUnitText = firstSpace > 0
+        ? compactVolumeText.substring(firstSpace + 1)
+        : '';
+    final buttonWidth = switch (prefs.volumeUnit) {
+      VolumeUnit.litres => 75.0,
+      VolumeUnit.pints => 92.0,
+      VolumeUnit.usFlOz => 106.0,
+    };
+    final contentWidth = buttonWidth - 20;
+    const buttonContentColor = Colors.black87;
 
     // Pre-format values for the rolling text animation.
     final beerCountText = prefs.formatDecimal(beerCount, 1);
-    final costText = TimeFormatter.formatCurrency(cost, prefs: prefs,
-        decimalPlaces: 0);
+    final costText = TimeFormatter.formatCurrency(
+      cost,
+      prefs: prefs,
+      decimalPlaces: 0,
+    );
     final timerText = lastPourTime != null
         ? '${TimeFormatter.formatDuration(lastPourTime!)} ${AppLocalizations.of(context)!.ago}'
         : null;
@@ -1492,12 +1543,11 @@ class _UnifiedParticipantRow extends StatelessWidget {
                 child: AnimatedRollingText(
                   text: '#$rank',
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: rank <= 3
-                            ? BeerColors.primaryAmber
-                            : BeerColors.onSurfaceSecondary,
-                        fontWeight:
-                            rank <= 3 ? FontWeight.w700 : FontWeight.normal,
-                      ),
+                    color: rank <= 3
+                        ? BeerColors.primaryAmber
+                        : BeerColors.onSurfaceSecondary,
+                    fontWeight: rank <= 3 ? FontWeight.w700 : FontWeight.normal,
+                  ),
                 ),
               ),
               const SizedBox(width: 4),
@@ -1519,9 +1569,7 @@ class _UnifiedParticipantRow extends StatelessWidget {
                         Flexible(
                           child: Text(
                             displayName,
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyMedium
+                            style: Theme.of(context).textTheme.bodyMedium
                                 ?.copyWith(fontWeight: FontWeight.w600),
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -1539,9 +1587,7 @@ class _UnifiedParticipantRow extends StatelessWidget {
                             ),
                             child: Text(
                               AppLocalizations.of(context)!.guestLower,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .labelSmall
+                              style: Theme.of(context).textTheme.labelSmall
                                   ?.copyWith(color: Colors.grey),
                             ),
                           ),
@@ -1554,18 +1600,15 @@ class _UnifiedParticipantRow extends StatelessWidget {
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: BeerColors.primaryAmber
-                                  .withValues(alpha: 0.2),
+                              color: BeerColors.primaryAmber.withValues(
+                                alpha: 0.2,
+                              ),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
                               groupName!,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .labelSmall
-                                  ?.copyWith(
-                                    color: BeerColors.primaryAmber,
-                                  ),
+                              style: Theme.of(context).textTheme.labelSmall
+                                  ?.copyWith(color: BeerColors.primaryAmber),
                             ),
                           ),
                         ],
@@ -1574,22 +1617,25 @@ class _UnifiedParticipantRow extends StatelessWidget {
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        const Icon(Icons.sports_bar_outlined,
-                            size: 14, color: BeerColors.onSurfaceSecondary),
+                        const Icon(
+                          Icons.sports_bar_outlined,
+                          size: 14,
+                          color: BeerColors.onSurfaceSecondary,
+                        ),
                         const SizedBox(width: 3),
                         AnimatedRollingText(
                           text: beerCountText,
                           style: smallStyle,
                         ),
                         const SizedBox(width: 12),
-                        AnimatedRollingText(
-                          text: costText,
-                          style: smallStyle,
-                        ),
+                        AnimatedRollingText(text: costText, style: smallStyle),
                         if (timerText != null) ...[
                           const SizedBox(width: 12),
-                          const Icon(Icons.timer,
-                              size: 13, color: BeerColors.onSurfaceSecondary),
+                          const Icon(
+                            Icons.timer,
+                            size: 13,
+                            color: BeerColors.onSurfaceSecondary,
+                          ),
                           const SizedBox(width: 3),
                           Flexible(
                             child: Text(
@@ -1612,20 +1658,58 @@ class _UnifiedParticipantRow extends StatelessWidget {
                     onPressed: onPour,
                     style: FilledButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 14),
-                      minimumSize: Size.zero,
+                        horizontal: 10,
+                        vertical: 10,
+                      ),
+                      minimumSize: Size(buttonWidth, 0),
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.sports_bar, size: 18),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${((lastVolumeMl ?? defaultVolumeMl ?? 500) / 1000).toStringAsFixed(2)} l',
-                          style: const TextStyle(fontSize: 12),
-                        ),
-                      ],
+                    child: SizedBox(
+                      width: contentWidth,
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.sports_bar,
+                            size: 18,
+                            color: buttonContentColor,
+                          ),
+                          const SizedBox(width: 2),
+                          Expanded(
+                            child: Align(
+                              alignment: Alignment.centerRight,
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerRight,
+                                child: RichText(
+                                  textAlign: TextAlign.right,
+                                  text: TextSpan(
+                                    style: DefaultTextStyle.of(
+                                      context,
+                                    ).style.copyWith(color: buttonContentColor),
+                                    children: [
+                                      TextSpan(
+                                        text: volumeValueText,
+                                        style: const TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      if (volumeUnitText.isNotEmpty)
+                                        TextSpan(
+                                          text: ' $volumeUnitText',
+                                          style: const TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -1652,15 +1736,14 @@ class _AccountsSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final accountsAsync =
-        ref.watch(watchSessionAccountsProvider(session.id));
+    final accountsAsync = ref.watch(watchSessionAccountsProvider(session.id));
     final accounts = accountsAsync.asData?.value ?? [];
-    final manualUsersAsync =
-        ref.watch(watchManualUsersProvider(session.id));
+    final manualUsersAsync = ref.watch(watchManualUsersProvider(session.id));
     final manualUsers = manualUsersAsync.asData?.value ?? [];
     final currentUid = FirebaseAuth.instance.currentUser?.uid;
     final isCreator = currentUid == session.creatorId;
-    final prefs = ref.watch(formatPreferencesProvider)
+    final prefs = ref
+        .watch(formatPreferencesProvider)
         .withCurrency(session.currency);
 
     // Collect IDs that are already in a joint account group.
@@ -1670,8 +1753,9 @@ class _AccountsSection extends ConsumerWidget {
     }
 
     // Solo registered participants (not in any group).
-    final soloIds =
-        participantIds.where((id) => !groupedIds.contains(id)).toList();
+    final soloIds = participantIds
+        .where((id) => !groupedIds.contains(id))
+        .toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1679,8 +1763,8 @@ class _AccountsSection extends ConsumerWidget {
         Text(
           AppLocalizations.of(context)!.accountsBills,
           style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                color: BeerColors.onSurfaceSecondary,
-              ),
+            color: BeerColors.onSurfaceSecondary,
+          ),
         ),
         const SizedBox(height: 8),
         // Joint account groups
@@ -1771,26 +1855,29 @@ class _AccountsSection extends ConsumerWidget {
                 if (name.isEmpty) return;
 
                 // Validate: no duplicate name among registered users or guests.
-                final existingGuestsAsync =
-                    ref.read(watchManualUsersProvider(session.id));
-                final existingGuests =
-                    existingGuestsAsync.asData?.value ?? [];
-                final existingUsersAsync =
-                    ref.read(watchUsersProvider(participantIds));
-                final existingUsers =
-                    existingUsersAsync.asData?.value ?? [];
+                final existingGuestsAsync = ref.read(
+                  watchManualUsersProvider(session.id),
+                );
+                final existingGuests = existingGuestsAsync.asData?.value ?? [];
+                final existingUsersAsync = ref.read(
+                  watchUsersProvider(participantIds),
+                );
+                final existingUsers = existingUsersAsync.asData?.value ?? [];
 
                 final lowerName = name.toLowerCase();
                 final isDuplicate =
-                    existingGuests.any((g) =>
-                        g.nickname.toLowerCase() == lowerName) ||
-                    existingUsers.any((u) =>
-                        u.displayName.toLowerCase() == lowerName);
+                    existingGuests.any(
+                      (g) => g.nickname.toLowerCase() == lowerName,
+                    ) ||
+                    existingUsers.any(
+                      (u) => u.displayName.toLowerCase() == lowerName,
+                    );
 
                 if (isDuplicate) {
                   setDialogState(
-                    () => errorText =
-                        AppLocalizations.of(context)!.guestNameTaken,
+                    () => errorText = AppLocalizations.of(
+                      context,
+                    )!.guestNameTaken,
                   );
                   return;
                 }
@@ -1841,10 +1928,7 @@ class _GuestAccountCard extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
         child: Row(
           children: [
-            AvatarCircle(
-              displayName: guest.nickname,
-              radius: 20,
-            ),
+            AvatarCircle(displayName: guest.nickname, radius: 20),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -1855,10 +1939,8 @@ class _GuestAccountCard extends StatelessWidget {
                       Flexible(
                         child: Text(
                           guest.nickname,
-                          style:
-                              Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(fontWeight: FontWeight.w600),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -1874,10 +1956,9 @@ class _GuestAccountCard extends StatelessWidget {
                         ),
                         child: Text(
                           AppLocalizations.of(context)!.guestLower,
-                          style: Theme.of(context)
-                              .textTheme
-                              .labelSmall
-                              ?.copyWith(color: Colors.grey),
+                          style: Theme.of(
+                            context,
+                          ).textTheme.labelSmall?.copyWith(color: Colors.grey),
                         ),
                       ),
                     ],
@@ -1885,15 +1966,23 @@ class _GuestAccountCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      const Icon(Icons.sports_bar_outlined,
-                          size: iconSize, color: iconColor),
+                      const Icon(
+                        Icons.sports_bar_outlined,
+                        size: iconSize,
+                        color: iconColor,
+                      ),
                       const SizedBox(width: 3),
-                      Text(prefs.formatDecimal(beerCount, 1),
-                          style: smallStyle),
+                      Text(
+                        prefs.formatDecimal(beerCount, 1),
+                        style: smallStyle,
+                      ),
                       const SizedBox(width: 12),
                       Text(
-                        TimeFormatter.formatCurrency(cost,
-                            prefs: prefs, decimalPlaces: 0),
+                        TimeFormatter.formatCurrency(
+                          cost,
+                          prefs: prefs,
+                          decimalPlaces: 0,
+                        ),
                         style: smallStyle,
                       ),
                     ],
@@ -1944,10 +2033,7 @@ class _AccountCard extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
         child: Row(
           children: [
-            GroupAvatarCircle(
-              avatarIcon: account.avatarIcon,
-              radius: 20,
-            ),
+            GroupAvatarCircle(avatarIcon: account.avatarIcon, radius: 20),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -1956,27 +2042,41 @@ class _AccountCard extends StatelessWidget {
                   Text(
                     account.groupName,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
+                      fontWeight: FontWeight.w600,
+                    ),
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      const Icon(Icons.people_outline,
-                          size: iconSize, color: iconColor),
+                      const Icon(
+                        Icons.people_outline,
+                        size: iconSize,
+                        color: iconColor,
+                      ),
                       const SizedBox(width: 3),
-                      Text('${account.memberUserIds.length}', style: smallStyle),
+                      Text(
+                        '${account.memberUserIds.length}',
+                        style: smallStyle,
+                      ),
                       const SizedBox(width: 12),
-                      const Icon(Icons.sports_bar_outlined,
-                          size: iconSize, color: iconColor),
+                      const Icon(
+                        Icons.sports_bar_outlined,
+                        size: iconSize,
+                        color: iconColor,
+                      ),
                       const SizedBox(width: 3),
-                      Text(prefs.formatDecimal(groupBeerCount, 1),
-                          style: smallStyle),
+                      Text(
+                        prefs.formatDecimal(groupBeerCount, 1),
+                        style: smallStyle,
+                      ),
                       const SizedBox(width: 12),
                       Text(
-                        TimeFormatter.formatCurrency(totalCost,
-                            prefs: prefs, decimalPlaces: 0),
+                        TimeFormatter.formatCurrency(
+                          totalCost,
+                          prefs: prefs,
+                          decimalPlaces: 0,
+                        ),
                         style: smallStyle,
                       ),
                     ],
@@ -2043,24 +2143,33 @@ class _SoloAccountCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    displayName + (isMe ? AppLocalizations.of(context)!.youSuffix : ''),
+                    displayName +
+                        (isMe ? AppLocalizations.of(context)!.youSuffix : ''),
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
+                      fontWeight: FontWeight.w600,
+                    ),
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      const Icon(Icons.sports_bar_outlined,
-                          size: iconSize, color: iconColor),
+                      const Icon(
+                        Icons.sports_bar_outlined,
+                        size: iconSize,
+                        color: iconColor,
+                      ),
                       const SizedBox(width: 3),
-                      Text(prefs.formatDecimal(beerCount, 1),
-                          style: smallStyle),
+                      Text(
+                        prefs.formatDecimal(beerCount, 1),
+                        style: smallStyle,
+                      ),
                       const SizedBox(width: 12),
                       Text(
-                        TimeFormatter.formatCurrency(cost,
-                            prefs: prefs, decimalPlaces: 0),
+                        TimeFormatter.formatCurrency(
+                          cost,
+                          prefs: prefs,
+                          decimalPlaces: 0,
+                        ),
                         style: smallStyle,
                       ),
                     ],
@@ -2104,8 +2213,11 @@ class _DoneParticipantRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final volumeMl = StatsCalculator.userPouredMl(pours, user.id);
     final ratio = StatsCalculator.userConsumptionRatio(pours, user.id);
-    final cost =
-        StatsCalculator.userCostByConsumption(pours, user.id, kegPrice);
+    final cost = StatsCalculator.userCostByConsumption(
+      pours,
+      user.id,
+      kegPrice,
+    );
 
     return InkWell(
       onTap: onTap,
@@ -2126,10 +2238,11 @@ class _DoneParticipantRow extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    user.displayName + (isMe ? AppLocalizations.of(context)!.youSuffix : ''),
+                    user.displayName +
+                        (isMe ? AppLocalizations.of(context)!.youSuffix : ''),
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
+                      fontWeight: FontWeight.w600,
+                    ),
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 2),
@@ -2137,17 +2250,17 @@ class _DoneParticipantRow extends StatelessWidget {
                     '${TimeFormatter.formatVolumeMl(volumeMl, prefs: prefs)} · '
                     '${TimeFormatter.formatRatio(ratio)}',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: BeerColors.onSurfaceSecondary,
-                        ),
+                      color: BeerColors.onSurfaceSecondary,
+                    ),
                   ),
                 ],
               ),
             ),
             Text(
               TimeFormatter.formatCurrency(cost, prefs: prefs),
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
             ),
           ],
         ),
@@ -2214,18 +2327,16 @@ class _DoneGroupRow extends StatelessWidget {
                 Expanded(
                   child: Text(
                     account.groupName,
-                    style:
-                        Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
                 Text(
                   TimeFormatter.formatCurrency(groupCost, prefs: prefs),
-                  style:
-                      Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700),
                 ),
               ],
             ),
@@ -2236,8 +2347,8 @@ class _DoneGroupRow extends StatelessWidget {
                 '${TimeFormatter.formatVolumeMl(groupVolumeMl, prefs: prefs)} · '
                 '${TimeFormatter.formatRatio(groupRatio)}',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: BeerColors.onSurfaceSecondary,
-                    ),
+                  color: BeerColors.onSurfaceSecondary,
+                ),
               ),
             ),
             if (memberUsers.length > 1) ...[
@@ -2279,16 +2390,13 @@ class _DoneMemberRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 3),
       child: Row(
         children: [
-          Text(
-            user.displayName,
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
+          Text(user.displayName, style: Theme.of(context).textTheme.bodySmall),
           const Spacer(),
           Text(
             TimeFormatter.formatVolumeMl(volumeMl, prefs: prefs),
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: BeerColors.onSurfaceSecondary,
-                ),
+              color: BeerColors.onSurfaceSecondary,
+            ),
           ),
         ],
       ),
@@ -2314,8 +2422,8 @@ class _MiniStat extends StatelessWidget {
           child: Text(
             text,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: BeerColors.onSurfaceSecondary,
-                ),
+              color: BeerColors.onSurfaceSecondary,
+            ),
             overflow: TextOverflow.ellipsis,
           ),
         ),
@@ -2343,8 +2451,11 @@ class _DoneGuestRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final volumeMl = StatsCalculator.userPouredMl(pours, guest.id);
     final ratio = StatsCalculator.userConsumptionRatio(pours, guest.id);
-    final cost =
-        StatsCalculator.userCostByConsumption(pours, guest.id, kegPrice);
+    final cost = StatsCalculator.userCostByConsumption(
+      pours,
+      guest.id,
+      kegPrice,
+    );
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
@@ -2373,8 +2484,8 @@ class _DoneGuestRow extends StatelessWidget {
                       child: Text(
                         guest.nickname,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
+                          fontWeight: FontWeight.w600,
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -2382,9 +2493,9 @@ class _DoneGuestRow extends StatelessWidget {
                     Text(
                       '(${AppLocalizations.of(context)!.guest})',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: BeerColors.onSurfaceSecondary,
-                            fontStyle: FontStyle.italic,
-                          ),
+                        color: BeerColors.onSurfaceSecondary,
+                        fontStyle: FontStyle.italic,
+                      ),
                     ),
                   ],
                 ),
@@ -2393,17 +2504,17 @@ class _DoneGuestRow extends StatelessWidget {
                   '${TimeFormatter.formatVolumeMl(volumeMl, prefs: prefs)} · '
                   '${TimeFormatter.formatRatio(ratio)}',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: BeerColors.onSurfaceSecondary,
-                      ),
+                    color: BeerColors.onSurfaceSecondary,
+                  ),
                 ),
               ],
             ),
           ),
           Text(
             TimeFormatter.formatCurrency(cost, prefs: prefs),
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
         ],
       ),
