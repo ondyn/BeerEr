@@ -392,6 +392,15 @@ class AppLocalizationsCs extends AppLocalizations {
   String get volumeUnits => 'Jednotky objemu';
 
   @override
+  String get volumeUnitLitres => 'Litry';
+
+  @override
+  String get volumeUnitPints => 'Pinty';
+
+  @override
+  String get volumeUnitUsFlOz => 'US fl. oz';
+
+  @override
   String get currencySymbol => 'Symbol měny';
 
   @override

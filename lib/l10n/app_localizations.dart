@@ -859,6 +859,24 @@ abstract class AppLocalizations {
   /// **'Volume units'**
   String get volumeUnits;
 
+  /// No description provided for @volumeUnitLitres.
+  ///
+  /// In en, this message translates to:
+  /// **'Litres'**
+  String get volumeUnitLitres;
+
+  /// No description provided for @volumeUnitPints.
+  ///
+  /// In en, this message translates to:
+  /// **'Pints'**
+  String get volumeUnitPints;
+
+  /// No description provided for @volumeUnitUsFlOz.
+  ///
+  /// In en, this message translates to:
+  /// **'US fl. oz'**
+  String get volumeUnitUsFlOz;
+
   /// No description provided for @currencySymbol.
   ///
   /// In en, this message translates to:

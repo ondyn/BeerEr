@@ -70,6 +70,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     saveLocalLanguage(langCode);
   }
 
+  String _volumeUnitLabel(BuildContext context, VolumeUnit unit) {
+    final l10n = AppLocalizations.of(context)!;
+    return switch (unit) {
+      VolumeUnit.litres => l10n.volumeUnitLitres,
+      VolumeUnit.pints => l10n.volumeUnitPints,
+      VolumeUnit.usFlOz => l10n.volumeUnitUsFlOz,
+    };
+  }
+
   /// Shows a confirmation dialog, then calls the `deleteUserAccount` Cloud
   /// Function. On success shows a success message and navigates to welcome.
   Future<void> _confirmDeleteAccount(BuildContext context) async {
@@ -312,7 +321,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   items: VolumeUnit.values
                       .map((u) => DropdownMenuItem(
                             value: u,
-                            child: Text(u.label),
+                            child: Text(
+                              _volumeUnitLabel(context, u),
+                            ),
                           ))
                       .toList(),
                   onChanged: (val) {

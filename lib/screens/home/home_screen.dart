@@ -159,31 +159,49 @@ class HomeScreen extends ConsumerWidget {
           top: 12,
           bottom: MediaQuery.of(context).padding.bottom + 12,
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Flexible(
-              child: FloatingActionButton.extended(
-                heroTag: 'join_keg',
-                onPressed: () => _showJoinDialog(context),
-                icon: const Icon(Icons.qr_code_scanner),
-                label: FittedBox(
-                  child: Text(AppLocalizations.of(context)!.joinKegSession),
-                ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isCompact = constraints.maxWidth < 380;
+
+            final joinButton = FloatingActionButton.extended(
+              heroTag: 'join_keg',
+              onPressed: () => _showJoinDialog(context),
+              icon: const Icon(Icons.qr_code_scanner),
+              label: FittedBox(
+                child: Text(AppLocalizations.of(context)!.joinKegSession),
               ),
-            ),
-            const SizedBox(width: 12),
-            Flexible(
-              child: FloatingActionButton.extended(
-                heroTag: 'new_keg',
-                onPressed: () => context.push('/keg/new'),
-                icon: const Icon(Icons.add),
-                label: FittedBox(
-                  child: Text(AppLocalizations.of(context)!.newKegSession),
-                ),
+            );
+
+            final newButton = FloatingActionButton.extended(
+              heroTag: 'new_keg',
+              onPressed: () => context.push('/keg/new'),
+              icon: const Icon(Icons.add),
+              label: FittedBox(
+                child: Text(AppLocalizations.of(context)!.newKegSession),
               ),
-            ),
-          ],
+            );
+
+            if (isCompact) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  joinButton,
+                  const SizedBox(height: 8),
+                  newButton,
+                ],
+              );
+            }
+
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Expanded(child: joinButton),
+                const SizedBox(width: 12),
+                Expanded(child: newButton),
+              ],
+            );
+          },
         ),
       ),
     );

@@ -271,109 +271,140 @@ class ProfileScreen extends ConsumerWidget {
           ? currentUser.age.toString()
           : '',
     );
+    var selectedGender = currentUser?.gender ?? 'male';
 
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.only(
-          left: 24,
-          right: 24,
-          top: 16,
-          bottom: 24 +
-              MediaQuery.viewInsetsOf(ctx).bottom +
-              MediaQuery.viewPaddingOf(ctx).bottom,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: BeerColors.onSurfaceSecondary,
-                  borderRadius: BorderRadius.circular(2),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setModalState) => Padding(
+          padding: EdgeInsets.only(
+            left: 24,
+            right: 24,
+            top: 16,
+            bottom: 24 +
+                MediaQuery.viewInsetsOf(ctx).bottom +
+                MediaQuery.viewPaddingOf(ctx).bottom,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: BeerColors.onSurfaceSecondary,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              AppLocalizations.of(ctx)!.editProfile,
-              style: Theme.of(ctx).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: nicknameCtrl,
-              decoration: InputDecoration(labelText: AppLocalizations.of(ctx)!.nickname),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: weightCtrl,
-                    keyboardType: TextInputType.number,
-                    decoration:
-                        InputDecoration(labelText: AppLocalizations.of(ctx)!.weightKg),
-                  ),
+              const SizedBox(height: 16),
+              Text(
+                AppLocalizations.of(ctx)!.editProfile,
+                style: Theme.of(ctx).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: nicknameCtrl,
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(ctx)!.nickname,
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: TextField(
-                    controller: ageCtrl,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(labelText: AppLocalizations.of(ctx)!.age),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: weightCtrl,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: AppLocalizations.of(ctx)!.weightKg,
+                      ),
+                    ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.pop(ctx),
-                    child: Text(AppLocalizations.of(ctx)!.cancel),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: TextField(
+                      controller: ageCtrl,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: AppLocalizations.of(ctx)!.age,
+                      ),
+                    ),
                   ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                value: selectedGender,
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(ctx)!.gender,
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: FilledButton(
-                    onPressed: () async {
-                      final userRepo = ref.read(userRepositoryProvider);
-                      final existing = ref.read(
-                        watchCurrentUserProvider(userId),
-                      ).asData?.value;
-                      final weight =
-                          double.tryParse(weightCtrl.text) ?? 0;
-                      final age = int.tryParse(ageCtrl.text) ?? 0;
-                      final gender = existing?.gender ?? 'male';
-                      await userRepo.createOrUpdateUser(AppUser(
-                        id: userId,
-                        nickname: nicknameCtrl.text.trim(),
-                        email: existing?.email ?? '',
-                        weightKg: weight,
-                        age: age,
-                        gender: gender,
-                        authProvider: existing?.authProvider ?? 'email',
-                        preferences: existing?.preferences ?? {},
-                      ));
-                      // Persist locally for next login.
-                      await LocalProfile.instance.save(
-                        weightKg: weight,
-                        age: age,
-                        gender: gender,
-                      );
-                      if (ctx.mounted) Navigator.pop(ctx);
-                    },
-                    child: Text(AppLocalizations.of(ctx)!.save),
+                items: [
+                  DropdownMenuItem(
+                    value: 'male',
+                    child: Text(AppLocalizations.of(ctx)!.male),
                   ),
-                ),
-              ],
-            ),
-          ],
+                  DropdownMenuItem(
+                    value: 'female',
+                    child: Text(AppLocalizations.of(ctx)!.female),
+                  ),
+                ],
+                onChanged: (value) {
+                  if (value == null) return;
+                  setModalState(() {
+                    selectedGender = value;
+                  });
+                },
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      child: Text(AppLocalizations.of(ctx)!.cancel),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: FilledButton(
+                      onPressed: () async {
+                        final userRepo = ref.read(userRepositoryProvider);
+                        final existing = ref.read(
+                          watchCurrentUserProvider(userId),
+                        ).asData?.value;
+                        final weight =
+                            double.tryParse(weightCtrl.text) ?? 0;
+                        final age = int.tryParse(ageCtrl.text) ?? 0;
+                        final gender = selectedGender;
+                        await userRepo.createOrUpdateUser(AppUser(
+                          id: userId,
+                          nickname: nicknameCtrl.text.trim(),
+                          email: existing?.email ?? '',
+                          weightKg: weight,
+                          age: age,
+                          gender: gender,
+                          authProvider: existing?.authProvider ?? 'email',
+                          preferences: existing?.preferences ?? {},
+                        ));
+                        // Persist locally for next login.
+                        await LocalProfile.instance.save(
+                          weightKg: weight,
+                          age: age,
+                          gender: gender,
+                        );
+                        if (ctx.mounted) Navigator.pop(ctx);
+                      },
+                      child: Text(AppLocalizations.of(ctx)!.save),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

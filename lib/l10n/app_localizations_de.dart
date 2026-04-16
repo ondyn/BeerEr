@@ -392,6 +392,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String get volumeUnits => 'Volumeneinheiten';
 
   @override
+  String get volumeUnitLitres => 'Liter';
+
+  @override
+  String get volumeUnitPints => 'Pints';
+
+  @override
+  String get volumeUnitUsFlOz => 'US fl. oz';
+
+  @override
   String get currencySymbol => 'Währungssymbol';
 
   @override
