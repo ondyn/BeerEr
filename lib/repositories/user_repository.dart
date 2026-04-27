@@ -67,11 +67,32 @@ class UserRepository {
     return AppUser.fromJson(firestoreDoc(snap.id, snap.data()!));
   }
 
+  /// Finds an active user profile by email.
+  ///
+  /// Useful when a user signs in with a different auth provider and gets a
+  /// different UID, but already has profile data under another document ID.
+  Future<AppUser?> findActiveUserByEmail(String email) async {
+    final normalized = email.trim();
+    if (normalized.isEmpty) return null;
+
+    final qs = await _col
+        .where('email', isEqualTo: normalized)
+        .limit(1)
+        .get();
+    if (qs.docs.isEmpty) return null;
+
+    for (final d in qs.docs) {
+      final user = AppUser.fromJson(firestoreDoc(d.id, d.data()));
+      if (!user.suspended) return user;
+    }
+    return null;
+  }
+
   /// Watches multiple users (for participant lists).
   Stream<List<AppUser>> watchUsers(List<String> userIds) {
     if (userIds.isEmpty) return Stream.value([]);
     return _col
-        .where(FieldPath.documentId, whereIn: userIds.take(10).toList())
+        .where(FieldPath.documentId, whereIn: userIds.take(30).toList())
         .snapshots()
         .map((qs) => qs.docs
             .map((d) => AppUser.fromJson(firestoreDoc(d.id, d.data())))

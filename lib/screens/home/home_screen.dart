@@ -294,14 +294,31 @@ void _showJoinDialog(BuildContext context) {
 /// Extracts a session ID from either:
 ///   - a raw session ID string  (e.g. "abc123")
 ///   - a beerer:// URI          (e.g. "beerer://join/abc123")
+///   - a HTTPS URI              (e.g. "https://ondyn-beerer.web.app/join/abc123")
 String? _extractSessionId(String input) {
   if (input.isEmpty) return null;
 
   // Try to parse as URI first
   final uri = Uri.tryParse(input);
-  if (uri != null && uri.scheme == 'beerer' && uri.host == 'join') {
-    final id = uri.pathSegments.isNotEmpty ? uri.pathSegments.first : null;
-    return (id != null && id.isNotEmpty) ? id : null;
+  if (uri != null) {
+    if (uri.scheme == 'beerer' && uri.host == 'join') {
+      final id = uri.pathSegments.isNotEmpty ? uri.pathSegments.first : null;
+      return (id != null && id.isNotEmpty) ? id : null;
+    }
+
+    const allowedHttpsHosts = {
+      'ondyn-beerer.web.app',
+      'ondyn-beerer.firebaseapp.com',
+    };
+    final isHttpsJoin =
+        uri.scheme == 'https' &&
+        allowedHttpsHosts.contains(uri.host) &&
+        uri.pathSegments.length >= 2 &&
+        uri.pathSegments.first == 'join';
+    if (isHttpsJoin) {
+      final id = uri.pathSegments[1];
+      return id.isNotEmpty ? id : null;
+    }
   }
 
   // Assume raw session ID — must not contain whitespace or slashes
@@ -426,22 +443,11 @@ class _SessionCardWithCount extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final participantIdsAsync = ref.watch(
-      watchParticipantIdsProvider(session.id),
-    );
-    final manualUsersAsync = ref.watch(watchManualUsersProvider(session.id));
-    final poursAsync = ref.watch(watchSessionPoursProvider(session.id));
-
-    final participantIds = participantIdsAsync.asData?.value ?? const [];
-    final manualUsers = manualUsersAsync.asData?.value ?? const <ManualUser>[];
-    final pours = poursAsync.asData?.value ?? const <Pour>[];
-
-    final consumerIds = <String>{
-      ...participantIds,
-      ...manualUsers.map((u) => u.id),
-      ...pours.where((p) => !p.undone).map((p) => p.userId),
-    };
-    final participantCount = consumerIds.length;
+    // One stream for the count — manual users and pour-based consumers are
+    // not shown on the list card (acceptable UX trade-off to save reads).
+    final participantIds =
+        ref.watch(watchParticipantIdsProvider(session.id)).asData?.value ?? const [];
+    final participantCount = participantIds.length;
 
     return SessionCard(
       session: session,

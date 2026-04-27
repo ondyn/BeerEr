@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart'
   show TargetPlatform, debugPrint, defaultTargetPlatform, kIsWeb;
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -175,12 +176,19 @@ class NotificationService {
     final token = await _fcm.getToken();
     if (token == null) return;
 
+    // Skip the Firestore write if the token hasn't changed since last sync.
+    final prefs = await SharedPreferences.getInstance();
+    final cachedKey = 'fcm_token_$uid';
+    final cachedToken = prefs.getString(cachedKey);
+    if (cachedToken == token) return;
+
     await FirebaseFirestore.instance.collection('users').doc(uid).set(
       {
         'preferences': {'fcm_token': token},
       },
       SetOptions(merge: true),
     );
+    await prefs.setString(cachedKey, token);
   }
 
   Future<void> _clearTokenForUser(String uid) async {
@@ -190,6 +198,9 @@ class NotificationService {
       },
       SetOptions(merge: true),
     );
+    // Invalidate cached token so next login always syncs.
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('fcm_token_$uid');
   }
 
   // --------------------------------------------------------------------------

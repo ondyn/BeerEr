@@ -115,7 +115,20 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
         }
       }
 
-      if (mounted) context.go('/home');
+      // Check if profile is complete (weight and age must be set).
+      final finalProfile = await userRepo.getUser(user.uid);
+      final isProfileComplete =
+          finalProfile != null &&
+          finalProfile.weightKg > 0 &&
+          finalProfile.age > 0;
+
+      if (mounted) {
+        if (isProfileComplete) {
+          context.go('/home');
+        } else {
+          context.go('/auth/complete-profile');
+        }
+      }
     } on FirebaseAuthException catch (e) {
       setState(() {
         _error = _mapFirebaseError(e.code);
@@ -154,31 +167,21 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
       _emailNotVerified = false;
     });
 
+    final userRepo = ref.read(userRepositoryProvider);
+    final preAuthLang = ref.read(preAuthLocaleProvider);
+
     try {
       debugPrint('[GoogleSignIn] Starting sign-in flow...');
-      final googleSignIn = GoogleSignIn();
-      final googleUser = await googleSignIn.signIn();
-      if (googleUser == null) {
-        debugPrint('[GoogleSignIn] User cancelled the flow.');
-        if (mounted) {
-          setState(() {
-            _error = AppLocalizations.of(context)!.googleSignInCancelled;
-            _isLoading = false;
-          });
-        }
-        return;
-      }
+      await GoogleSignIn.instance.initialize();
+      final googleUser = await GoogleSignIn.instance.authenticate();
 
       debugPrint('[GoogleSignIn] Got Google user: ${googleUser.email}');
-      final googleAuth = await googleUser.authentication;
+      final googleAuth = googleUser.authentication;
       debugPrint(
-        '[GoogleSignIn] Got tokens — '
-        'accessToken: ${googleAuth.accessToken != null ? "present" : "null"}, '
-        'idToken: ${googleAuth.idToken != null ? "present" : "null"}',
+        '[GoogleSignIn] Got idToken: ${googleAuth.idToken != null ? "present" : "null"}',
       );
 
       final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
@@ -200,11 +203,27 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
         return;
       }
 
-      // Ensure a Firestore profile exists.
-      final userRepo = ref.read(userRepositoryProvider);
-      final existingProfile = await userRepo.getUser(user.uid);
-      debugPrint('[GoogleSignIn] Existing profile: ${existingProfile != null}');
-      if (existingProfile == null) {
+      // Ensure a Firestore profile exists. If this UID has no profile yet,
+      // try to recover an existing profile by email (provider/UID may differ).
+      var profile = await userRepo.getUser(user.uid);
+      debugPrint('[GoogleSignIn] Existing profile: ${profile != null}');
+
+      if (profile == null && user.email != null && user.email!.isNotEmpty) {
+        final byEmail = await userRepo.findActiveUserByEmail(user.email!);
+        if (byEmail != null && byEmail.id != user.uid) {
+          await userRepo.createOrUpdateUser(
+            byEmail.copyWith(
+              id: user.uid,
+              email: user.email ?? byEmail.email,
+              authProvider: 'google',
+            ),
+          );
+          profile = await userRepo.getUser(user.uid);
+          debugPrint('[GoogleSignIn] Recovered profile by email for ${user.uid}');
+        }
+      }
+
+      if (profile == null) {
         final fallbackNickname =
             user.displayName?.trim().isNotEmpty == true
                 ? user.displayName!.trim()
@@ -217,13 +236,12 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
           email: user.email ?? '',
           authProvider: 'google',
         );
+        profile = await userRepo.getUser(user.uid);
         debugPrint('[GoogleSignIn] Created profile for ${user.uid}');
       }
 
       // Sync pre-auth locale to Firestore.
-      final preAuthLang = ref.read(preAuthLocaleProvider);
       if (preAuthLang != null) {
-        final profile = await userRepo.getUser(user.uid);
         if (profile != null) {
           final currentLang =
               profile.preferences['language'] as String? ?? 'en';
@@ -234,17 +252,41 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
             await userRepo.createOrUpdateUser(
               profile.copyWith(preferences: updatedPrefs),
             );
+            profile = profile.copyWith(preferences: updatedPrefs);
           }
         }
       }
 
+      // Check if profile is complete (weight and age must be set).
+      final isProfileComplete =
+          profile != null &&
+          profile.weightKg > 0 &&
+          profile.age > 0;
+
       debugPrint('[GoogleSignIn] Success — navigating');
       if (mounted) {
-        if (existingProfile == null) {
-          context.go('/auth/complete-profile');
-        } else {
+        if (isProfileComplete) {
           context.go('/home');
+        } else {
+          context.go('/auth/complete-profile');
         }
+      }
+    } on GoogleSignInException catch (e) {
+      debugPrint('[GoogleSignIn] GoogleSignInException: ${e.code}, ${e.description}');
+      if (e.code == GoogleSignInExceptionCode.canceled) {
+        if (mounted) {
+          setState(() {
+            _error = AppLocalizations.of(context)!.googleSignInCancelled;
+            _isLoading = false;
+          });
+        }
+        return;
+      }
+      if (mounted) {
+        setState(() {
+          _error = AppLocalizations.of(context)!.googleSignInFailed;
+          _isLoading = false;
+        });
       }
     } on FirebaseAuthException catch (e) {
       debugPrint('[GoogleSignIn] FirebaseAuthException: code=${e.code}, message=${e.message}');

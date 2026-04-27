@@ -12,9 +12,12 @@ class ShareSessionScreen extends StatelessWidget {
 
   final String sessionId;
 
-  /// Deep link that opens the app directly on Android & iOS.
-  /// Format: beerer://join/[sessionId]
-  String get _deepLink => 'beerer://join/$sessionId';
+  /// Canonical join link shared to other apps.
+  /// Format: https://ondyn-beerer.web.app/join/[sessionId]
+  ///
+  /// This is clickable in chat apps (e.g. WhatsApp). The hosted join page
+  /// then opens the app via custom scheme and falls back to Play Store.
+  String get _joinLink => 'https://ondyn-beerer.web.app/join/$sessionId';
 
   @override
   Widget build(BuildContext context) {
@@ -44,16 +47,16 @@ class ShareSessionScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: QrImageView(
-                  data: _deepLink,
+                  data: _joinLink,
                   version: QrVersions.auto,
                   size: 200,
                 ),
               ),
             ),
             const SizedBox(height: 24),
-            // Deep link
+            // Join link
             Text(
-              _deepLink,
+              _joinLink,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: BeerColors.primaryAmber,
@@ -63,7 +66,7 @@ class ShareSessionScreen extends StatelessWidget {
             // Copy link
             OutlinedButton.icon(
               onPressed: () {
-                Clipboard.setData(ClipboardData(text: _deepLink));
+                Clipboard.setData(ClipboardData(text: _joinLink));
                 ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text(AppLocalizations.of(context)!.linkCopied)),
                 );
@@ -74,7 +77,7 @@ class ShareSessionScreen extends StatelessWidget {
             const SizedBox(height: 16),
             ElevatedButton.icon(
               onPressed: () => SharePlus.instance.share(
-                ShareParams(text: AppLocalizations.of(context)!.joinMyKegParty(_deepLink)),
+                ShareParams(text: AppLocalizations.of(context)!.joinMyKegParty(_joinLink)),
               ),
               icon: const Icon(Icons.share),
               label: Text(AppLocalizations.of(context)!.shareLink),

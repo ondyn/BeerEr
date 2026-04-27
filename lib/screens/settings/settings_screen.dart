@@ -33,16 +33,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   String? _language;
 
   /// Persists a single key/value pair into the user's Firestore preferences
-  /// map.
+  /// map via a targeted merge write (no read required).
   Future<void> _savePreference(String key, dynamic value) async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return;
-    final repo = ref.read(userRepositoryProvider);
-    final user = await repo.getUser(uid);
-    if (user == null) return;
-    final updatedPrefs = Map<String, dynamic>.from(user.preferences)
-      ..[key] = value;
-    await repo.createOrUpdateUser(user.copyWith(preferences: updatedPrefs));
+    await ref.read(userRepositoryProvider).updatePreferences(
+      userId: uid,
+      preferences: {key: value},
+    );
   }
 
   /// Persists the updated [allowPourForMe] value into the user's Firestore

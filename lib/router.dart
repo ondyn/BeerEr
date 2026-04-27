@@ -1,5 +1,6 @@
 import 'package:beerer/providers/auth_provider.dart';
 import 'package:beerer/screens/screens.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -27,11 +28,11 @@ class _AuthNotifier extends ChangeNotifier {
   User? get user => _user;
 }
 
-/// Single instance shared by the router provider.
-final _authNotifier = _AuthNotifier();
-
 @riverpod
 GoRouter router(Ref ref) {
+  final authNotifier = _AuthNotifier();
+  ref.onDispose(authNotifier.dispose);
+
   // Listen to the Riverpod auth stream so the provider stays alive,
   // but do NOT recreate the GoRouter on every change.
   ref.listen(authStateProvider, (_, _) {});
@@ -39,9 +40,21 @@ GoRouter router(Ref ref) {
   return GoRouter(
     navigatorKey: appNavigatorKey,
     initialLocation: '/welcome',
-    refreshListenable: _authNotifier,
-    redirect: (context, state) {
-      final user = _authNotifier.user;
+    overridePlatformDefaultLocation: true,
+    onException: (context, state, router) {
+      final sessionId = _extractExternalJoinSessionId(state.uri);
+      if (sessionId != null && sessionId.isNotEmpty) {
+        router.go('/join/$sessionId');
+        return;
+      }
+
+      // Prevent landing on an unresolved route (which can leave users
+      // visually stuck on the splash fallback).
+      router.go('/welcome');
+    },
+    refreshListenable: authNotifier,
+    redirect: (context, state) async {
+      final user = authNotifier.user;
       final emailVerified = user?.emailVerified ?? false;
       final loggedIn = user != null && emailVerified;
       final path = state.uri.path;
@@ -65,9 +78,34 @@ GoRouter router(Ref ref) {
       if (!loggedIn && !isAuthRoute && !isJoinRoute) {
         return '/welcome';
       }
-      if (loggedIn && isAuthRoute && path != '/auth/complete-profile') {
-        return '/home';
+
+      // For logged-in users, gate by profile completeness.
+      // This prevents first-time Google sign-in from being redirected to /home
+      // before the app can route to /auth/complete-profile.
+      if (loggedIn && isAuthRoute) {
+        final profileSnap = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
+
+        final data = profileSnap.data();
+        final weightKg = (data?['weight_kg'] as num?)?.toDouble() ?? 0.0;
+        final age = (data?['age'] as num?)?.toInt() ?? 0;
+        final isProfileComplete = weightKg > 0 && age > 0;
+
+        if (!isProfileComplete && path != '/auth/complete-profile') {
+          return '/auth/complete-profile';
+        }
+
+        if (isProfileComplete && path == '/auth/complete-profile') {
+          return '/home';
+        }
+
+        if (isProfileComplete && path != '/auth/complete-profile') {
+          return '/home';
+        }
       }
+
       return null;
     },
     routes: [
@@ -181,4 +219,25 @@ GoRouter router(Ref ref) {
       ),
     ],
   );
+}
+
+String? _extractExternalJoinSessionId(Uri uri) {
+  if (uri.scheme == 'beerer' && uri.host == 'join') {
+    return uri.pathSegments.isNotEmpty ? uri.pathSegments.first : null;
+  }
+
+  const allowedHttpsHosts = {
+    'ondyn-beerer.web.app',
+    'ondyn-beerer.firebaseapp.com',
+  };
+  final isHttpsJoin =
+      uri.scheme == 'https' &&
+      allowedHttpsHosts.contains(uri.host) &&
+      uri.pathSegments.length >= 2 &&
+      uri.pathSegments.first == 'join';
+  if (isHttpsJoin) {
+    return uri.pathSegments[1];
+  }
+
+  return null;
 }

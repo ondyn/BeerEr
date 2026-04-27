@@ -1,8 +1,6 @@
 import 'package:beerer/l10n/app_localizations.dart';
-import 'package:beerer/models/models.dart';
 import 'package:beerer/repositories/user_repository.dart';
 import 'package:beerer/theme/beer_theme.dart';
-import 'package:beerer/utils/local_profile.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,39 +19,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPwdController = TextEditingController();
-  final _nicknameController = TextEditingController();
-  final _weightController = TextEditingController();
-  final _ageController = TextEditingController();
-  String _gender = 'male';
   bool _isLoading = false;
   String? _error;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadLocalProfile();
-  }
-
-  Future<void> _loadLocalProfile() async {
-    final local = await LocalProfile.instance.load();
-    if (!mounted) return;
-    if (local.weightKg > 0 && _weightController.text.isEmpty) {
-      _weightController.text = local.weightKg.toStringAsFixed(0);
-    }
-    if (local.age > 0 && _ageController.text.isEmpty) {
-      _ageController.text = local.age.toString();
-    }
-    setState(() => _gender = local.gender);
-  }
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPwdController.dispose();
-    _nicknameController.dispose();
-    _weightController.dispose();
-    _ageController.dispose();
     super.dispose();
   }
 
@@ -73,7 +46,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       );
 
       final user = credential.user!;
-      final uid = user.uid;
 
       // Send verification email.
       try {
@@ -84,19 +56,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         debugPrint('[Beerer] sendEmailVerification failed: $e');
       }
 
-      // Create user profile in Firestore
+      // Create a minimal profile in Firestore (email + email-provider only).
+      // User will complete profile details after email verification during sign-in.
       final userRepo = ref.read(userRepositoryProvider);
-      final weight = double.tryParse(_weightController.text) ?? 0;
-      final age = int.tryParse(_ageController.text) ?? 0;
-      await userRepo.createOrUpdateUser(AppUser(
-        id: uid,
-        nickname: _nicknameController.text.trim(),
+      await userRepo.createMinimalProfile(
+        uid: user.uid,
+        nickname: user.email?.split('@').first ?? 'User',
         email: user.email ?? '',
-        weightKg: weight,
-        age: age,
-        gender: _gender,
         authProvider: 'email',
-      ));
+      );
 
       // Try to relink a previously deleted (suspended) account with the
       // same email — this reassigns all old pours/sessions to the new UID.
@@ -107,25 +75,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         if (suspended != null) {
           await userRepo.relinkSuspendedAccount(
             oldUserId: suspended.id,
-            newUserId: uid,
-            nickname: _nicknameController.text.trim(),
+            newUserId: user.uid,
+            nickname: user.email?.split('@').first ?? 'User',
             email: user.email ?? '',
-            weightKg: weight,
-            age: age,
-            gender: _gender,
+            weightKg: 0,
+            age: 0,
+            gender: 'male',
           );
         }
       } catch (_) {
         // Best-effort: don't block registration if relinking fails.
         debugPrint('[Beerer] relinkSuspendedAccount failed (non-critical)');
       }
-
-      // Persist weight/age/gender locally.
-      await LocalProfile.instance.save(
-        weightKg: weight,
-        age: age,
-        gender: _gender,
-      );
 
       if (mounted) {
         // Sign out so the user cannot use the app until email is verified.
@@ -257,107 +218,39 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   },
                 ),
                 const SizedBox(height: 24),
-                // Profile section divider
-                Row(
-                  children: [
-                    const Expanded(child: Divider()),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Text(
-                        AppLocalizations.of(context)!.profileDetails,
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                    ),
-                    const Expanded(child: Divider()),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                // Nickname
-                TextFormField(
-                  controller: _nicknameController,
-                  decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.sports_bar),
-                    labelText: AppLocalizations.of(context)!.nickname,
-                  ),
-                  validator: (val) {
-                    if (val == null || val.trim().isEmpty) {
-                      return AppLocalizations.of(context)!.pleaseChooseNickname;
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 12),
-                // Weight & Age row
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        controller: _weightController,
-                        keyboardType:
-                            const TextInputType.numberWithOptions(
-                              decimal: true,
-                            ),
-                        decoration: InputDecoration(
-                          prefixIcon: const Icon(Icons.monitor_weight_outlined),
-                          labelText: AppLocalizations.of(context)!.weightKg,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: TextFormField(
-                        controller: _ageController,
-                        keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
-                          prefixIcon: const Icon(Icons.cake_outlined),
-                          labelText: AppLocalizations.of(context)!.age,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                // Gender
-                Text(
-                  AppLocalizations.of(context)!.genderLabel,
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-                const SizedBox(height: 8),
-                SegmentedButton<String>(
-                  segments: [
-                    ButtonSegment(
-                      value: 'male',
-                      label: Text(AppLocalizations.of(context)!.male),
-                      icon: const Icon(Icons.male),
-                    ),
-                    ButtonSegment(
-                      value: 'female',
-                      label: Text(AppLocalizations.of(context)!.female),
-                      icon: const Icon(Icons.female),
-                    ),
-                  ],
-                  selected: {_gender},
-                  onSelectionChanged: (val) {
-                    setState(() => _gender = val.first);
-                  },
-                ),
-                const SizedBox(height: 12),
-                // Privacy note
-                Text(
-                  AppLocalizations.of(context)!.bacPrivacyNote,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: BeerColors.onSurfaceSecondary,
-                      ),
-                ),
-                const SizedBox(height: 24),
                 if (_error != null) ...[
-                  Text(
-                    _error!,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: BeerColors.error.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: BeerColors.error.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.error_outline,
                           color: BeerColors.error,
+                          size: 20,
                         ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            _error!,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(
+                                  color: BeerColors.error,
+                                ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 16),
                 ],
                 // Register button
                 FilledButton(

@@ -10,30 +10,34 @@ import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 /// Welcome / onboarding screen for new or logged-out users.
-class WelcomeScreen extends ConsumerWidget {
+class WelcomeScreen extends ConsumerStatefulWidget {
   const WelcomeScreen({super.key});
 
-  Future<void> _signInWithGoogle(
-      BuildContext context, WidgetRef ref) async {
+  @override
+  ConsumerState<WelcomeScreen> createState() => _WelcomeScreenState();
+}
+
+class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
+  bool _isLoading = false;
+
+  Future<void> _signInWithGoogle() async {
+    setState(() => _isLoading = true);
+
+    final userRepo = ref.read(userRepositoryProvider);
+    final preAuthLang = ref.read(preAuthLocaleProvider);
+
     try {
       debugPrint('[GoogleSignIn] Starting sign-in flow (welcome)...');
-      final googleSignIn = GoogleSignIn();
-      final googleUser = await googleSignIn.signIn();
-      if (googleUser == null) {
-        debugPrint('[GoogleSignIn] User cancelled the flow.');
-        return;
-      }
+      await GoogleSignIn.instance.initialize();
+      final googleUser = await GoogleSignIn.instance.authenticate();
 
       debugPrint('[GoogleSignIn] Got Google user: ${googleUser.email}');
-      final googleAuth = await googleUser.authentication;
+      final googleAuth = googleUser.authentication;
       debugPrint(
-        '[GoogleSignIn] Got tokens — '
-        'accessToken: ${googleAuth.accessToken != null ? "present" : "null"}, '
-        'idToken: ${googleAuth.idToken != null ? "present" : "null"}',
+        '[GoogleSignIn] Got idToken: ${googleAuth.idToken != null ? "present" : "null"}',
       );
 
       final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
@@ -49,14 +53,32 @@ class WelcomeScreen extends ConsumerWidget {
 
       if (user == null) {
         debugPrint('[GoogleSignIn] ERROR: user is null after signInWithCredential');
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
         return;
       }
 
-      // Ensure Firestore profile exists.
-      final userRepo = ref.read(userRepositoryProvider);
-      final existingProfile = await userRepo.getUser(user.uid);
-      debugPrint('[GoogleSignIn] Existing profile: ${existingProfile != null}');
-      if (existingProfile == null) {
+      // Ensure Firestore profile exists. If this UID has no profile yet,
+      // try to recover an existing profile by email (provider/UID may differ).
+      var profile = await userRepo.getUser(user.uid);
+
+      if (profile == null && user.email != null && user.email!.isNotEmpty) {
+        final byEmail = await userRepo.findActiveUserByEmail(user.email!);
+        if (byEmail != null && byEmail.id != user.uid) {
+          await userRepo.createOrUpdateUser(
+            byEmail.copyWith(
+              id: user.uid,
+              email: user.email ?? byEmail.email,
+              authProvider: 'google',
+            ),
+          );
+          profile = await userRepo.getUser(user.uid);
+          debugPrint('[GoogleSignIn] Recovered profile by email for ${user.uid}');
+        }
+      }
+
+      if (profile == null) {
         final fallbackNickname =
             user.displayName?.trim().isNotEmpty == true
                 ? user.displayName!.trim()
@@ -69,13 +91,12 @@ class WelcomeScreen extends ConsumerWidget {
           email: user.email ?? '',
           authProvider: 'google',
         );
+        profile = await userRepo.getUser(user.uid);
         debugPrint('[GoogleSignIn] Created profile for ${user.uid}');
       }
 
       // Sync pre-auth locale.
-      final preAuthLang = ref.read(preAuthLocaleProvider);
       if (preAuthLang != null) {
-        final profile = await userRepo.getUser(user.uid);
         if (profile != null) {
           final currentLang =
               profile.preferences['language'] as String? ?? 'en';
@@ -86,21 +107,29 @@ class WelcomeScreen extends ConsumerWidget {
             await userRepo.createOrUpdateUser(
               profile.copyWith(preferences: updatedPrefs),
             );
+            profile = profile.copyWith(preferences: updatedPrefs);
           }
         }
       }
 
+      // Check if profile is complete (weight and age must be set).
+      final isProfileComplete =
+          profile != null &&
+          profile.weightKg > 0 &&
+          profile.age > 0;
+
       debugPrint('[GoogleSignIn] Success — navigating');
-      if (context.mounted) {
-        if (existingProfile == null) {
-          context.go('/auth/complete-profile');
-        } else {
+      if (mounted) {
+        if (isProfileComplete) {
           context.go('/home');
+        } else {
+          context.go('/auth/complete-profile');
         }
       }
     } on FirebaseAuthException catch (e) {
       debugPrint('[GoogleSignIn] FirebaseAuthException: code=${e.code}, message=${e.message}');
-      if (context.mounted) {
+      if (mounted) {
+        setState(() => _isLoading = false);
         final l10n = AppLocalizations.of(context)!;
         final msg = e.code == 'account-exists-with-different-credential'
             ? l10n.accountExistsWithDifferentCredential
@@ -109,19 +138,39 @@ class WelcomeScreen extends ConsumerWidget {
           SnackBar(content: Text(msg)),
         );
       }
+    } on GoogleSignInException catch (e) {
+      debugPrint('[GoogleSignIn] GoogleSignInException: ${e.code}, ${e.description}');
+      if (e.code == GoogleSignInExceptionCode.canceled) {
+        if (mounted) setState(() => _isLoading = false);
+        return;
+      }
+      if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.googleSignInFailed)),
+        );
+      }
     } catch (e, st) {
       debugPrint('[GoogleSignIn] Unexpected error: $e');
       debugPrint('[GoogleSignIn] Stack trace: $st');
-      if (context.mounted) {
+      if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
+        setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.googleSignInFailed)),
+          SnackBar(content: Text(l10n.googleSignInFailed)),
         );
       }
     }
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: BeerColors.background,
       body: SafeArea(
@@ -195,7 +244,7 @@ class WelcomeScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 16),
                     OutlinedButton.icon(
-                      onPressed: () => _signInWithGoogle(context, ref),
+                      onPressed: _isLoading ? null : _signInWithGoogle,
                       icon: const Icon(Icons.g_mobiledata, size: 24),
                       label: Text(
                         AppLocalizations.of(context)!.signInWithGoogle,

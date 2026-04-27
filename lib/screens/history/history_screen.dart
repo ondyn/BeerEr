@@ -97,22 +97,11 @@ class _HistorySessionCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final participantIdsAsync = ref.watch(
-      watchParticipantIdsProvider(session.id),
-    );
-    final manualUsersAsync = ref.watch(watchManualUsersProvider(session.id));
-    final poursAsync = ref.watch(watchSessionPoursProvider(session.id));
-
-    final participantIds = participantIdsAsync.asData?.value ?? const [];
-    final manualUsers = manualUsersAsync.asData?.value ?? const <ManualUser>[];
-    final pours = poursAsync.asData?.value ?? const <Pour>[];
-
-    final consumerIds = <String>{
-      ...participantIds,
-      ...manualUsers.map((u) => u.id),
-      ...pours.where((p) => !p.undone).map((p) => p.userId),
-    };
-    final participantCount = consumerIds.length;
+    // One stream for the count — manual users and pour-based consumers are
+    // not shown on the list card (acceptable UX trade-off to save reads).
+    final participantIds =
+        ref.watch(watchParticipantIdsProvider(session.id)).asData?.value ?? const [];
+    final participantCount = participantIds.length;
 
     return SessionCard(
       session: session,

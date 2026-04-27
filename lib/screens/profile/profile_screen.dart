@@ -165,12 +165,9 @@ class ProfileScreen extends ConsumerWidget {
             title: Text(AppLocalizations.of(context)!.showStatsToOthers),
             value: user.preferences['show_stats'] as bool? ?? true,
             onChanged: (val) async {
-              final repo = ref.read(userRepositoryProvider);
-              final updatedPrefs =
-                  Map<String, dynamic>.from(user.preferences)
-                    ..['show_stats'] = val;
-              await repo.createOrUpdateUser(
-                user.copyWith(preferences: updatedPrefs),
+              await ref.read(userRepositoryProvider).updatePreferences(
+                userId: user.id,
+                preferences: {'show_stats': val},
               );
             },
             tileColor: BeerColors.surfaceVariant,
@@ -191,12 +188,9 @@ class ProfileScreen extends ConsumerWidget {
                 : null,
             value: user.preferences['show_bac'] as bool? ?? false,
             onChanged: (val) async {
-              final repo = ref.read(userRepositoryProvider);
-              final updatedPrefs =
-                  Map<String, dynamic>.from(user.preferences)
-                    ..['show_bac'] = val;
-              await repo.createOrUpdateUser(
-                user.copyWith(preferences: updatedPrefs),
+              await ref.read(userRepositoryProvider).updatePreferences(
+                userId: user.id,
+                preferences: {'show_bac': val},
               );
             },
             tileColor: BeerColors.surfaceVariant,
@@ -209,12 +203,9 @@ class ProfileScreen extends ConsumerWidget {
             title: Text(AppLocalizations.of(context)!.showPersonalInfoToOthers),
             value: user.preferences['show_personal_info'] as bool? ?? true,
             onChanged: (val) async {
-              final repo = ref.read(userRepositoryProvider);
-              final updatedPrefs =
-                  Map<String, dynamic>.from(user.preferences)
-                    ..['show_personal_info'] = val;
-              await repo.createOrUpdateUser(
-                user.copyWith(preferences: updatedPrefs),
+              await ref.read(userRepositoryProvider).updatePreferences(
+                userId: user.id,
+                preferences: {'show_personal_info': val},
               );
             },
             tileColor: BeerColors.surfaceVariant,

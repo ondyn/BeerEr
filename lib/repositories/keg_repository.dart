@@ -93,12 +93,15 @@ class KegRepository {
   // ---------------------------------------------------------------------------
 
   Future<KegSession> createSession(KegSession session) async {
-    final data = session.toJson()..remove('id');
-    final ref = await _sessions.add(data);
-    final sessionId = ref.id;
-    // Store the deep-link join URL now that we know the session ID.
-    final joinLink = 'beerer://join/$sessionId';
-    await ref.update({'join_link': joinLink});
+    // Pre-generate the document ID so join_link can be included in
+    // the initial write, eliminating a second round-trip.
+    final docRef = _sessions.doc();
+    final sessionId = docRef.id;
+    final joinLink = 'https://ondyn-beerer.web.app/join/$sessionId';
+    final data = session.toJson()
+      ..remove('id')
+      ..['join_link'] = joinLink;
+    await docRef.set(data);
     return session.copyWith(id: sessionId, joinLink: joinLink);
   }
 

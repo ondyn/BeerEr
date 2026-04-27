@@ -34,7 +34,7 @@ Future<void> main() async {
     ),
   );
 
-  // Handle deep links (beerer://join/<sessionId>) after the app is running.
+  // Handle deep links after the app is running.
   final appLinks = AppLinks();
 
   // Initial link when the app is opened cold via a link.
@@ -47,22 +47,38 @@ Future<void> main() async {
   appLinks.uriLinkStream.listen(_handleDeepLink);
 }
 
-/// Translates a `beerer://join/[sessionId]` URI into a GoRouter path.
+/// Translates a supported deep-link URI into a GoRouter path.
 ///
-/// URI shape:  beerer://join/[sessionId]
-///   scheme  = beerer
-///   host    = join
-///   path    = /[sessionId]   (pathSegments[0])
+/// Supported URI shapes:
+///   - beerer://join/[sessionId]
+///   - https://ondyn-beerer.web.app/join/[sessionId]
+///   - https://ondyn-beerer.firebaseapp.com/join/[sessionId]
 void _handleDeepLink(Uri uri) {
-  if (uri.scheme != 'beerer' || uri.host != 'join') return;
-
-  final sessionId = uri.pathSegments.isNotEmpty
-      ? uri.pathSegments.first
-      : null;
+  final sessionId = _extractJoinSessionId(uri);
   if (sessionId == null || sessionId.isEmpty) return;
 
   final context = appNavigatorKey.currentContext;
   if (context != null) {
     GoRouter.of(context).go('/join/$sessionId');
   }
+}
+
+String? _extractJoinSessionId(Uri uri) {
+  if (uri.scheme == 'beerer' && uri.host == 'join') {
+    return uri.pathSegments.isNotEmpty ? uri.pathSegments.first : null;
+  }
+
+  final allowedHttpsHosts = {
+    'ondyn-beerer.web.app',
+    'ondyn-beerer.firebaseapp.com',
+  };
+  final isAllowedHttpsJoin =
+      uri.scheme == 'https' && allowedHttpsHosts.contains(uri.host);
+  if (isAllowedHttpsJoin &&
+      uri.pathSegments.length >= 2 &&
+      uri.pathSegments.first == 'join') {
+    return uri.pathSegments[1];
+  }
+
+  return null;
 }
